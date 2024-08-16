@@ -31,7 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
   camera: 0.11.0+2
-  permission_handler: ^10.0.0+2
+  permission_handler: ^11.3.1
+  flutter_barcode_scanner: ^2.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -39,8 +40,10 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   flutter_webrtc: any
-  qr_flutter: any
+  qr_flutter: ^4.1.0
   qr_code_scanner: any
+  http: ^0.13.4
+  #qr: ^3.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
