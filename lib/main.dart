@@ -21,6 +21,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   RTCPeerConnection? _peerConnection;
   bool _renderersInitialized = false;
   bool _isOfferer = false; // Track if the device is the offerer
+  bool _connecting = false; // Track connection status
 
   String _connectionCode = '';
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
@@ -56,7 +57,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       });
     } catch (e) {
       print('Failed to initialize renderers: $e');
-      _showErrorAlert('Failed to initialize renderers');
+      _showErrorAlert('Failed to initialize video renderers. Please restart the app.');
     }
   }
 
@@ -73,6 +74,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
         print('ICE Connection State: $state');
+        if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
+          setState(() {
+            _connecting = false;
+          });
+          _showInfoSnackBar('Connected successfully!');
+        } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
+                   state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+          setState(() {
+            _connecting = false;
+          });
+          _showErrorSnackBar('Connection failed. Please try again.');
+        }
       };
 
       _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
@@ -111,7 +124,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
     } catch (e) {
       print('Failed to create PeerConnection: $e');
-      _showErrorAlert('Failed to create PeerConnection');
+      _showErrorAlert('Failed to create a connection. Please try again.');
     }
   }
 
@@ -122,6 +135,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
 
     try {
+      setState(() {
+        _connecting = true;
+      });
+
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
       print("Local SDP Offer: ${offer.sdp}");
@@ -130,8 +147,11 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       await _displayQRCode(offer.sdp!, 'offer');
     } catch (e) {
+      setState(() {
+        _connecting = false;
+      });
       print('Failed to create offer: $e');
-      _showErrorAlert('Failed to create offer');
+      _showErrorAlert('Failed to create an offer. Please try again.');
     }
   }
 
@@ -142,14 +162,21 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
 
     try {
+      setState(() {
+        _connecting = true;
+      });
+
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
       print("Local SDP Answer: ${answer.sdp}");
 
       await _displayQRCode(answer.sdp!, 'answer');
     } catch (e) {
+      setState(() {
+        _connecting = false;
+      });
       print('Failed to create answer: $e');
-      _showErrorAlert('Failed to create answer');
+      _showErrorAlert('Failed to create an answer. Please try again.');
     }
   }
 
@@ -160,13 +187,20 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
 
     try {
+      setState(() {
+        _connecting = true;
+      });
+
       final description = RTCSessionDescription(sdp, 'offer');
       await _peerConnection!.setRemoteDescription(description);
       print("Remote SDP set as Offer");
       await _createAnswer();
     } catch (e) {
+      setState(() {
+        _connecting = false;
+      });
       print('Failed to handle received offer: $e');
-      _showErrorAlert('Failed to handle received offer');
+      _showErrorAlert('Failed to process the offer. Please try again.');
     }
   }
 
@@ -189,7 +223,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
     } catch (e) {
       print('Failed to handle received answer: $e');
-      _showErrorAlert('Failed to handle received answer');
+      _showErrorAlert('Failed to process the answer. Please try again.');
     }
   }
 
@@ -205,7 +239,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       print("Added ICE Candidate: $candidate");
     } catch (e) {
       print('Failed to add ICE candidate: $e');
-      _showErrorAlert('Failed to add ICE candidate');
+      _showErrorAlert('Failed to add ICE candidate. Please try again.');
     }
   }
 
@@ -218,7 +252,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       });
     } catch (e) {
       print("Error generating QR code: $e");
-      _showErrorAlert("Error generating QR code");
+      _showErrorAlert("Failed to generate QR code. Please try again.");
     }
   }
 
@@ -231,10 +265,11 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         _processScannedData(scannedData);
       } else {
         print("QR scan was cancelled or failed");
+        _showInfoSnackBar("QR scan was cancelled.");
       }
     } catch (e) {
       print("Error scanning QR code: $e");
-      _showErrorAlert("Error scanning QR code");
+      _showErrorAlert("Failed to scan QR code. Please try again.");
     }
   }
 
@@ -258,7 +293,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
     } catch (e) {
       print("Failed to decode QR code data: $e");
-      _showErrorAlert("Failed to decode QR code data");
+      _showErrorAlert("Failed to process scanned QR code data. Please try again.");
     }
   }
 
@@ -294,6 +329,22 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     );
   }
 
+  void _showErrorSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _showInfoSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.green,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   void dispose() {
     _localRenderer.dispose();
@@ -314,16 +365,28 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: _connectionCode.isNotEmpty
-                      ? SizedBox(
-                          width: 200.0,
-                          height: 200.0,
-                          child: QrImageView(
-                            data: _connectionCode,
-                            version: QrVersions.auto,
-                            size: 200.0,
-                          ),
+                      ? Column(
+                          children: [
+                            const Text(
+                              'Scan the QR code on the other device to connect',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: 200.0,
+                              height: 200.0,
+                              child: QrImageView(
+                                data: _connectionCode,
+                                version: QrVersions.auto,
+                                size: 200.0,
+                              ),
+                            ),
+                          ],
                         )
-                      : const Text('No data to display'),
+                      : _connecting
+                          ? const CircularProgressIndicator()
+                          : const Text('No data to display'),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
