@@ -61,105 +61,105 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
   }
 
-Future<void> _createPeerConnection() async {
-  try {
-    final configuration = {
-      'iceServers': [
-        {'urls': 'stun:stun.l.google.com:19302'},
-      ],
-      'sdpSemantics': 'unified-plan',
-    };
+  Future<void> _createPeerConnection() async {
+    try {
+      final configuration = {
+        'iceServers': [
+          {'urls': 'stun:stun.l.google.com:19302'},
+        ],
+        'sdpSemantics': 'unified-plan',
+      };
 
-    _peerConnection = await createPeerConnection(configuration);
+      _peerConnection = await createPeerConnection(configuration);
 
-    _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
-      print('ICE Connection State: $state');
-      if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
-        setState(() {
-          _connecting = false;
+      _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
+        print('ICE Connection State: $state');
+        if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
+          setState(() {
+            _connecting = false;
+          });
+          _showInfoSnackBar('Connected successfully!');
+        } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
+            state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+          setState(() {
+            _connecting = false;
+          });
+          _showErrorSnackBar('Connection failed. Please try again.');
+        }
+      };
+
+      _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+        print('Peer Connection State: $state');
+      };
+
+      _peerConnection!.onSignalingState = (RTCSignalingState state) {
+        print('Signaling State: $state');
+      };
+
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
+        print('Received track: ${event.track.kind}');
+        if (event.track.kind == 'video' && event.streams.isNotEmpty) {
+          setState(() {
+            _remoteRenderer.srcObject = event.streams[0];
+          });
+        }
+      };
+
+      _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
+        if (candidate.candidate != null) {
+          print('ICE Candidate: ${candidate.candidate}');
+          _gatheredIceCandidates.add(candidate); // Collect ICE candidates
+        }
+      };
+
+      _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
+        print('ICE Gathering State: $state');
+      };
+
+      // Enumerate cameras and get the device ID of the back camera
+      final mediaDevices = await navigator.mediaDevices.enumerateDevices();
+      String? backCameraId;
+
+      for (var device in mediaDevices) {
+        if (device.kind == 'videoinput' && device.label.toLowerCase().contains('back')) {
+          backCameraId = device.deviceId;
+          break;
+        }
+      }
+
+      if (backCameraId != null) {
+        // Get video stream from back camera using the device ID
+        final stream = await navigator.mediaDevices.getUserMedia({
+          'audio': true,
+          'video': {
+            'deviceId': backCameraId,  // Pass the device ID directly as a string
+          },
         });
-        _showInfoSnackBar('Connected successfully!');
-      } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
-                 state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-        setState(() {
-          _connecting = false;
+        _localRenderer.srcObject = stream;
+
+        for (var track in stream.getTracks()) {
+          await _peerConnection!.addTrack(track, stream);
+        }
+      } else {
+        print('Back camera not found');
+        _showErrorSnackBar('Back camera not found. Using default camera.');
+
+        // Fallback to default camera if back camera is not found
+        final stream = await navigator.mediaDevices.getUserMedia({
+          'audio': true,
+          'video': true,
         });
-        _showErrorSnackBar('Connection failed. Please try again.');
+        _localRenderer.srcObject = stream;
+
+        for (var track in stream.getTracks()) {
+          await _peerConnection!.addTrack(track, stream);
+        }
       }
-    };
-
-    _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
-      print('Peer Connection State: $state');
-    };
-
-    _peerConnection!.onSignalingState = (RTCSignalingState state) {
-      print('Signaling State: $state');
-    };
-
-    _peerConnection!.onTrack = (RTCTrackEvent event) {
-      print('Received track: ${event.track.kind}');
-      if (event.track.kind == 'video' && event.streams.isNotEmpty) {
-        setState(() {
-          _remoteRenderer.srcObject = event.streams[0];
-        });
-      }
-    };
-
-    _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
-      if (candidate.candidate != null) {
-        print('ICE Candidate: ${candidate.candidate}');
-        _gatheredIceCandidates.add(candidate); // Collect ICE candidates
-      }
-    };
-
-    _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
-      print('ICE Gathering State: $state');
-    };
-
-    // Enumerate cameras and get the device ID of the back camera
-    final mediaDevices = await navigator.mediaDevices.enumerateDevices();
-    String? backCameraId;
-
-    for (var device in mediaDevices) {
-      if (device.kind == 'videoinput' && device.label.toLowerCase().contains('back')) {
-        backCameraId = device.deviceId;
-        break;
-      }
+    } catch (e) {
+      print('Failed to create PeerConnection: $e');
+      _showErrorAlert('Failed to create a connection. Please try again.');
     }
-
-    if (backCameraId != null) {
-      // Get video stream from back camera using the device ID
-      final stream = await navigator.mediaDevices.getUserMedia({
-        'audio': true,
-        'video': {
-          'deviceId': backCameraId,  // Pass the device ID directly as a string
-        },
-      });
-      _localRenderer.srcObject = stream;
-
-      for (var track in stream.getTracks()) {
-        await _peerConnection!.addTrack(track, stream);
-      }
-    } else {
-      print('Back camera not found');
-      _showErrorSnackBar('Back camera not found. Using default camera.');
-      
-      // Fallback to default camera if back camera is not found
-      final stream = await navigator.mediaDevices.getUserMedia({
-        'audio': true,
-        'video': true,
-      });
-      _localRenderer.srcObject = stream;
-
-      for (var track in stream.getTracks()) {
-        await _peerConnection!.addTrack(track, stream);
-      }
-    }
-  } catch (e) {
-    print('Failed to create PeerConnection: $e');
-    _showErrorAlert('Failed to create a connection. Please try again.');
   }
-}
 
   Future<void> _createOffer() async {
     if (_peerConnection == null) {
@@ -330,6 +330,15 @@ Future<void> _createPeerConnection() async {
     }
   }
 
+  void _enterFullscreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullscreenVideoView(remoteRenderer: _remoteRenderer),
+      ),
+    );
+  }
+
   void _showPermissionAlert() {
     showDialog(
       context: context,
@@ -392,54 +401,85 @@ Future<void> _createPeerConnection() async {
       appBar: AppBar(title: const Text('P2P Camera Stream with QR Code')),
       body: _renderersInitialized
           ? Column(
+        children: [
+          Expanded(child: RTCVideoView(_localRenderer)),
+          Expanded(child: RTCVideoView(_remoteRenderer)),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _connectionCode.isNotEmpty
+                ? Column(
               children: [
-                Expanded(child: RTCVideoView(_localRenderer)),
-                Expanded(child: RTCVideoView(_remoteRenderer)),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _connectionCode.isNotEmpty
-                      ? Column(
-                          children: [
-                            const Text(
-                              'Scan the QR code on the other device to connect',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16.0),
-                            ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              width: 200.0,
-                              height: 200.0,
-                              child: QrImageView(
-                                data: _connectionCode,
-                                version: QrVersions.auto,
-                                size: 200.0,
-                              ),
-                            ),
-                          ],
-                        )
-                      : _connecting
-                          ? const CircularProgressIndicator()
-                          : const Text('No data to display'),
+                const Text(
+                  'Scan the QR code on the other device to connect',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16.0),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _createOffer,
-                      child: const Text('Create Offer'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _scanQRCode,
-                      child: const Text('Scan QR Code'),
-                    ),
-                  ],
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: 200.0,
+                  height: 200.0,
+                  child: QrImageView(
+                    data: _connectionCode,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                  ),
                 ),
               ],
             )
+                : _connecting
+                ? const CircularProgressIndicator()
+                : const Text('No data to display'),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: _createOffer,
+                child: const Text('Create Offer'),
+              ),
+              ElevatedButton(
+                onPressed: _scanQRCode,
+                child: const Text('Scan QR Code'),
+              ),
+              ElevatedButton(
+                onPressed: _enterFullscreen,
+                child: const Text('Fullscreen'),
+              ),
+            ],
+          ),
+        ],
+      )
           : const Center(child: CircularProgressIndicator()),
     );
   }
 }
+
+class FullscreenVideoView extends StatelessWidget {
+  final RTCVideoRenderer remoteRenderer;
+  final bool rotateVideo;
+
+  const FullscreenVideoView({Key? key, required this.remoteRenderer, this.rotateVideo = false}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        child: Center(
+          child: rotateVideo
+              ? RotatedBox(
+                  quarterTurns: 1, // Rotate only if needed
+                  child: RTCVideoView(remoteRenderer),
+                )
+              : RTCVideoView(remoteRenderer),
+        ),
+      ),
+    );
+  }
+}
+
 
 // Compress the data
 String _compressData(String data) {
