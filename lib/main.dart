@@ -130,7 +130,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       if (backCameraId != null) {
         // Get video stream from back camera using the device ID
         final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': true,
+          'audio': false,
           'video': {
             'deviceId': backCameraId,  // Pass the device ID directly as a string
           },
@@ -146,7 +146,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
         // Fallback to default camera if back camera is not found
         final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': true,
+          'audio': false,
           'video': true,
         });
         _localRenderer.srcObject = stream;
@@ -330,11 +330,11 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
   }
 
-  void _enterFullscreen() {
+  void _enterVRMode() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => FullscreenVideoView(remoteRenderer: _remoteRenderer),
+        builder: (context) => VRVideoView(remoteRenderer: _remoteRenderer),
       ),
     );
   }
@@ -442,8 +442,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                 child: const Text('Scan QR Code'),
               ),
               ElevatedButton(
-                onPressed: _enterFullscreen,
-                child: const Text('Fullscreen'),
+                onPressed: _enterVRMode,
+                child: const Text('Enter VR Mode'),
               ),
             ],
           ),
@@ -454,11 +454,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 }
 
-class FullscreenVideoView extends StatelessWidget {
+class VRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
-  final bool rotateVideo;
 
-  const FullscreenVideoView({Key? key, required this.remoteRenderer, this.rotateVideo = false}) : super(key: key);
+  const VRVideoView({Key? key, required this.remoteRenderer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -468,18 +467,21 @@ class FullscreenVideoView extends StatelessWidget {
           Navigator.pop(context);
         },
         child: Center(
-          child: rotateVideo
-              ? RotatedBox(
-                  quarterTurns: 1, // Rotate only if needed
-                  child: RTCVideoView(remoteRenderer),
-                )
-              : RTCVideoView(remoteRenderer),
+          child: Row(
+            children: [
+              Expanded(
+                child: RTCVideoView(remoteRenderer),
+              ),
+              Expanded(
+                child: RTCVideoView(remoteRenderer),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
 
 // Compress the data
 String _compressData(String data) {
