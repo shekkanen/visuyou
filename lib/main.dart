@@ -339,6 +339,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     );
   }
 
+  void _enter50_50VRMode() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VR50_50VideoView(
+          localRenderer: _localRenderer,
+          remoteRenderer: _remoteRenderer,
+        ),
+      ),
+    );
+  }
+
   void _showPermissionAlert() {
     showDialog(
       context: context,
@@ -401,59 +413,64 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       appBar: AppBar(title: const Text('P2P Camera Stream with QR Code')),
       body: _renderersInitialized
           ? Column(
-        children: [
-          Expanded(child: RTCVideoView(_localRenderer)),
-          Expanded(child: RTCVideoView(_remoteRenderer)),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _connectionCode.isNotEmpty
-                ? Column(
               children: [
-                const Text(
-                  'Scan the QR code on the other device to connect',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16.0),
+                Expanded(child: RTCVideoView(_localRenderer)),
+                Expanded(child: RTCVideoView(_remoteRenderer)),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _connectionCode.isNotEmpty
+                      ? Column(
+                          children: [
+                            const Text(
+                              'Scan the QR code on the other device to connect',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: 200.0,
+                              height: 200.0,
+                              child: QrImageView(
+                                data: _connectionCode,
+                                version: QrVersions.auto,
+                                size: 200.0,
+                              ),
+                            ),
+                          ],
+                        )
+                      : _connecting
+                          ? const CircularProgressIndicator()
+                          : const Text('No data to display'),
                 ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: 200.0,
-                  height: 200.0,
-                  child: QrImageView(
-                    data: _connectionCode,
-                    version: QrVersions.auto,
-                    size: 200.0,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _createOffer,
+                      child: const Text('Create Offer'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _scanQRCode,
+                      child: const Text('Scan QR Code'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _enterVRMode,
+                      child: const Text('Enter VR Mode'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _enter50_50VRMode,
+                      child: const Text('Enter 50/50 VR Mode'),
+                    ),
+                  ],
                 ),
               ],
             )
-                : _connecting
-                ? const CircularProgressIndicator()
-                : const Text('No data to display'),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: _createOffer,
-                child: const Text('Create Offer'),
-              ),
-              ElevatedButton(
-                onPressed: _scanQRCode,
-                child: const Text('Scan QR Code'),
-              ),
-              ElevatedButton(
-                onPressed: _enterVRMode,
-                child: const Text('Enter VR Mode'),
-              ),
-            ],
-          ),
-        ],
-      )
           : const Center(child: CircularProgressIndicator()),
     );
   }
 }
 
+// Move the VRVideoView class to the top level
 class VRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
 
@@ -483,11 +500,68 @@ class VRVideoView extends StatelessWidget {
   }
 }
 
+class VR50_50VideoView extends StatelessWidget {
+  final RTCVideoRenderer localRenderer;
+  final RTCVideoRenderer remoteRenderer;
+
+  const VR50_50VideoView({
+    Key? key,
+    required this.localRenderer,
+    required this.remoteRenderer,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        child: Center(
+          child: Row(
+            children: [
+              // Left Eye View
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: RTCVideoView(localRenderer), // Left side - Back camera
+                    ),
+                    Expanded(
+                      child: RTCVideoView(remoteRenderer), // Right side - Incoming video
+                    ),
+                  ],
+                ),
+              ),
+              // Right Eye View
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: RTCVideoView(localRenderer), // Left side - Back camera
+                    ),
+                    Expanded(
+                      child: RTCVideoView(remoteRenderer), // Right side - Incoming video
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
 // Compress the data
 String _compressData(String data) {
   try {
     List<int> stringBytes = utf8.encode(data);
-    List<int> compressedBytes = GZipEncoder().encode(stringBytes) as List<int>;
+    List<int> compressedBytes =
+        GZipEncoder().encode(stringBytes) as List<int>;
     return base64Encode(compressedBytes);
   } catch (e) {
     print('Failed to compress data: $e');
@@ -499,7 +573,8 @@ String _compressData(String data) {
 String _decompressData(String compressedData) {
   try {
     List<int> compressedBytes = base64Decode(compressedData);
-    List<int> decompressedBytes = GZipDecoder().decodeBytes(compressedBytes);
+    List<int> decompressedBytes =
+        GZipDecoder().decodeBytes(compressedBytes);
     return utf8.decode(decompressedBytes);
   } catch (e) {
     print('Failed to decompress data: $e');
