@@ -351,6 +351,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     );
   }
 
+  void _enterPiPMode() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PiPVideoView(
+          mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
+          pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
+        ),
+      ),
+    );
+  }
+
   void _showPermissionAlert() {
     showDialog(
       context: context,
@@ -455,12 +467,16 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                     ),
                     ElevatedButton(
                       onPressed: _enterVRMode,
-                      child: const Text('Enter VR Mode'),
+                      child: const Text('VR Mode'),
                     ),
                     ElevatedButton(
                       onPressed: _enter50_50VRMode,
                       child: const Text('Enter 50/50 VR Mode'),
                     ),
+                    ElevatedButton(
+                        onPressed: _enterPiPMode,
+                        child: const Text('PIP Mode'),
+                    )
                   ],
                 ),
               ],
@@ -554,7 +570,57 @@ class VR50_50VideoView extends StatelessWidget {
   }
 }
 
+// PiP Mode implementation for VR headset
+class PiPVideoView extends StatelessWidget {
+  final RTCVideoRenderer mainRenderer;
+  final RTCVideoRenderer pipRenderer;
 
+  const PiPVideoView({
+    Key? key,
+    required this.mainRenderer,
+    required this.pipRenderer,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        child: Center(
+          child: Row(
+            children: [
+              // Left Eye View
+              Expanded(
+                child: Stack(
+                  children: [
+                    Center(
+                      child: RTCVideoView(mainRenderer), // Main view
+                    ),
+                    Positioned(
+                      right: 20.0,
+                      bottom: 20.0,
+                      width: 150.0,
+                      height: 100.0,
+                      child: RTCVideoView(pipRenderer), // PiP view
+                    ),
+                  ],
+                ),
+              ),
+              // Right Eye View
+              Expanded(
+                child: Center(
+                  child: RTCVideoView(mainRenderer), // Main view without PiP
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 // Compress the data
 String _compressData(String data) {
