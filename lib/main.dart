@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'dart:convert';
 import 'package:archive/archive.dart';
+import 'qr_code_utils.dart';
 
 void main() => runApp(const MaterialApp(home: CameraStreamingApp()));
 
@@ -276,59 +277,29 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
   }
 
-  Future<void> _displayQRCode(String data, String type) async {
-    try {
-      String compressedData = _compressData(data);
-      setState(() {
-        _connectionCode = jsonEncode({'type': type, 'data': compressedData});
-        print("Generated QR Code Data: $_connectionCode");
-      });
-    } catch (e) {
-      print("Error generating QR code: $e");
-      _showErrorAlert("Failed to generate QR code. Please try again.");
-    }
+Future<void> _displayQRCode(String data, String type) async {
+  await QRCodeUtils.displayQRCode(context, data, type, (String qrCodeData) {
+    setState(() {
+      _connectionCode = qrCodeData;
+    });
+  });
+}
+
+Future<void> _scanQRCode() async {
+  await QRCodeUtils.scanQRCode(context, _processScannedData);
+}
+
+void _processScannedData(String type, String data) async {
+  if (type == 'offer') {
+    await _onOfferReceived(data);
+  } else if (type == 'answer') {
+    await _onAnswerReceived(data);
+  } else if (type == 'ice') {
+    await _addIceCandidate(data);
+  } else {
+    print("Unknown type: $type");
   }
-
-  Future<void> _scanQRCode() async {
-    try {
-      String scannedData = await FlutterBarcodeScanner.scanBarcode(
-          "#ff6666", "Cancel", true, ScanMode.QR);
-
-      if (scannedData != '-1') {
-        _processScannedData(scannedData);
-      } else {
-        print("QR scan was cancelled or failed");
-        _showInfoSnackBar("QR scan was cancelled.");
-      }
-    } catch (e) {
-      print("Error scanning QR code: $e");
-      _showErrorAlert("Failed to scan QR code. Please try again.");
-    }
-  }
-
-  void _processScannedData(String scannedData) async {
-    try {
-      final Map<String, dynamic> receivedData = jsonDecode(scannedData);
-      print("Decoded Data: $receivedData");
-      final String type = receivedData['type'];
-      final String compressedData = receivedData['data'];
-      final String data = _decompressData(compressedData);
-      print("Type: $type, Data: $data");
-
-      if (type == 'offer') {
-        await _onOfferReceived(data);
-      } else if (type == 'answer') {
-        await _onAnswerReceived(data);
-      } else if (type == 'ice') {
-        await _addIceCandidate(data);
-      } else {
-        print("Unknown type: $type");
-      }
-    } catch (e) {
-      print("Failed to decode QR code data: $e");
-      _showErrorAlert("Failed to process scanned QR code data. Please try again.");
-    }
-  }
+}
 
   void _enterVRMode() {
     Navigator.push(
@@ -431,25 +402,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: _connectionCode.isNotEmpty
-                      ? Column(
-                          children: [
-                            const Text(
-                              'Scan the QR code on the other device to connect',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16.0),
-                            ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              width: 200.0,
-                              height: 200.0,
-                              child: QrImageView(
-                                data: _connectionCode,
-                                version: QrVersions.auto,
-                                size: 200.0,
-                              ),
-                            ),
-                          ],
-                        )
+                      ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
                       : _connecting
                           ? const CircularProgressIndicator()
                           : const Text('No data to display'),
