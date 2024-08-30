@@ -647,46 +647,90 @@ class PiPVideoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Hide the system UI when entering VR mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     return Scaffold(
       body: GestureDetector(
         onTap: () {
+          // Restore the system UI when exiting VR mode
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
         },
-        child: Center(
-          child: Row(
-            children: [
-              // Left Eye View
-              Expanded(
-            child: Stack(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final halfWidth = constraints.maxWidth / 2;
+            final pipSize = constraints.maxWidth / 5;  // Adjust the size of the PiP view here
+
+            return Row(
               children: [
-                    Center(
-                      child: RTCVideoView(mainRenderer), // Main view
+                // Left Eye View
+                SizedBox(
+                  width: halfWidth,
+                  height: constraints.maxHeight,
+                  child: Stack(
+                    children: [
+                      RTCVideoView(
+                        mainRenderer,
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure main video fills the box
+                      ),
+                      Positioned(
+                        right: 20.0,
+                        bottom: 20.0,
+                        width: pipSize,
+                        height: pipSize,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 2), // Frame around the PiP view
+                          ),
+                          child: RTCVideoView(
+                            pipRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure PiP video fills the box
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Positioned(
-                  right: 20.0,
-                  bottom: 20.0,
-                  width: 150.0,
-                  height: 100.0,
-                      child: RTCVideoView(pipRenderer), // PiP view
+                // Right Eye View
+                SizedBox(
+                  width: halfWidth,
+                  height: constraints.maxHeight,
+                  child: Stack(
+                    children: [
+                      RTCVideoView(
+                        mainRenderer,
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure main video fills the box
+                      ),
+                      Positioned(
+                        right: 20.0,
+                        bottom: 20.0,
+                        width: pipSize,
+                        height: pipSize,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 2), // Frame around the PiP view
+                          ),
+                          child: RTCVideoView(
+                            pipRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure PiP video fills the box
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-              ),
-              // Right Eye View
-              Expanded(
-                child: Center(
-                  child: RTCVideoView(mainRenderer), // Main view without PiP
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-// Compress the data
+
+
 String _compressData(String data) {
   try {
     List<int> stringBytes = utf8.encode(data);
