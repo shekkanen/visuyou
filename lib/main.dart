@@ -6,6 +6,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'qr_code_utils.dart';
+import 'package:flutter/services.dart'; // Import for SystemChrome
 
 void main() => runApp(const MaterialApp(home: CameraStreamingApp()));
 
@@ -504,27 +505,48 @@ class VRVideoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Hide the system UI when entering VR mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     return Scaffold(
       body: GestureDetector(
         onTap: () {
+          // Restore the system UI when exiting VR mode
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
         },
-        child: Center(
-          child: Row(
-            children: [
-              Expanded(
-                child: RTCVideoView(remoteRenderer),
-              ),
-              Expanded(
-                child: RTCVideoView(remoteRenderer),
-              ),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final halfWidth = constraints.maxWidth / 2;
+            return Row(
+              children: [
+                // Left Eye View
+                SizedBox(
+                  width: halfWidth,
+                  height: constraints.maxHeight,
+                  child: RTCVideoView(
+                    remoteRenderer,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                  ),
+                ),
+                // Right Eye View
+                SizedBox(
+                  width: halfWidth,
+                  height: constraints.maxHeight,
+                  child: RTCVideoView(
+                    remoteRenderer,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
+
 
 class VR50_50VideoView extends StatelessWidget {
   final RTCVideoRenderer localRenderer;
@@ -544,35 +566,35 @@ class VR50_50VideoView extends StatelessWidget {
           Navigator.pop(context);
         },
         child: Center(
-          child: Row(
-            children: [
+            child: Row(
+              children: [
               // Left Eye View
-              Expanded(
+                Expanded(
                 child: Row(
-                  children: [
-                    Expanded(
+                    children: [
+                      Expanded(
                       child: RTCVideoView(localRenderer), // Left side - Back camera
-                    ),
-                    Expanded(
+                      ),
+                      Expanded(
                       child: RTCVideoView(remoteRenderer), // Right side - Incoming video
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               // Right Eye View
-              Expanded(
+                Expanded(
                 child: Row(
-                  children: [
-                    Expanded(
+                    children: [
+                      Expanded(
                       child: RTCVideoView(localRenderer), // Left side - Back camera
-                    ),
-                    Expanded(
+                      ),
+                      Expanded(
                       child: RTCVideoView(remoteRenderer), // Right side - Incoming video
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
           ),
         ),
       ),
@@ -603,20 +625,20 @@ class PiPVideoView extends StatelessWidget {
             children: [
               // Left Eye View
               Expanded(
-                child: Stack(
-                  children: [
+            child: Stack(
+              children: [
                     Center(
                       child: RTCVideoView(mainRenderer), // Main view
-                    ),
-                    Positioned(
-                      right: 20.0,
-                      bottom: 20.0,
-                      width: 150.0,
-                      height: 100.0,
-                      child: RTCVideoView(pipRenderer), // PiP view
-                    ),
-                  ],
                 ),
+                Positioned(
+                  right: 20.0,
+                  bottom: 20.0,
+                  width: 150.0,
+                  height: 100.0,
+                      child: RTCVideoView(pipRenderer), // PiP view
+                ),
+              ],
+            ),
               ),
               // Right Eye View
               Expanded(
