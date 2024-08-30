@@ -560,42 +560,74 @@ class VR50_50VideoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Hide the system UI when entering VR mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     return Scaffold(
       body: GestureDetector(
         onTap: () {
+          // Restore the system UI when exiting VR mode
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
         },
-        child: Center(
-            child: Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final quarterWidth = constraints.maxWidth / 4;
+            return Row(
               children: [
-              // Left Eye View
-                Expanded(
-                child: Row(
+                // Left Eye View
+                SizedBox(
+                  width: quarterWidth * 2,
+                  height: constraints.maxHeight,
+                  child: Row(
                     children: [
-                      Expanded(
-                      child: RTCVideoView(localRenderer), // Left side - Back camera
+                      SizedBox(
+                        width: quarterWidth,
+                        height: constraints.maxHeight,
+                        child: RTCVideoView(
+                          localRenderer,
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                        ),
                       ),
-                      Expanded(
-                      child: RTCVideoView(remoteRenderer), // Right side - Incoming video
+                      SizedBox(
+                        width: quarterWidth,
+                        height: constraints.maxHeight,
+                        child: RTCVideoView(
+                          remoteRenderer,
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                        ),
                       ),
                     ],
                   ),
                 ),
-              // Right Eye View
-                Expanded(
-                child: Row(
+                // Right Eye View
+                SizedBox(
+                  width: quarterWidth * 2,
+                  height: constraints.maxHeight,
+                  child: Row(
                     children: [
-                      Expanded(
-                      child: RTCVideoView(localRenderer), // Left side - Back camera
+                      SizedBox(
+                        width: quarterWidth,
+                        height: constraints.maxHeight,
+                        child: RTCVideoView(
+                          localRenderer,
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                        ),
                       ),
-                      Expanded(
-                      child: RTCVideoView(remoteRenderer), // Right side - Incoming video
+                      SizedBox(
+                        width: quarterWidth,
+                        height: constraints.maxHeight,
+                        child: RTCVideoView(
+                          remoteRenderer,
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
-          ),
+            );
+          },
         ),
       ),
     );
