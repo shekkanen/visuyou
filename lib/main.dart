@@ -390,38 +390,74 @@ void _processScannedData(String type, String data) async {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('P2P Camera Stream with QR Code')),
-      body: _renderersInitialized
-          ? Column(
-              children: [
-                Expanded(child: RTCVideoView(_localRenderer)),
-                Expanded(child: RTCVideoView(_remoteRenderer)),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _connectionCode.isNotEmpty
-                      ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                      : _connecting
-                          ? const CircularProgressIndicator()
-                          : const Text('No data to display'),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      centerTitle: true, // Center the title in the AppBar
+      title: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Add your app logo/icon here
+              Image.asset(
+                'assets/visuyou_logo.png', // Replace with your logo's asset path
+                height: 24.0,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8.0), // Add space between the logo and title
+              Text(
+                'VisuYou',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // Ensure it stands out
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _createOffer,
-                      child: const Text('Create Offer'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _scanQRCode,
-                      child: const Text('Scan QR Code'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _enterVRMode,
-                      child: const Text('VR Mode'),
-                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4.0), // Adjust this value for better spacing
+          const Text(
+            'True P2P VR Experience', // Your tagline
+            style: TextStyle(
+              fontSize: 14.0,
+              fontWeight: FontWeight.w300,
+              color: Colors.white70, // Slightly muted color for the tagline
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Colors.black, // Optional: change to fit your theme
+    ),
+    body: _renderersInitialized
+        ? Column(
+            children: [
+              Expanded(child: RTCVideoView(_localRenderer)),
+              Expanded(child: RTCVideoView(_remoteRenderer)),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _connectionCode.isNotEmpty
+                    ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                    : _connecting
+                        ? const CircularProgressIndicator()
+                        : const Text('No data to display'),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _createOffer,
+                    child: const Text('Create Offer'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _scanQRCode,
+                    child: const Text('Scan QR Code'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _enterVRMode,
+                    child: const Text('VR Mode'),
+                  ),
                     ElevatedButton(
                       onPressed: _enter50_50VRMode,
                       child: const Text('Enter 50/50 VR Mode'),
@@ -430,12 +466,12 @@ void _processScannedData(String type, String data) async {
                         onPressed: _enterPiPMode,
                         child: const Text('PIP Mode'),
                     )
-                  ],
-                ),
-              ],
-            )
-          : const Center(child: CircularProgressIndicator()),
-    );
+                ],
+              ),
+            ],
+          )
+        : const Center(child: CircularProgressIndicator()),
+  );
   }
 }
 
