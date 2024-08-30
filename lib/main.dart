@@ -27,6 +27,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   String _connectionCode = '';
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
 
+  // Dropdown menu related
+  String _selectedViewMode = 'VR Mode'; // Default selected mode
+  final List<String> _viewModes = ['VR Mode', '50/50 VR Mode', 'PIP VR Mode'];
+
   @override
   void initState() {
     super.initState();
@@ -390,91 +394,108 @@ void _processScannedData(String type, String data) async {
     super.dispose();
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
       centerTitle: true, // Center the title in the AppBar
-      title: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Add your app logo/icon here
-              Image.asset(
-                'assets/visuyou_logo.png', // Replace with your logo's asset path
-                height: 24.0,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(width: 8.0), // Add space between the logo and title
-              Text(
-                'VisuYou',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // Ensure it stands out
+        title: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/visuyou_logo.png',
+                  height: 24.0,
+                  fit: BoxFit.contain,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4.0), // Adjust this value for better spacing
-          const Text(
-            'True P2P VR Experience', // Your tagline
-            style: TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.w300,
-              color: Colors.white70, // Slightly muted color for the tagline
+                const SizedBox(width: 8.0),
+                Text(
+                  'VisuYou',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 4.0),
+            const Text(
+              'True P2P VR Experience',
+              style: TextStyle(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w300,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.black,
+        actions: [
+          // Add the dropdown menu in the AppBar
+          DropdownButton<String>(
+            value: _selectedViewMode,
+            dropdownColor: Colors.black87,
+            style: TextStyle(color: Colors.white),
+            underline: Container(), // Removes the underline
+            icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+            items: _viewModes.map((String mode) {
+              return DropdownMenuItem<String>(
+                value: mode,
+                child: Text(mode),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedViewMode = newValue!;
+                // Add logic to handle view mode change here
+                if (_selectedViewMode == 'VR Mode') {
+                  _enterVRMode();
+                } else if (_selectedViewMode == '50/50 VR Mode') {
+                  _enter50_50VRMode();
+                } else if (_selectedViewMode == 'PIP VR Mode') {
+                  _enterPiPMode();
+                }
+              });
+            },
           ),
+          const SizedBox(width: 12), // Add some padding to the right
         ],
       ),
-      backgroundColor: Colors.black, // Optional: change to fit your theme
-    ),
-    body: _renderersInitialized
-        ? Column(
-            children: [
-              Expanded(child: RTCVideoView(_localRenderer)),
-              Expanded(child: RTCVideoView(_remoteRenderer)),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: _connectionCode.isNotEmpty
-                    ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                    : _connecting
-                        ? const CircularProgressIndicator()
-                        : const Text('No data to display'),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: _createOffer,
-                    child: const Text('Create Offer'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _scanQRCode,
-                    child: const Text('Scan QR Code'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _enterVRMode,
-                    child: const Text('VR Mode'),
-                  ),
+      body: _renderersInitialized
+          ? Column(
+              children: [
+                Expanded(child: RTCVideoView(_localRenderer)),
+                Expanded(child: RTCVideoView(_remoteRenderer)),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _connectionCode.isNotEmpty
+                      ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                      : _connecting
+                          ? const CircularProgressIndicator()
+                          : const Text('No data to display'),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                     ElevatedButton(
-                      onPressed: _enter50_50VRMode,
-                      child: const Text('Enter 50/50 VR Mode'),
+                      onPressed: _createOffer,
+                      child: const Text('Create Offer'),
                     ),
                     ElevatedButton(
-                        onPressed: _enterPiPMode,
-                        child: const Text('PIP Mode'),
-                    )
-                ],
-              ),
-            ],
-          )
-        : const Center(child: CircularProgressIndicator()),
-  );
+                      onPressed: _scanQRCode,
+                      child: const Text('Scan QR Code'),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
+    );
   }
-}
-
+  }
+  
 // Move the VRVideoView class to the top level
 class VRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
