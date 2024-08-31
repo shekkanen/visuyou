@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'qr_code_utils.dart';
 import 'package:flutter/services.dart'; // Import for SystemChrome
+import 'voice_command_utils.dart';
 
 void main() => runApp(const MaterialApp(home: CameraStreamingApp()));
 
@@ -18,6 +19,7 @@ class CameraStreamingApp extends StatefulWidget {
 }
 
 class _CameraStreamingAppState extends State<CameraStreamingApp> {
+
   late RTCVideoRenderer _localRenderer;
   late RTCVideoRenderer _remoteRenderer;
   RTCPeerConnection? _peerConnection;
@@ -32,13 +34,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   String _selectedViewMode = 'VR Mode'; // Default selected mode
   final List<String> _viewModes = ['VR Mode', '50/50 VR Mode', 'PIP VR Mode'];
 
+  late VoiceCommandUtils _voiceCommandUtils; // Add this line
   @override
   void initState() {
     super.initState();
     _localRenderer = RTCVideoRenderer();
     _remoteRenderer = RTCVideoRenderer();
     _requestPermissions();
+    _voiceCommandUtils = VoiceCommandUtils(onCommandRecognized: handleVoiceCommand);
+    _voiceCommandUtils.initSpeech(); // Initialize speech recognition
   }
+
+
 
   Future<void> _requestPermissions() async {
     var status = await Permission.camera.status;
@@ -303,6 +310,32 @@ void _processScannedData(String type, String data) async {
     await _addIceCandidate(data);
   } else {
     print("Unknown type: $type");
+  }
+}
+
+void handleVoiceCommand(String command) {
+  if (command == 'next') {
+    int currentIndex = _viewModes.indexOf(_selectedViewMode);
+    int nextIndex = (currentIndex + 1) % _viewModes.length;
+    String nextMode = _viewModes[nextIndex];
+    setState(() {
+      _selectedViewMode = nextMode;
+    });
+    switchViewMode(nextMode);
+  }
+}
+
+void switchViewMode(String mode) {
+  switch (mode) {
+    case 'VR Mode':
+      _enterVRMode();
+      break;
+    case '50/50 VR Mode':
+      _enter50_50VRMode();
+      break;
+    case 'PIP VR Mode':
+      _enterPiPMode();
+      break;
   }
 }
 
