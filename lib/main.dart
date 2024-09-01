@@ -34,7 +34,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
   // Dropdown menu related
   String _selectedViewMode = 'Full VR Mode'; // Default selected mode
-  final List<String> _viewModes = ['Full VR Mode', '50/50 VR Mode', 'PIP VR Mode'];
+  final List<String> _viewModes = ['Full VR Mode', '50/50 VR Mode', 'PIP VR Mode', 'PIP VR Mode2'];
 
   late VoiceCommandUtils _voiceCommandUtils; // Add this line
   @override
@@ -354,6 +354,9 @@ void switchViewMode(String mode) {
     case 'PIP VR Mode':
       _enterPiPMode();
       break;
+    case 'PIP VR Mode2':
+      _enterPiPMode2();
+      break;
   }
 }
 
@@ -424,6 +427,28 @@ void _enterPiPMode() {
   });
 }
 
+void _enterPiPMode2() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+  ]);
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PiPVideoView(
+        mainRenderer: _localRenderer, // Assuming remoteRenderer as main view
+        pipRenderer: _remoteRenderer, // Assuming localRenderer as PiP view
+      ),
+    ),
+  ).then((_) {
+    // Reset orientation when the PiP view is popped from the navigation stack.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  });
+}
 
   void _showPermissionAlert() {
     showDialog(
@@ -556,6 +581,8 @@ Widget build(BuildContext context) {
                   _enter50_50VRMode();
                 } else if (_selectedViewMode == 'PIP VR Mode') {
                   _enterPiPMode();
+                } else if (_selectedViewMode == 'PIP VR Mode2') {
+                  _enterPiPMode2();
                 }
             });
           },
