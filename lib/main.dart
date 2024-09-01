@@ -33,8 +33,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
 
   // Dropdown menu related
-  String _selectedViewMode = 'VR Mode'; // Default selected mode
-  final List<String> _viewModes = ['VR Mode', '50/50 VR Mode', 'PIP VR Mode'];
+  String _selectedViewMode = 'Full VR Mode'; // Default selected mode
+  final List<String> _viewModes = ['Full VR Mode', '50/50 VR Mode', 'PIP VR Mode'];
 
   late VoiceCommandUtils _voiceCommandUtils; // Add this line
   @override
@@ -329,8 +329,8 @@ void handleVoiceCommand(String command) {
 
 void switchViewMode(String mode) {
   switch (mode) {
-    case 'VR Mode':
-      _enterVRMode();
+    case 'Full VR Mode':
+      _enterFullVRMode();
       break;
     case '50/50 VR Mode':
       _enter50_50VRMode();
@@ -341,11 +341,11 @@ void switchViewMode(String mode) {
   }
 }
 
-  void _enterVRMode() {
+  void _enterFullVRMode() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => VRVideoView(remoteRenderer: _remoteRenderer),
+        builder: (context) => FullVRVideoView(remoteRenderer: _remoteRenderer),
       ),
     );
   }
@@ -493,8 +493,8 @@ Widget build(BuildContext context) {
             setState(() {
               _selectedViewMode = newValue!;
                 // Add logic to handle view mode change here
-                if (_selectedViewMode == 'VR Mode') {
-                  _enterVRMode();
+                if (_selectedViewMode == 'Full VR Mode') {
+                  _enterFullVRMode();
                 } else if (_selectedViewMode == '50/50 VR Mode') {
                   _enter50_50VRMode();
                 } else if (_selectedViewMode == 'PIP VR Mode') {
@@ -557,10 +557,10 @@ void _navigateToAboutPage(BuildContext context) {
 
 
 // Move the VRVideoView class to the top level
-class VRVideoView extends StatelessWidget {
+class FullVRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
 
-  const VRVideoView({Key? key, required this.remoteRenderer}) : super(key: key);
+  const FullVRVideoView({Key? key, required this.remoteRenderer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
