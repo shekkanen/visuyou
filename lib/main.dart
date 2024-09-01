@@ -8,6 +8,8 @@ import 'package:archive/archive.dart';
 import 'qr_code_utils.dart';
 import 'package:flutter/services.dart'; // Import for SystemChrome
 import 'voice_command_utils.dart';
+import 'about_page.dart'; // Import the About page
+import 'settings_page.dart'; // Import the Settings page
 
 void main() => runApp(const MaterialApp(home: CameraStreamingApp()));
 
@@ -428,61 +430,68 @@ void switchViewMode(String mode) {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-      centerTitle: true, // Center the title in the AppBar
-        title: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/visuyou_logo.png',
-                  height: 24.0,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 8.0),
-                Text(
-                  'VisuYou',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4.0),
-            const Text(
-              'True P2P VR Experience',
-              style: TextStyle(
-                fontSize: 14.0,
-                fontWeight: FontWeight.w300,
-                color: Colors.white70,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      centerTitle: true,
+      title: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/visuyou_logo.png',
+                height: 24.0,
+                fit: BoxFit.contain,
               ),
+              const SizedBox(width: 8.0),
+              const Text(
+                'VisuYou',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+            const SizedBox(height: 4.0),
+          const Text(
+            'True P2P VR Experience',
+            style: TextStyle(
+              fontSize: 14.0,
+              fontWeight: FontWeight.w300,
+              color: Colors.white70,
             ),
-          ],
+          ),
+        ],
+      ),
+      backgroundColor: Colors.black,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () => _navigateToSettingsPage(context),
         ),
-        backgroundColor: Colors.black,
-        actions: [
-          // Add the dropdown menu in the AppBar
-          DropdownButton<String>(
-            value: _selectedViewMode,
-            dropdownColor: Colors.black87,
-            style: TextStyle(color: Colors.white),
-            underline: Container(), // Removes the underline
-            icon: Icon(Icons.arrow_drop_down, color: Colors.white),
-            items: _viewModes.map((String mode) {
-              return DropdownMenuItem<String>(
-                value: mode,
-                child: Text(mode),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedViewMode = newValue!;
+        IconButton(
+          icon: const Icon(Icons.info_outline),
+          onPressed: () => _navigateToAboutPage(context),
+        ),
+        DropdownButton<String>(
+          value: _selectedViewMode,
+          dropdownColor: Colors.black87,
+          style: const TextStyle(color: Colors.white),
+          underline: Container(),
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          items: _viewModes.map((String mode) {
+            return DropdownMenuItem<String>(
+              value: mode,
+              child: Text(mode),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedViewMode = newValue!;
                 // Add logic to handle view mode change here
                 if (_selectedViewMode == 'VR Mode') {
                   _enterVRMode();
@@ -491,12 +500,12 @@ void switchViewMode(String mode) {
                 } else if (_selectedViewMode == 'PIP VR Mode') {
                   _enterPiPMode();
                 }
-              });
-            },
-          ),
+            });
+          },
+        ),
           const SizedBox(width: 12), // Add some padding to the right
-        ],
-      ),
+      ],
+    ),
       body: _renderersInitialized
           ? Column(
               children: [
@@ -530,6 +539,23 @@ void switchViewMode(String mode) {
   }
   }
   
+void _navigateToSettingsPage(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const SettingsPage()),
+  );
+}
+
+void _navigateToAboutPage(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const AboutPage()),
+  );
+}
+
+
+
+
 // Move the VRVideoView class to the top level
 class VRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
