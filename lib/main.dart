@@ -45,6 +45,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     _requestPermissions();
     _voiceCommandUtils = VoiceCommandUtils(onCommandRecognized: handleVoiceCommand);
     _voiceCommandUtils.initSpeech(); // Initialize speech recognition
+      SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]); // Force portrait mode initially
+  
   }
 
 
@@ -328,6 +332,18 @@ void handleVoiceCommand(String command) {
 }
 
 void switchViewMode(String mode) {
+  if (mode.contains('VR Mode')) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+  } else {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
   switch (mode) {
     case 'Full VR Mode':
       _enterFullVRMode();
@@ -341,38 +357,73 @@ void switchViewMode(String mode) {
   }
 }
 
-  void _enterFullVRMode() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FullVRVideoView(remoteRenderer: _remoteRenderer),
-      ),
-    );
-  }
+void _enterFullVRMode() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+  ]);
 
-  void _enter50_50VRMode() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VR50_50VideoView(
-          localRenderer: _localRenderer,
-          remoteRenderer: _remoteRenderer,
-        ),
-      ),
-    );
-  }
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => FullVRVideoView(remoteRenderer: _remoteRenderer),
+    ),
+  ).then((_) {
+    // This will reset the orientation when the VR view is popped from the navigation stack.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  });
+}
 
-  void _enterPiPMode() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PiPVideoView(
-          mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
-          pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
-        ),
+void _enter50_50VRMode() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+  ]);
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => VR50_50VideoView(
+        localRenderer: _localRenderer,
+        remoteRenderer: _remoteRenderer,
       ),
-    );
-  }
+    ),
+  ).then((_) {
+    // Reset orientation when the VR view is popped from the navigation stack.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  });
+}
+
+
+void _enterPiPMode() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+  ]);
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PiPVideoView(
+        mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
+        pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
+      ),
+    ),
+  ).then((_) {
+    // Reset orientation when the PiP view is popped from the navigation stack.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  });
+}
+
 
   void _showPermissionAlert() {
     showDialog(
@@ -427,6 +478,12 @@ void switchViewMode(String mode) {
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _peerConnection?.dispose();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]); // Reset to dynamic orientation on dispose
     super.dispose();
   }
 
