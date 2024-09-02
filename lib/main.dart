@@ -10,18 +10,26 @@ import 'package:flutter/services.dart'; // Import for SystemChrome
 import 'voice_command_utils.dart';
 import 'about_page.dart'; // Import the About page
 import 'settings_page.dart'; // Import the Settings page
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(const MaterialApp(home: CameraStreamingApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();  // Ensure plugin services are initialized
+  final prefs = await SharedPreferences.getInstance();  // Load shared preferences
+  final enableAudio = prefs.getBool('enableAudio') ?? false;  // Get audio setting
+  
+  runApp(MaterialApp(home: CameraStreamingApp(enableAudio: enableAudio)));  // Pass the setting to the app
+}
 
 class CameraStreamingApp extends StatefulWidget {
-  const CameraStreamingApp({super.key});
+  final bool enableAudio;
+  const CameraStreamingApp({super.key, required this.enableAudio});
 
   @override
   _CameraStreamingAppState createState() => _CameraStreamingAppState();
 }
 
 class _CameraStreamingAppState extends State<CameraStreamingApp> {
-
+  late SharedPreferences prefs;
   late RTCVideoRenderer _localRenderer;
   late RTCVideoRenderer _remoteRenderer;
   RTCPeerConnection? _peerConnection;
@@ -40,6 +48,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   @override
   void initState() {
     super.initState();
+    _initializePreferences(); // Initialize preferences
     _localRenderer = RTCVideoRenderer();
     _remoteRenderer = RTCVideoRenderer();
     _requestPermissions();
@@ -51,7 +60,11 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   
   }
 
-
+  Future<void> _initializePreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    bool enableAudio = prefs.getBool('enableAudio') ?? false;
+    // Now you can use the enableAudio variable to initialize other components
+  }
 
   Future<void> _requestPermissions() async {
     var status = await Permission.camera.status;
@@ -81,6 +94,14 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   Future<void> _createPeerConnection() async {
+
+  if (prefs == null) {
+    print("SharedPreferences is not initialized");
+    return;
+  }
+  
+  bool enableAudio = prefs.getBool('enableAudio') ?? false;
+
     try {
       final configuration = {
         'iceServers': [
@@ -88,6 +109,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         ],
         'sdpSemantics': 'unified-plan',
       };
+
+    // Retrieve the audio setting directly before setting up the streams
+    bool enableAudio = prefs.getBool('enableAudio') ?? false;
 
       _peerConnection = await createPeerConnection(configuration);
 
@@ -149,7 +173,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       if (backCameraId != null) {
         // Get video stream from back camera using the device ID
         final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': false,
+          'audio': enableAudio, // Enable audio based on the setting
           'video': {
             'deviceId': backCameraId,  // Pass the device ID directly as a string
           },

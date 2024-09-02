@@ -34,6 +34,7 @@ dependencies:
   permission_handler: any
   flutter_barcode_scanner: any
   speech_to_text: any
+  shared_preferences: any
 
 
   # The following adds the Cupertino Icons font to your application.
