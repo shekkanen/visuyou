@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <application
-        android:label="visuyou"
+        android:label="VisuYou"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
