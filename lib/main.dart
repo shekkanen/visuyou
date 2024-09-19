@@ -589,116 +589,136 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/visuyou_logo.png',
-                  height: 24.0,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 8.0),
-                const Text(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      centerTitle: true,
+      title: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/visuyou_logo.png',
+                height: 36.0, // Increased logo size
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: const Text(
                   'VisuYou',
                   style: TextStyle(
-                    fontSize: 20.0,
+                    fontSize: 22.0, // Larger font size for better readability
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
+                  overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
+                  maxLines: 1, // Prevent the title from taking too much space
                 ),
-              ],
-            ),
-            const SizedBox(height: 4.0),
-            const Text(
+              ),
+            ],
+          ),
+          const SizedBox(height: 6.0),
+          FittedBox(
+            fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
+            child: const Text(
               'True P2P VR Experience',
               style: TextStyle(
-                fontSize: 14.0,
+                fontSize: 16.0, // Slightly larger subtitle font
                 fontWeight: FontWeight.w300,
                 color: Colors.white70,
               ),
             ),
-          ],
-        ),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _navigateToSettingsPage(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _navigateToAboutPage(context),
-          ),
-          DropdownButton<String>(
-            value: _selectedViewMode,
-            dropdownColor: Colors.black87,
-            style: const TextStyle(color: Colors.white),
-            underline: Container(),
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-            items: _viewModes.map((String mode) {
-              return DropdownMenuItem<String>(
-                value: mode,
-                child: Text(mode),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedViewMode = newValue!;
-                // Add logic to handle view mode change here
-                if (_selectedViewMode == 'Full VR Mode') {
-                  _enterFullVRMode();
-                } else if (_selectedViewMode == '50/50 VR Mode') {
-                  _enter50_50VRMode();
-                } else if (_selectedViewMode == 'PIP VR Mode') {
-                  _enterPiPMode();
-                } else if (_selectedViewMode == 'PIP VR Mode2') {
-                  _enterPiPMode2();
-                }
-              });
-            },
-          ),
-          const SizedBox(width: 12), // Add some padding to the right
         ],
       ),
-      body: _renderersInitialized
-          ? Column(
-              children: [
-                Expanded(child: RTCVideoView(_localRenderer)),
-                Expanded(child: RTCVideoView(_remoteRenderer)),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _connectionCode.isNotEmpty
-                      ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                      : _connecting
-                          ? const CircularProgressIndicator()
-                          : const Text('No data to display'),
-                ),
-                Row(
+      backgroundColor: Colors.black,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings, size: 28), // Increased icon size
+          onPressed: () => _navigateToSettingsPage(context),
+        ),
+        IconButton(
+          icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
+          onPressed: () => _navigateToAboutPage(context),
+        ),
+        DropdownButton<String>(
+          value: _selectedViewMode,
+          dropdownColor: Colors.black87,
+          style: const TextStyle(color: Colors.white),
+          underline: Container(),
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          items: _viewModes.map((String mode) {
+            return DropdownMenuItem<String>(
+              value: mode,
+              child: Text(mode),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedViewMode = newValue!;
+              if (_selectedViewMode == 'Full VR Mode') {
+                _enterFullVRMode();
+              } else if (_selectedViewMode == '50/50 VR Mode') {
+                _enter50_50VRMode();
+              } else if (_selectedViewMode == 'PIP VR Mode') {
+                _enterPiPMode();
+              } else if (_selectedViewMode == 'PIP VR Mode2') {
+                _enterPiPMode2();
+              }
+            });
+          },
+        ),
+        const SizedBox(width: 12),
+      ],
+    ),
+    body: _renderersInitialized
+        ? Column(
+            children: [
+              Expanded(child: RTCVideoView(_localRenderer)),
+              Expanded(child: RTCVideoView(_remoteRenderer)),
+              Padding(
+                padding: const EdgeInsets.all(12.0), // Increased padding
+                child: _connectionCode.isNotEmpty
+                    ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                    : _connecting
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            'No data to display',
+                            style: TextStyle(fontSize: 16), // Increased text size
+                          ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                        textStyle: const TextStyle(fontSize: 18), // Larger text size
+                      ),
                       onPressed: _createOffer,
                       child: const Text('Create Offer'),
                     ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                        textStyle: const TextStyle(fontSize: 18), // Larger text size
+                      ),
                       onPressed: _scanQRCode,
                       child: const Text('Scan QR Code'),
                     ),
                   ],
                 ),
-              ],
-            )
-          : const Center(child: CircularProgressIndicator()),
-    );
-  }
-  }
+              ),
+            ],
+          )
+        : const Center(child: CircularProgressIndicator()),
+  );
+}
+}
 
   void _navigateToSettingsPage(BuildContext context) {
     Navigator.push(
