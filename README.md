@@ -21,3 +21,6 @@ samples, guidance on mobile development, and a full API reference.
 ./adb devices
 ./adb -s 192.168.0.113:5555 install -r /home/sami/sorsat/visuyou/build/app/outputs/apk/debug/app-debug.apk
 flutter run -d 192.168.0.109
+
+#icons
+flutter pub run flutter_launcher_icons:main
