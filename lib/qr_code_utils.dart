@@ -3,6 +3,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:flutter/foundation.dart'; // Import for kDebugMode
 
 class QRCodeUtils {
   static Future<void> displayQRCode(BuildContext context, String data, String type, Function(String) setStateCallback) async {
@@ -10,9 +11,13 @@ class QRCodeUtils {
       String compressedData = _compressData(data);
       String qrCodeData = jsonEncode({'type': type, 'data': compressedData});
       setStateCallback(qrCodeData);
-      print("Generated QR Code Data: $qrCodeData");
+      if (kDebugMode) {
+        print("Generated QR Code Data: $qrCodeData");
+      }
     } catch (e) {
-      print("Error generating QR code: $e");
+      if (kDebugMode) {
+        print("Error generating QR code: $e");
+      }
       _showErrorAlert(context, "Failed to generate QR code. Please try again.");
     }
   }
@@ -25,11 +30,15 @@ class QRCodeUtils {
       if (scannedData != '-1') {
         _processScannedData(context, scannedData, processScannedData);
       } else {
-        print("QR scan was cancelled or failed");
+        if (kDebugMode) {
+          print("QR scan was cancelled or failed");
+        }
         _showInfoSnackBar(context, "QR scan was cancelled.");
       }
     } catch (e) {
-      print("Error scanning QR code: $e");
+      if (kDebugMode) {
+        print("Error scanning QR code: $e");
+      }
       _showErrorAlert(context, "Failed to scan QR code. Please try again.");
     }
   }
@@ -37,15 +46,21 @@ class QRCodeUtils {
   static void _processScannedData(BuildContext context, String scannedData, Function(String, String) processScannedData) {
     try {
       final Map<String, dynamic> receivedData = jsonDecode(scannedData);
-      print("Decoded Data: $receivedData");
+      if (kDebugMode) {
+        print("Decoded Data: $receivedData");
+      }
       final String type = receivedData['type'];
       final String compressedData = receivedData['data'];
       final String data = _decompressData(compressedData);
-      print("Type: $type, Data: $data");
+      if (kDebugMode) {
+        print("Type: $type, Data: $data");
+      }
 
       processScannedData(type, data);
     } catch (e) {
-      print("Failed to decode QR code data: $e");
+      if (kDebugMode) {
+        print("Failed to decode QR code data: $e");
+      }
       _showErrorAlert(context, "Failed to process scanned QR code data. Please try again.");
     }
   }
@@ -56,7 +71,9 @@ class QRCodeUtils {
       List<int> compressedBytes = GZipEncoder().encode(stringBytes) as List<int>;
       return base64Encode(compressedBytes);
     } catch (e) {
-      print('Failed to compress data: $e');
+      if (kDebugMode) {
+        print('Failed to compress data: $e');
+      }
       throw Exception('Failed to compress data');
     }
   }
@@ -67,7 +84,9 @@ class QRCodeUtils {
       List<int> decompressedBytes = GZipDecoder().decodeBytes(compressedBytes);
       return utf8.decode(decompressedBytes);
     } catch (e) {
-      print('Failed to decompress data: $e');
+      if (kDebugMode) {
+        print('Failed to decompress data: $e');
+      }
       throw Exception('Failed to decompress data');
     }
   }

@@ -1,5 +1,6 @@
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // Import for kDebugMode
 
 class VoiceCommandUtils {
   late stt.SpeechToText _speech;
@@ -18,7 +19,9 @@ class VoiceCommandUtils {
     if (available) {
       startListening();
     } else {
-      print("Speech recognition not available");
+      if (kDebugMode) {
+        print("Speech recognition not available");
+      }
     }
   }
 
@@ -38,9 +41,13 @@ class VoiceCommandUtils {
           cancelOnError: false,
         );
         _isListening = true;
-        print("Started listening");
+        if (kDebugMode) {
+          print("Started listening");
+        }
       } else {
-        print("Speech recognition not available");
+        if (kDebugMode) {
+          print("Speech recognition not available");
+        }
       }
     }
   }
@@ -49,23 +56,31 @@ class VoiceCommandUtils {
     if (_isListening) {
       _speech.stop();
       _isListening = false;
-      print("Stopped listening");
+      if (kDebugMode) {
+        print("Stopped listening");
+      }
     }
   }
 
   void _processRecognizedText(String recognizedText) {
     recognizedText = recognizedText.toLowerCase();
-    print("Recognized command: $recognizedText");
+    if (kDebugMode) {
+      print("Recognized command: $recognizedText");
+    }
 
     if (recognizedText.contains('next')) {
       onCommandRecognized('next');
     } else {
-      print("Command not recognized");
+      if (kDebugMode) {
+        print("Command not recognized");
+      }
     }
   }
 
   void _statusListener(String status) {
-    print('Speech status: $status');
+    if (kDebugMode) {
+      print('Speech status: $status');
+    }
     if (status == 'done' || status == 'notListening') {
       // Automatically restart listening if it stops or times out
       _isListening = false;
@@ -74,7 +89,9 @@ class VoiceCommandUtils {
   }
 
   void _errorListener(dynamic error) {
-    print('Speech error: $error');
+    if (kDebugMode) {
+      print('Speech error: $error');
+    }
     // Attempt to restart listening on any error
     _isListening = false;
     startListening();

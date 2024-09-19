@@ -11,6 +11,7 @@ import 'voice_command_utils.dart';
 import 'about_page.dart'; // Import the About page
 import 'settings_page.dart'; // Import the Settings page
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart'; // Import for kDebugMode
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();  // Ensure plugin services are initialized
@@ -62,8 +63,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
   Future<void> _initializePreferences() async {
     prefs = await SharedPreferences.getInstance();
-    bool enableAudio = prefs.getBool('enableAudio') ?? false;
-    // Now you can use the enableAudio variable to initialize other components
+      bool enableAudio = prefs.getBool('enableAudio') ?? false;
+      // Now you can use the enableAudio variable to initialize other components
   }
 
   Future<void> _requestPermissions() async {
@@ -88,7 +89,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         _renderersInitialized = true;
       });
     } catch (e) {
-      print('Failed to initialize renderers: $e');
+      if (kDebugMode) {
+        print('Failed to initialize renderers: $e');
+      }
       _showErrorAlert('Failed to initialize video renderers. Please restart the app.');
     }
   }
@@ -96,7 +99,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   Future<void> _createPeerConnection() async {
 
   if (prefs == null) {
-    print("SharedPreferences is not initialized");
+    if (kDebugMode) {
+      print("SharedPreferences is not initialized");
+    }
     return;
   }
   
@@ -116,7 +121,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       _peerConnection = await createPeerConnection(configuration);
 
       _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
-        print('ICE Connection State: $state');
+        if (kDebugMode) {
+          print('ICE Connection State: $state');
+        }
         if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
           setState(() {
             _connecting = false;
@@ -132,15 +139,21 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       };
 
       _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
-        print('Peer Connection State: $state');
+        if (kDebugMode) {
+          print('Peer Connection State: $state');
+        }
       };
 
       _peerConnection!.onSignalingState = (RTCSignalingState state) {
-        print('Signaling State: $state');
+        if (kDebugMode) {
+          print('Signaling State: $state');
+        }
       };
 
       _peerConnection!.onTrack = (RTCTrackEvent event) {
-        print('Received track: ${event.track.kind}');
+        if (kDebugMode) {
+          print('Received track: ${event.track.kind}');
+        }
         if (event.track.kind == 'video' && event.streams.isNotEmpty) {
           setState(() {
             _remoteRenderer.srcObject = event.streams[0];
@@ -150,13 +163,17 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
         if (candidate.candidate != null) {
-          print('ICE Candidate: ${candidate.candidate}');
+          if (kDebugMode) {
+            print('ICE Candidate: ${candidate.candidate}');
+          }
           _gatheredIceCandidates.add(candidate); // Collect ICE candidates
         }
       };
 
       _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
-        print('ICE Gathering State: $state');
+        if (kDebugMode) {
+          print('ICE Gathering State: $state');
+        }
       };
 
       // Enumerate cameras and get the device ID of the back camera
@@ -184,7 +201,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
           await _peerConnection!.addTrack(track, stream);
         }
       } else {
-        print('Back camera not found');
+        if (kDebugMode) {
+          print('Back camera not found');
+        }
         _showErrorSnackBar('Back camera not found. Using default camera.');
 
         // Fallback to default camera if back camera is not found
@@ -199,14 +218,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         }
       }
     } catch (e) {
-      print('Failed to create PeerConnection: $e');
+      if (kDebugMode) {
+        print('Failed to create PeerConnection: $e');
+      }
       _showErrorAlert('Failed to create a connection. Please try again.');
     }
   }
 
   Future<void> _createOffer() async {
     if (_peerConnection == null) {
-      print("PeerConnection is not initialized");
+      if (kDebugMode) {
+        print("PeerConnection is not initialized");
+      }
       return;
     }
 
@@ -217,7 +240,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
-      print("Local SDP Offer: ${offer.sdp}");
+      if (kDebugMode) {
+        print("Local SDP Offer: ${offer.sdp}");
+      }
 
       _isOfferer = true; // Mark this device as the offerer
 
@@ -226,14 +251,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       setState(() {
         _connecting = false;
       });
-      print('Failed to create offer: $e');
+      if (kDebugMode) {
+        print('Failed to create offer: $e');
+      }
       _showErrorAlert('Failed to create an offer. Please try again.');
     }
   }
 
   Future<void> _createAnswer() async {
     if (_peerConnection == null) {
-      print("PeerConnection is not initialized");
+      if (kDebugMode) {
+        print("PeerConnection is not initialized");
+      }
       return;
     }
 
@@ -244,21 +273,27 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
-      print("Local SDP Answer: ${answer.sdp}");
+      if (kDebugMode) {
+        print("Local SDP Answer: ${answer.sdp}");
+      }
 
       await _displayQRCode(answer.sdp!, 'answer');
     } catch (e) {
       setState(() {
         _connecting = false;
       });
-      print('Failed to create answer: $e');
+      if (kDebugMode) {
+        print('Failed to create answer: $e');
+      }
       _showErrorAlert('Failed to create an answer. Please try again.');
     }
   }
 
   Future<void> _onOfferReceived(String sdp) async {
     if (_peerConnection == null) {
-      print("PeerConnection is not initialized");
+      if (kDebugMode) {
+        print("PeerConnection is not initialized");
+      }
       return;
     }
 
@@ -269,27 +304,35 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       final description = RTCSessionDescription(sdp, 'offer');
       await _peerConnection!.setRemoteDescription(description);
-      print("Remote SDP set as Offer");
+      if (kDebugMode) {
+        print("Remote SDP set as Offer");
+      }
       await _createAnswer();
     } catch (e) {
       setState(() {
         _connecting = false;
       });
-      print('Failed to handle received offer: $e');
+      if (kDebugMode) {
+        print('Failed to handle received offer: $e');
+      }
       _showErrorAlert('Failed to process the offer. Please try again.');
     }
   }
 
   Future<void> _onAnswerReceived(String sdp) async {
     if (_peerConnection == null) {
-      print("PeerConnection is not initialized");
+      if (kDebugMode) {
+        print("PeerConnection is not initialized");
+      }
       return;
     }
 
     try {
       final description = RTCSessionDescription(sdp, 'answer');
       await _peerConnection!.setRemoteDescription(description);
-      print("Remote SDP set as Answer");
+      if (kDebugMode) {
+        print("Remote SDP set as Answer");
+      }
 
       if (_isOfferer) {
         // Once the answer is received, send the collected ICE candidates
@@ -298,181 +341,191 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         }
       }
     } catch (e) {
-      print('Failed to handle received answer: $e');
+      if (kDebugMode) {
+        print('Failed to handle received answer: $e');
+      }
       _showErrorAlert('Failed to process the answer. Please try again.');
     }
   }
 
   Future<void> _addIceCandidate(String candidate) async {
     if (_peerConnection == null) {
-      print("PeerConnection is not initialized");
+      if (kDebugMode) {
+        print("PeerConnection is not initialized");
+      }
       return;
     }
 
     try {
       RTCIceCandidate iceCandidate = RTCIceCandidate(candidate, '', 0);
       await _peerConnection!.addCandidate(iceCandidate);
-      print("Added ICE Candidate: $candidate");
+      if (kDebugMode) {
+        print("Added ICE Candidate: $candidate");
+      }
     } catch (e) {
-      print('Failed to add ICE candidate: $e');
+      if (kDebugMode) {
+        print('Failed to add ICE candidate: $e');
+      }
       _showErrorAlert('Failed to add ICE candidate. Please try again.');
     }
   }
 
-Future<void> _displayQRCode(String data, String type) async {
-  await QRCodeUtils.displayQRCode(context, data, type, (String qrCodeData) {
-    setState(() {
-      _connectionCode = qrCodeData;
+  Future<void> _displayQRCode(String data, String type) async {
+    await QRCodeUtils.displayQRCode(context, data, type, (String qrCodeData) {
+      setState(() {
+        _connectionCode = qrCodeData;
+      });
     });
-  });
-}
-
-Future<void> _scanQRCode() async {
-  await QRCodeUtils.scanQRCode(context, _processScannedData);
-}
-
-void _processScannedData(String type, String data) async {
-  if (type == 'offer') {
-    await _onOfferReceived(data);
-  } else if (type == 'answer') {
-    await _onAnswerReceived(data);
-  } else if (type == 'ice') {
-    await _addIceCandidate(data);
-  } else {
-    print("Unknown type: $type");
   }
-}
 
-void handleVoiceCommand(String command) {
-  if (command == 'next') {
-    int currentIndex = _viewModes.indexOf(_selectedViewMode);
-    int nextIndex = (currentIndex + 1) % _viewModes.length;
-    String nextMode = _viewModes[nextIndex];
-    setState(() {
-      _selectedViewMode = nextMode;
-    });
-    switchViewMode(nextMode);
+  Future<void> _scanQRCode() async {
+    await QRCodeUtils.scanQRCode(context, _processScannedData);
   }
-}
 
-void switchViewMode(String mode) {
-  if (mode.contains('VR Mode')) {
+  void _processScannedData(String type, String data) async {
+    if (type == 'offer') {
+      await _onOfferReceived(data);
+    } else if (type == 'answer') {
+      await _onAnswerReceived(data);
+    } else if (type == 'ice') {
+      await _addIceCandidate(data);
+    } else {
+      if (kDebugMode) {
+        print("Unknown type: $type");
+      }
+    }
+  }
+
+  void handleVoiceCommand(String command) {
+    if (command == 'next') {
+      int currentIndex = _viewModes.indexOf(_selectedViewMode);
+      int nextIndex = (currentIndex + 1) % _viewModes.length;
+      String nextMode = _viewModes[nextIndex];
+      setState(() {
+        _selectedViewMode = nextMode;
+      });
+      switchViewMode(nextMode);
+    }
+  }
+
+  void switchViewMode(String mode) {
+    if (mode.contains('VR Mode')) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
+
+    switch (mode) {
+      case 'Full VR Mode':
+        _enterFullVRMode();
+        break;
+      case '50/50 VR Mode':
+        _enter50_50VRMode();
+        break;
+      case 'PIP VR Mode':
+        _enterPiPMode();
+        break;
+      case 'PIP VR Mode2':
+        _enterPiPMode2();
+        break;
+    }
+  }
+
+  void _enterFullVRMode() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-  } else {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullVRVideoView(remoteRenderer: _remoteRenderer),
+      ),
+    ).then((_) {
+      // This will reset the orientation when the VR view is popped from the navigation stack.
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
   }
 
-  switch (mode) {
-    case 'Full VR Mode':
-      _enterFullVRMode();
-      break;
-    case '50/50 VR Mode':
-      _enter50_50VRMode();
-      break;
-    case 'PIP VR Mode':
-      _enterPiPMode();
-      break;
-    case 'PIP VR Mode2':
-      _enterPiPMode2();
-      break;
+  void _enter50_50VRMode() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VR50_50VideoView(
+          localRenderer: _localRenderer,
+          remoteRenderer: _remoteRenderer,
+        ),
+      ),
+    ).then((_) {
+      // Reset orientation when the VR view is popped from the navigation stack.
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
   }
-}
 
-void _enterFullVRMode() {
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeRight,
-    DeviceOrientation.landscapeLeft,
-  ]);
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => FullVRVideoView(remoteRenderer: _remoteRenderer),
-    ),
-  ).then((_) {
-    // This will reset the orientation when the VR view is popped from the navigation stack.
+  void _enterPiPMode() {
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
     ]);
-  });
-}
 
-void _enter50_50VRMode() {
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeRight,
-    DeviceOrientation.landscapeLeft,
-  ]);
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => VR50_50VideoView(
-        localRenderer: _localRenderer,
-        remoteRenderer: _remoteRenderer,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PiPVideoView(
+          mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
+          pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
+        ),
       ),
-    ),
-  ).then((_) {
-    // Reset orientation when the VR view is popped from the navigation stack.
+    ).then((_) {
+      // Reset orientation when the PiP view is popped from the navigation stack.
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
+  }
+
+  void _enterPiPMode2() {
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
     ]);
-  });
-}
 
-
-void _enterPiPMode() {
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeRight,
-    DeviceOrientation.landscapeLeft,
-  ]);
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PiPVideoView(
-        mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
-        pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PiPVideoView(
+          mainRenderer: _localRenderer, // Assuming remoteRenderer as main view
+          pipRenderer: _remoteRenderer, // Assuming localRenderer as PiP view
+        ),
       ),
-    ),
-  ).then((_) {
-    // Reset orientation when the PiP view is popped from the navigation stack.
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  });
-}
-
-void _enterPiPMode2() {
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeRight,
-    DeviceOrientation.landscapeLeft,
-  ]);
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PiPVideoView(
-        mainRenderer: _localRenderer, // Assuming remoteRenderer as main view
-        pipRenderer: _remoteRenderer, // Assuming localRenderer as PiP view
-      ),
-    ),
-  ).then((_) {
-    // Reset orientation when the PiP view is popped from the navigation stack.
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  });
-}
+    ).then((_) {
+      // Reset orientation when the PiP view is popped from the navigation stack.
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
+  }
 
   void _showPermissionAlert() {
     showDialog(
@@ -536,68 +589,68 @@ void _enterPiPMode2() {
     super.dispose();
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      centerTitle: true,
-      title: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/visuyou_logo.png',
-                height: 24.0,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(width: 8.0),
-              const Text(
-                'VisuYou',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/visuyou_logo.png',
+                  height: 24.0,
+                  fit: BoxFit.contain,
                 ),
-              ),
-            ],
-          ),
-            const SizedBox(height: 4.0),
-          const Text(
-            'True P2P VR Experience',
-            style: TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.w300,
-              color: Colors.white70,
+                const SizedBox(width: 8.0),
+                const Text(
+                  'VisuYou',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 4.0),
+            const Text(
+              'True P2P VR Experience',
+              style: TextStyle(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w300,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _navigateToSettingsPage(context),
           ),
-        ],
-      ),
-      backgroundColor: Colors.black,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () => _navigateToSettingsPage(context),
-        ),
-        IconButton(
-          icon: const Icon(Icons.info_outline),
-          onPressed: () => _navigateToAboutPage(context),
-        ),
-        DropdownButton<String>(
-          value: _selectedViewMode,
-          dropdownColor: Colors.black87,
-          style: const TextStyle(color: Colors.white),
-          underline: Container(),
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          items: _viewModes.map((String mode) {
-            return DropdownMenuItem<String>(
-              value: mode,
-              child: Text(mode),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedViewMode = newValue!;
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _navigateToAboutPage(context),
+          ),
+          DropdownButton<String>(
+            value: _selectedViewMode,
+            dropdownColor: Colors.black87,
+            style: const TextStyle(color: Colors.white),
+            underline: Container(),
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+            items: _viewModes.map((String mode) {
+              return DropdownMenuItem<String>(
+                value: mode,
+                child: Text(mode),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedViewMode = newValue!;
                 // Add logic to handle view mode change here
                 if (_selectedViewMode == 'Full VR Mode') {
                   _enterFullVRMode();
@@ -608,12 +661,12 @@ Widget build(BuildContext context) {
                 } else if (_selectedViewMode == 'PIP VR Mode2') {
                   _enterPiPMode2();
                 }
-            });
-          },
-        ),
+              });
+            },
+          ),
           const SizedBox(width: 12), // Add some padding to the right
-      ],
-    ),
+        ],
+      ),
       body: _renderersInitialized
           ? Column(
               children: [
@@ -646,20 +699,20 @@ Widget build(BuildContext context) {
     );
   }
   }
-  
-void _navigateToSettingsPage(BuildContext context) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const SettingsPage()),
-  );
-}
 
-void _navigateToAboutPage(BuildContext context) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const AboutPage()),
-  );
-}
+  void _navigateToSettingsPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsPage()),
+    );
+  }
+
+  void _navigateToAboutPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AboutPage()),
+    );
+  }
 
 
 
