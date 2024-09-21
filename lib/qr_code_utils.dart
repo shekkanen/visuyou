@@ -119,6 +119,16 @@ class QRCodeUtils {
     return Column(
       children: [
         const Text(
+          'Using VR headsets may cause motion sickness, disorientation, or other discomfort. Be aware of your surroundings and use caution.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.redAccent, // Optional: Make the warning stand out
+          ),
+        ),
+        const SizedBox(height: 10),
+        const Text(
           'Scan the QR code on the other device to connect',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 16.0),
