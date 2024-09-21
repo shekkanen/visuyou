@@ -340,3 +340,7 @@ Gesture Recognition: Use device sensors to capture gestures or movements, adding
 Customization Options: Allow users to adjust video quality or switch between front and back cameras, tailoring the experience to their needs.
 
 Session Recording: Offer the option to record sessions for later viewing, with clear consent from both parties.
+
+
+# Android emulator
+ emulator -avd Medium_Phone_API_35

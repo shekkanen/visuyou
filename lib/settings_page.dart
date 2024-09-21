@@ -11,7 +11,6 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _enableAudio = false;
   late SharedPreferences prefs;
-  bool _enableNotifications = false;
 
   @override
   void initState() {
@@ -31,7 +30,6 @@ class _SettingsPageState extends State<SettingsPage> {
       _enableAudio = value;
     });
     await prefs.setBool('enableAudio', value);
-    // Consider using an event or callback to inform the app of the setting change
   }
 
   @override
@@ -46,15 +44,6 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('Enable Audio'),
             value: _enableAudio,
             onChanged: _updateAudioSetting,
-          ),
-          SwitchListTile(
-            title: const Text('Enable Notifications'),
-            value: _enableNotifications,
-            onChanged: (bool value) {
-              setState(() {
-                _enableNotifications = value;
-              });
-            },
           ),
           ListTile(
             title: const Text('Privacy Policy'),
