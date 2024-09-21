@@ -12,18 +12,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'policy_page.dart'; // Import the PolicyPage widget
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();  // Ensure plugin services are initialized
   final prefs = await SharedPreferences.getInstance();  // Load shared preferences
   final enableAudio = prefs.getBool('enableAudio') ?? false;  // Get audio setting
-  
-  runApp(MaterialApp(home: CameraStreamingApp(enableAudio: enableAudio)));  // Pass the setting to the app
+  final enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true; // Get voice command setting
+
+  runApp(MaterialApp(home: CameraStreamingApp(enableAudio: enableAudio, enableVoiceCommands: enableVoiceCommands)));  // Pass the settings to the app
 }
 
 class CameraStreamingApp extends StatefulWidget {
   final bool enableAudio;
-  const CameraStreamingApp({super.key, required this.enableAudio});
+  final bool enableVoiceCommands;
+  const CameraStreamingApp({super.key, required this.enableAudio, required this.enableVoiceCommands});
 
   @override
   _CameraStreamingAppState createState() => _CameraStreamingAppState();
@@ -46,7 +47,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   final List<String> _viewModes = ['Full VR Mode', '50/50 VR Mode', 'PIP VR Mode', 'PIP VR Mode2'];
 
   late VoiceCommandUtils _voiceCommandUtils; // Add this line
-
 
   // Terms of Service Text
   final String _termsOfServiceText = '''
@@ -115,29 +115,43 @@ If you have any questions about these Terms, please contact us at:
     _localRenderer = RTCVideoRenderer();
     _remoteRenderer = RTCVideoRenderer();
     _requestPermissions();
-    _voiceCommandUtils = VoiceCommandUtils(onCommandRecognized: handleVoiceCommand);
-    _voiceCommandUtils.initSpeech(); // Initialize speech recognition
-      SystemChrome.setPreferredOrientations([
+    SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]); // Force portrait mode initially
-  
   }
 
   Future<void> _initializePreferences() async {
     prefs = await SharedPreferences.getInstance();
-      bool enableAudio = prefs.getBool('enableAudio') ?? false;
-      // Now you can use the enableAudio variable to initialize other components
+    // No need to retrieve settings here; we'll get them in _requestPermissions()
   }
 
   Future<void> _requestPermissions() async {
-    var status = await Permission.camera.status;
-    if (status.isDenied) {
+    var cameraStatus = await Permission.camera.status;
+    if (cameraStatus.isDenied) {
       await Permission.camera.request();
     }
 
-    if (await Permission.camera.isGranted) {
+    // Check if either enableAudio or enableVoiceCommands is true
+    bool enableAudio = prefs.getBool('enableAudio') ?? false;
+    bool enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true;
+
+    if (enableAudio || enableVoiceCommands) {
+      var microphoneStatus = await Permission.microphone.status;
+      if (microphoneStatus.isDenied) {
+        await Permission.microphone.request();
+      }
+    }
+
+    bool microphoneGranted = !enableAudio && !enableVoiceCommands || await Permission.microphone.isGranted;
+
+    if (await Permission.camera.isGranted && microphoneGranted) {
       await _initializeRenderers();
       await _createPeerConnection();
+
+      if (enableVoiceCommands) {
+        _voiceCommandUtils = VoiceCommandUtils(onCommandRecognized: handleVoiceCommand);
+        _voiceCommandUtils.initSpeech();
+      }
     } else {
       _showPermissionAlert();
     }
@@ -159,15 +173,14 @@ If you have any questions about these Terms, please contact us at:
   }
 
   Future<void> _createPeerConnection() async {
-
-  if (prefs == null) {
-    if (kDebugMode) {
-      print("SharedPreferences is not initialized");
+    if (prefs == null) {
+      if (kDebugMode) {
+        print("SharedPreferences is not initialized");
+      }
+      return;
     }
-    return;
-  }
-  
-  bool enableAudio = prefs.getBool('enableAudio') ?? false;
+
+    bool enableAudio = prefs.getBool('enableAudio') ?? false;
 
     try {
       final configuration = {
@@ -176,9 +189,6 @@ If you have any questions about these Terms, please contact us at:
         ],
         'sdpSemantics': 'unified-plan',
       };
-
-    // Retrieve the audio setting directly before setting up the streams
-    bool enableAudio = prefs.getBool('enableAudio') ?? false;
 
       _peerConnection = await createPeerConnection(configuration);
 
@@ -216,7 +226,7 @@ If you have any questions about these Terms, please contact us at:
         if (kDebugMode) {
           print('Received track: ${event.track.kind}');
         }
-        if (event.track.kind == 'video' && event.streams.isNotEmpty) {
+        if (event.streams.isNotEmpty) {
           setState(() {
             _remoteRenderer.srcObject = event.streams[0];
           });
@@ -270,7 +280,7 @@ If you have any questions about these Terms, please contact us at:
 
         // Fallback to default camera if back camera is not found
         final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': false,
+          'audio': enableAudio,
           'video': true,
         });
         _localRenderer.srcObject = stream;

@@ -11,6 +11,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _enableAudio = false;
+  bool _enableVoiceCommands = true;
   late SharedPreferences prefs;
 
   // Privacy Policy Text
@@ -121,6 +122,7 @@ If you have any questions about these Terms, please contact us at:
     prefs = await SharedPreferences.getInstance();
     setState(() {
       _enableAudio = prefs.getBool('enableAudio') ?? false;
+      _enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true; // default is on
     });
   }
 
@@ -129,6 +131,13 @@ If you have any questions about these Terms, please contact us at:
       _enableAudio = value;
     });
     await prefs.setBool('enableAudio', value);
+  }
+
+  Future<void> _updateVoiceCommandSetting(bool value) async {
+    setState(() {
+      _enableVoiceCommands = value;
+    });
+    await prefs.setBool('enableVoiceCommands', value);
   }
 
   void _navigateToPolicyPage(String title, String content) {
@@ -153,6 +162,11 @@ If you have any questions about these Terms, please contact us at:
             title: const Text('Enable Audio'),
             value: _enableAudio,
             onChanged: _updateAudioSetting,
+          ),
+          SwitchListTile(
+            title: const Text('Enable Voice Commands'),
+            value: _enableVoiceCommands,
+            onChanged: _updateVoiceCommandSetting,
           ),
           ListTile(
             title: const Text('Privacy Policy'),
