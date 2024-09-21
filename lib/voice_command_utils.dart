@@ -20,7 +20,9 @@ class VoiceCommandUtils {
     if (!status.isGranted) {
       status = await Permission.microphone.request();
       if (!status.isGranted) {
-        print('Microphone permission not granted');
+        if (kDebugMode) {
+          print('Microphone permission not granted');
+        }
         return;
       }
     }

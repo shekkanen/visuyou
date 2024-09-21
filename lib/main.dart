@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
-//import 'package:qr_flutter/qr_flutter.dart';
-//import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'qr_code_utils.dart';
@@ -1071,32 +1069,5 @@ class PiPVideoView extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-
-
-String _compressData(String data) {
-  try {
-    List<int> stringBytes = utf8.encode(data);
-    List<int> compressedBytes =
-        GZipEncoder().encode(stringBytes) as List<int>;
-    return base64Encode(compressedBytes);
-  } catch (e) {
-    print('Failed to compress data: $e');
-    throw Exception('Failed to compress data');
-  }
-}
-
-// Decompress the data
-String _decompressData(String compressedData) {
-  try {
-    List<int> compressedBytes = base64Decode(compressedData);
-    List<int> decompressedBytes =
-        GZipDecoder().decodeBytes(compressedBytes);
-    return utf8.decode(decompressedBytes);
-  } catch (e) {
-    print('Failed to decompress data: $e');
-    throw Exception('Failed to decompress data');
   }
 }
