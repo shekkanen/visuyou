@@ -14,6 +14,10 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _enableVoiceCommands = true;
   late SharedPreferences prefs;
 
+  // New: View Change Words
+  final List<String> _viewChangeWords = ['next', 'green', 'red', 'one', 'six'];
+  String _selectedViewChangeWord = 'next';
+
   // Privacy Policy Text
   final String _privacyPolicyText = '''
 **Privacy Policy**
@@ -123,6 +127,7 @@ If you have any questions about these Terms, please contact us at:
     setState(() {
       _enableAudio = prefs.getBool('enableAudio') ?? false;
       _enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true; // default is on
+      _selectedViewChangeWord = prefs.getString('viewChangeWord') ?? 'next'; // Load saved word or default
     });
   }
 
@@ -138,6 +143,15 @@ If you have any questions about these Terms, please contact us at:
       _enableVoiceCommands = value;
     });
     await prefs.setBool('enableVoiceCommands', value);
+  }
+
+  Future<void> _updateViewChangeWord(String? newWord) async {
+    if (newWord != null) {
+      setState(() {
+        _selectedViewChangeWord = newWord;
+      });
+      await prefs.setString('viewChangeWord', newWord);
+    }
   }
 
   void _navigateToPolicyPage(String title, String content) {
@@ -167,6 +181,29 @@ If you have any questions about these Terms, please contact us at:
             title: const Text('Enable Voice Commands'),
             value: _enableVoiceCommands,
             onChanged: _updateVoiceCommandSetting,
+          ),
+          ListTile(
+            title: const Text('View Change Word'),
+            subtitle: Text('Current: $_selectedViewChangeWord'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select View Change Word'),
+                    children: _viewChangeWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              await _updateViewChangeWord(selectedWord);
+            },
           ),
           ListTile(
             title: const Text('Privacy Policy'),

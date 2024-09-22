@@ -2,6 +2,7 @@ import 'package:vosk_flutter/vosk_flutter.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart'; // Import for SharedPreferences
 
 class VoiceCommandUtils {
   final Function(String) onCommandRecognized;
@@ -48,11 +49,11 @@ class VoiceCommandUtils {
       }
     });
 
-    _speechService!.onResult().listen((finalResult) {
+    _speechService!.onResult().listen((finalResult) async {
       if (kDebugMode) {
         print('Final result: $finalResult');
       }
-      _processRecognizedText(finalResult);
+      await _processRecognizedText(finalResult);
     });
 
     // Start listening
@@ -87,22 +88,26 @@ class VoiceCommandUtils {
     }
   }
 
-  void _processRecognizedText(String recognizedJson) {
-    // Parse the JSON result
-    Map<String, dynamic> result = jsonDecode(recognizedJson);
-    String recognizedText = result['text'] ?? '';
+Future<void> _processRecognizedText(String recognizedJson) async {
+  // Parse the JSON result
+  Map<String, dynamic> result = jsonDecode(recognizedJson);
+  String recognizedText = result['text'] ?? '';
 
-    recognizedText = recognizedText.toLowerCase();
+  recognizedText = recognizedText.toLowerCase();
+  if (kDebugMode) {
+    print('Recognized command: $recognizedText');
+  }
+
+  // Get the view change word from SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String viewChangeWord = prefs.getString('viewChangeWord') ?? 'next';
+
+  if (recognizedText.contains(viewChangeWord.toLowerCase())) {
+    onCommandRecognized('next');
+  } else {
     if (kDebugMode) {
-      print('Recognized command: $recognizedText');
-    }
-
-    if (recognizedText.contains('next')) {
-      onCommandRecognized('next');
-    } else {
-      if (kDebugMode) {
-        print('Command not recognized');
-      }
+      print('Command not recognized');
     }
   }
+}
 }
