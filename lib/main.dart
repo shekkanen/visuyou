@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:convert';
-import 'package:archive/archive.dart';
 import 'qr_code_utils.dart';
 import 'package:flutter/services.dart'; // Import for SystemChrome
 import 'voice_command_utils.dart';
@@ -10,7 +8,6 @@ import 'about_page.dart'; // Import the About page
 import 'settings_page.dart'; // Import the Settings page
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
-import 'policy_page.dart'; // Import the PolicyPage widget
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();  // Ensure plugin services are initialized

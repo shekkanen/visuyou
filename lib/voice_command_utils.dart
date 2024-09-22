@@ -63,7 +63,7 @@ class VoiceCommandUtils {
   Future<String> _loadModel() async {
     final modelLoader = ModelLoader();
     // Adjust the path according to where your model zip file is located
-    final modelPath = await modelLoader.loadFromAssets('models/vosk-model-small-en-us-0.15.zip');
+    final modelPath = await modelLoader.loadFromAssets('assets/models/vosk-model-small-en-us-0.15.zip');
     return modelPath;
   }
 
