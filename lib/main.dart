@@ -235,15 +235,19 @@ If you have any questions about these Terms, please contact us at:
           if (kDebugMode) {
             print('ICE Candidate: ${candidate.candidate}');
           }
-          _gatheredIceCandidates.add(candidate); // Collect ICE candidates
-        }
+          // Automatically send the ICE candidate to the remote peer
+          _peerConnection!.addCandidate(candidate);        }
       };
 
-      _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
-        if (kDebugMode) {
-          print('ICE Gathering State: $state');
-        }
-      };
+_peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
+  if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
+    if (_isOfferer) {
+      _createOffer();
+    } else {
+      _createAnswer();
+    }
+  }
+};
 
       // Enumerate cameras and get the device ID of the back camera
       final mediaDevices = await navigator.mediaDevices.enumerateDevices();
