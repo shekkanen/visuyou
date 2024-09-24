@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,12 +11,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();  // Ensure plugin services are initialized
-  final prefs = await SharedPreferences.getInstance();  // Load shared preferences
-  final enableAudio = prefs.getBool('enableAudio') ?? false;  // Get audio setting
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
+  final prefs = await SharedPreferences.getInstance(); // Load shared preferences
+  final enableAudio = prefs.getBool('enableAudio') ?? false; // Get audio setting
   final enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true; // Get voice command setting
 
-  runApp(MaterialApp(home: CameraStreamingApp(enableAudio: enableAudio, enableVoiceCommands: enableVoiceCommands)));  // Pass the settings to the app
+  runApp(MaterialApp(
+    home: CameraStreamingApp(enableAudio: enableAudio, enableVoiceCommands: enableVoiceCommands),
+    debugShowCheckedModeBanner: false,
+  )); // Pass the settings to the app
 }
 
 class CameraStreamingApp extends StatefulWidget {
@@ -125,17 +129,25 @@ If you have any questions about these Terms, please contact us at:
   Future<void> _requestPermissions() async {
     var cameraStatus = await Permission.camera.status;
     if (cameraStatus.isDenied) {
-      await Permission.camera.request();
+      cameraStatus = await Permission.camera.request();
+      if (!cameraStatus.isGranted) {
+        _showPermissionAlert();
+        return;
+      }
     }
 
     // Check if either enableAudio or enableVoiceCommands is true
-    bool enableAudio = prefs.getBool('enableAudio') ?? false;
-    bool enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true;
+    bool enableAudio = widget.enableAudio;
+    bool enableVoiceCommands = widget.enableVoiceCommands;
 
     if (enableAudio || enableVoiceCommands) {
       var microphoneStatus = await Permission.microphone.status;
       if (microphoneStatus.isDenied) {
-        await Permission.microphone.request();
+        microphoneStatus = await Permission.microphone.request();
+        if (!microphoneStatus.isGranted) {
+          _showPermissionAlert();
+          return;
+        }
       }
     }
 
@@ -177,7 +189,7 @@ If you have any questions about these Terms, please contact us at:
       return;
     }
 
-    bool enableAudio = prefs.getBool('enableAudio') ?? false;
+    bool enableAudio = widget.enableAudio;
 
     try {
       final configuration = {
@@ -235,19 +247,18 @@ If you have any questions about these Terms, please contact us at:
           if (kDebugMode) {
             print('ICE Candidate: ${candidate.candidate}');
           }
-          // Automatically send the ICE candidate to the remote peer
-          _peerConnection!.addCandidate(candidate);        }
+          _gatheredIceCandidates.add(candidate);
+        }
       };
 
-_peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
-  if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
-    if (_isOfferer) {
-      _createOffer();
-    } else {
-      _createAnswer();
-    }
-  }
-};
+      _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
+        if (kDebugMode) {
+          print('ICE Gathering State: $state');
+        }
+        if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
+          _sendQRCode();
+        }
+      };
 
       // Enumerate cameras and get the device ID of the back camera
       final mediaDevices = await navigator.mediaDevices.enumerateDevices();
@@ -298,6 +309,64 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
+  /// Sends the QR code containing SDP and ICE candidates.
+  Future<void> _sendQRCode() async {
+    if (_peerConnection == null) {
+      if (kDebugMode) {
+        print("PeerConnection is not initialized");
+      }
+      return;
+    }
+
+    try {
+      RTCSessionDescription? localDescription = await _peerConnection!.getLocalDescription();
+      if (localDescription == null) {
+        if (kDebugMode) {
+          print("Local description is not set");
+        }
+        return;
+      }
+
+      // Prepare ICE candidates as a list of maps
+      List<Map<String, dynamic>> iceCandidates = _gatheredIceCandidates.map((candidate) {
+        return {
+          'candidate': candidate.candidate,
+          'sdpMid': candidate.sdpMid,
+          'sdpMLineIndex': candidate.sdpMLineIndex,
+        };
+      }).toList();
+
+      // Determine type based on whether this device is the offerer
+      String type = _isOfferer ? 'offer' : 'answer';
+
+      await QRCodeUtils.displayQRCode(
+        context,
+        type,
+        localDescription.sdp ?? '',
+        iceCandidates,
+        (String qrCodeData) {
+          setState(() {
+            _connectionCode = qrCodeData;
+            _connecting = false;
+          });
+        },
+      );
+
+      if (kDebugMode) {
+        print("QR Code sent with type: $type");
+      }
+
+      // Clear the gathered ICE candidates after sending
+      _gatheredIceCandidates.clear();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to send QR Code: $e");
+      }
+      _showErrorAlert('Failed to send QR code. Please try again.');
+    }
+  }
+
+  /// Creates an SDP offer.
   Future<void> _createOffer() async {
     if (_peerConnection == null) {
       if (kDebugMode) {
@@ -309,6 +378,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     try {
       setState(() {
         _connecting = true;
+        _isOfferer = true; // Mark this device as the offerer
       });
 
       final offer = await _peerConnection!.createOffer();
@@ -317,9 +387,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
         print("Local SDP Offer: ${offer.sdp}");
       }
 
-      _isOfferer = true; // Mark this device as the offerer
-
-      await _displayQRCode(offer.sdp!, 'offer');
+      // The QR code will be sent automatically once ICE gathering is complete
     } catch (e) {
       setState(() {
         _connecting = false;
@@ -331,6 +399,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
+  /// Creates an SDP answer.
   Future<void> _createAnswer() async {
     if (_peerConnection == null) {
       if (kDebugMode) {
@@ -342,6 +411,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     try {
       setState(() {
         _connecting = true;
+        _isOfferer = false; // This device is the answerer
       });
 
       final answer = await _peerConnection!.createAnswer();
@@ -350,7 +420,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
         print("Local SDP Answer: ${answer.sdp}");
       }
 
-      await _displayQRCode(answer.sdp!, 'answer');
+      // The QR code will be sent automatically once ICE gathering is complete
     } catch (e) {
       setState(() {
         _connecting = false;
@@ -362,7 +432,8 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
-  Future<void> _onOfferReceived(String sdp) async {
+  /// Handles receiving an SDP offer.
+  Future<void> _onOfferReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -380,6 +451,17 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
       if (kDebugMode) {
         print("Remote SDP set as Offer");
       }
+
+      // Add ICE candidates received from the offer
+      for (var candidate in iceCandidates) {
+        RTCIceCandidate iceCandidate = RTCIceCandidate(
+          candidate['candidate'],
+          candidate['sdpMid'],
+          candidate['sdpMLineIndex'],
+        );
+        await _peerConnection!.addCandidate(iceCandidate);
+      }
+
       await _createAnswer();
     } catch (e) {
       setState(() {
@@ -392,7 +474,8 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
-  Future<void> _onAnswerReceived(String sdp) async {
+  /// Handles receiving an SDP answer.
+  Future<void> _onAnswerReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -407,11 +490,14 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
         print("Remote SDP set as Answer");
       }
 
-      if (_isOfferer) {
-        // Once the answer is received, send the collected ICE candidates
-        for (RTCIceCandidate candidate in _gatheredIceCandidates) {
-          await _displayQRCode(candidate.candidate!, 'ice');
-        }
+      // Add ICE candidates received from the answer
+      for (var candidate in iceCandidates) {
+        RTCIceCandidate iceCandidate = RTCIceCandidate(
+          candidate['candidate'],
+          candidate['sdpMid'],
+          candidate['sdpMLineIndex'],
+        );
+        await _peerConnection!.addCandidate(iceCandidate);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -421,54 +507,26 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
-  Future<void> _addIceCandidate(String candidate) async {
-    if (_peerConnection == null) {
-      if (kDebugMode) {
-        print("PeerConnection is not initialized");
-      }
-      return;
-    }
-
-    try {
-      RTCIceCandidate iceCandidate = RTCIceCandidate(candidate, '', 0);
-      await _peerConnection!.addCandidate(iceCandidate);
-      if (kDebugMode) {
-        print("Added ICE Candidate: $candidate");
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Failed to add ICE candidate: $e');
-      }
-      _showErrorAlert('Failed to add ICE candidate. Please try again.');
-    }
-  }
-
-  Future<void> _displayQRCode(String data, String type) async {
-    await QRCodeUtils.displayQRCode(context, data, type, (String qrCodeData) {
-      setState(() {
-        _connectionCode = qrCodeData;
-      });
-    });
-  }
-
+  /// Scans a QR code and processes the data.
   Future<void> _scanQRCode() async {
     await QRCodeUtils.scanQRCode(context, _processScannedData);
   }
 
-  void _processScannedData(String type, String data) async {
+  /// Processes the scanned QR code data.
+  void _processScannedData(String type, String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (type == 'offer') {
-      await _onOfferReceived(data);
+      await _onOfferReceived(sdp, iceCandidates);
     } else if (type == 'answer') {
-      await _onAnswerReceived(data);
-    } else if (type == 'ice') {
-      await _addIceCandidate(data);
+      await _onAnswerReceived(sdp, iceCandidates);
     } else {
       if (kDebugMode) {
         print("Unknown type: $type");
       }
+      _showErrorAlert('Unknown QR code type. Please try again.');
     }
   }
 
+  /// Handles recognized voice commands.
   void handleVoiceCommand(String command) {
     if (command == 'next') {
       int currentIndex = _viewModes.indexOf(_selectedViewMode);
@@ -481,6 +539,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
+  /// Switches the view mode based on the selected mode.
   void switchViewMode(String mode) {
     if (mode.contains('VR Mode')) {
       SystemChrome.setPreferredOrientations([
@@ -510,11 +569,9 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     }
   }
 
+  /// Enters Full VR Mode.
   void _enterFullVRMode() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     Navigator.push(
       context,
@@ -523,6 +580,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
       ),
     ).then((_) {
       // This will reset the orientation when the VR view is popped from the navigation stack.
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -530,11 +588,9 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     });
   }
 
+  /// Enters 50/50 VR Mode.
   void _enter50_50VRMode() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     Navigator.push(
       context,
@@ -546,6 +602,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
       ),
     ).then((_) {
       // Reset orientation when the VR view is popped from the navigation stack.
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -553,12 +610,9 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     });
   }
 
-
+  /// Enters Picture-in-Picture VR Mode.
   void _enterPiPMode() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     Navigator.push(
       context,
@@ -570,6 +624,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
       ),
     ).then((_) {
       // Reset orientation when the PiP view is popped from the navigation stack.
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -577,22 +632,21 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     });
   }
 
+  /// Enters the second Picture-in-Picture VR Mode.
   void _enterPiPMode2() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PiPVideoView(
-          mainRenderer: _localRenderer, // Assuming remoteRenderer as main view
-          pipRenderer: _remoteRenderer, // Assuming localRenderer as PiP view
+          mainRenderer: _localRenderer, // Assuming localRenderer as main view
+          pipRenderer: _remoteRenderer, // Assuming remoteRenderer as PiP view
         ),
       ),
     ).then((_) {
       // Reset orientation when the PiP view is popped from the navigation stack.
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -600,12 +654,13 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     });
   }
 
+  /// Shows an alert dialog if permissions are not granted.
   void _showPermissionAlert() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Permissions required'),
-        content: const Text('Camera permissions are required to proceed.'),
+        content: const Text('Camera and microphone permissions are required to proceed.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -616,6 +671,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     );
   }
 
+  /// Shows an error alert dialog.
   void _showErrorAlert(String message) {
     showDialog(
       context: context,
@@ -632,6 +688,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     );
   }
 
+  /// Shows an error snackbar.
   void _showErrorSnackBar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
@@ -640,6 +697,7 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  /// Shows an informational snackbar.
   void _showInfoSnackBar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
@@ -648,46 +706,46 @@ _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-void _checkFirstLaunch() async {
-  prefs = await SharedPreferences.getInstance();
-  bool acceptedTerms = prefs.getBool('acceptedTerms') ?? false;
-  if (!acceptedTerms) {
-    _showTermsAcceptance();
+  /// Checks if it's the first launch and shows Terms of Service if needed.
+  void _checkFirstLaunch() async {
+    prefs = await SharedPreferences.getInstance();
+    bool acceptedTerms = prefs.getBool('acceptedTerms') ?? false;
+    if (!acceptedTerms) {
+      _showTermsAcceptance();
+    }
   }
-}
 
-void _showTermsAcceptance() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => AlertDialog(
-      title: const Text('Terms of Service'),
-      content: SingleChildScrollView(
-        child: Text(_termsOfServiceText), // Ensure _termsOfServiceText is accessible here
+  /// Displays the Terms of Service acceptance dialog.
+  void _showTermsAcceptance() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Terms of Service'),
+        content: SingleChildScrollView(
+          child: Text(_termsOfServiceText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // User declines, exit the app
+              Navigator.of(context).pop();
+              SystemNavigator.pop();
+            },
+            child: const Text('Decline'),
+          ),
+          TextButton(
+            onPressed: () {
+              // User accepts
+              prefs.setBool('acceptedTerms', true);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Accept'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            // User declines, exit the app
-            Navigator.of(context).pop();
-            SystemNavigator.pop();
-          },
-          child: const Text('Decline'),
-        ),
-        TextButton(
-          onPressed: () {
-            // User accepts
-            prefs.setBool('acceptedTerms', true);
-            Navigator.of(context).pop();
-          },
-          child: const Text('Accept'),
-        ),
-      ],
-    ),
-  );
-}
-
-
+    );
+  }
 
   @override
   void dispose() {
@@ -703,137 +761,139 @@ void _showTermsAcceptance() {
     super.dispose();
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      centerTitle: true,
-      title: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/visuyou_logo.png',
-                height: 36.0, // Increased logo size
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: const Text(
-                  'VisuYou',
-                  style: TextStyle(
-                    fontSize: 22.0, // Larger font size for better readability
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
-                  maxLines: 1, // Prevent the title from taking too much space
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/visuyou_logo.png',
+                  height: 36.0, // Increased logo size
+                  fit: BoxFit.contain,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6.0),
-          FittedBox(
-            fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
-            child: const Text(
-              'True P2P VR Experience',
-              style: TextStyle(
-                fontSize: 16.0, // Slightly larger subtitle font
-                fontWeight: FontWeight.w300,
-                color: Colors.white70,
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: const Text(
+                    'VisuYou',
+                    style: TextStyle(
+                      fontSize: 22.0, // Larger font size for better readability
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
+                    maxLines: 1, // Prevent the title from taking too much space
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6.0),
+            FittedBox(
+              fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
+              child: const Text(
+                'True P2P VR Experience',
+                style: TextStyle(
+                  fontSize: 16.0, // Slightly larger subtitle font
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white70,
+                ),
               ),
             ),
+          ],
+        ),
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, size: 28), // Increased icon size
+            onPressed: () => _navigateToSettingsPage(context),
           ),
+          IconButton(
+            icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
+            onPressed: () => _navigateToAboutPage(context),
+          ),
+          DropdownButton<String>(
+            value: _selectedViewMode,
+            dropdownColor: Colors.black87,
+            style: const TextStyle(color: Colors.white),
+            underline: Container(),
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+            items: _viewModes.map((String mode) {
+              return DropdownMenuItem<String>(
+                value: mode,
+                child: Text(mode),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue == null) return;
+              setState(() {
+                _selectedViewMode = newValue;
+              });
+              switchViewMode(newValue);
+            },
+          ),
+          const SizedBox(width: 12),
         ],
       ),
-      backgroundColor: Colors.black,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings, size: 28), // Increased icon size
-          onPressed: () => _navigateToSettingsPage(context),
-        ),
-        IconButton(
-          icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
-          onPressed: () => _navigateToAboutPage(context),
-        ),
-        DropdownButton<String>(
-          value: _selectedViewMode,
-          dropdownColor: Colors.black87,
-          style: const TextStyle(color: Colors.white),
-          underline: Container(),
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          items: _viewModes.map((String mode) {
-            return DropdownMenuItem<String>(
-              value: mode,
-              child: Text(mode),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedViewMode = newValue!;
-              if (_selectedViewMode == 'Full VR Mode') {
-                _enterFullVRMode();
-              } else if (_selectedViewMode == '50/50 VR Mode') {
-                _enter50_50VRMode();
-              } else if (_selectedViewMode == 'PIP VR Mode') {
-                _enterPiPMode();
-              } else if (_selectedViewMode == 'PIP VR Mode2') {
-                _enterPiPMode2();
-              }
-            });
-          },
-        ),
-        const SizedBox(width: 12),
-      ],
-    ),
-    body: _renderersInitialized
-        ? Column(
-            children: [
-              Expanded(child: RTCVideoView(_localRenderer)),
-              Expanded(child: RTCVideoView(_remoteRenderer)),
-              Padding(
-                padding: const EdgeInsets.all(12.0), // Increased padding
-                child: _connectionCode.isNotEmpty
-                    ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                    : _connecting
-                        ? const CircularProgressIndicator()
-                        : const Text(
-                            'No data to display',
-                            style: TextStyle(fontSize: 16), // Increased text size
-                          ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                        textStyle: const TextStyle(fontSize: 18), // Larger text size
-                      ),
-                      onPressed: _createOffer,
-                      child: const Text('Create Offer'),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                        textStyle: const TextStyle(fontSize: 18), // Larger text size
-                      ),
-                      onPressed: _scanQRCode,
-                      child: const Text('Scan QR Code'),
-                    ),
-                  ],
+      body: _renderersInitialized
+          ? Column(
+              children: [
+                Expanded(
+                  child: RTCVideoView(
+                    _localRenderer,
+                    mirror: true,
+                  ),
                 ),
-              ),
-            ],
-          )
-        : const Center(child: CircularProgressIndicator()),
-  );
-}
-}
+                Expanded(
+                  child: RTCVideoView(
+                    _remoteRenderer,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0), // Increased padding
+                  child: _connectionCode.isNotEmpty
+                      ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                      : _connecting
+                          ? const CircularProgressIndicator()
+                          : const Text(
+                              'No data to display',
+                              style: TextStyle(fontSize: 16), // Increased text size
+                            ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                          textStyle: const TextStyle(fontSize: 18), // Larger text size
+                        ),
+                        onPressed: _isOfferer || _connecting ? null : _createOffer,
+                        child: const Text('Create Offer'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                          textStyle: const TextStyle(fontSize: 18), // Larger text size
+                        ),
+                        onPressed: _connecting ? null : _scanQRCode,
+                        child: const Text('Scan QR Code'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
+    );
+  }
 
+  /// Navigates to the Settings page.
   void _navigateToSettingsPage(BuildContext context) {
     Navigator.push(
       context,
@@ -841,17 +901,17 @@ Widget build(BuildContext context) {
     );
   }
 
+  /// Navigates to the About page.
   void _navigateToAboutPage(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AboutPage()),
     );
   }
+}
 
+// VR Video View Classes
 
-
-
-// Move the VRVideoView class to the top level
 class FullVRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
 
@@ -900,7 +960,6 @@ class FullVRVideoView extends StatelessWidget {
     );
   }
 }
-
 
 class VR50_50VideoView extends StatelessWidget {
   final RTCVideoRenderer localRenderer;
@@ -1014,11 +1073,11 @@ class PiPVideoView extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
-            final pipSize = constraints.maxWidth / 5;  // Adjust the size of the PiP view here
+            final pipSize = constraints.maxWidth / 5; // Adjust the size of the PiP view here
 
             return Row(
               children: [
-                // Left Eye View
+                // Main View
                 SizedBox(
                   width: halfWidth,
                   height: constraints.maxHeight,
@@ -1046,7 +1105,7 @@ class PiPVideoView extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Right Eye View
+                // Secondary View
                 SizedBox(
                   width: halfWidth,
                   height: constraints.maxHeight,

@@ -1,3 +1,4 @@
+// lib/qr_code_utils.dart
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -6,11 +7,28 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 
 class QRCodeUtils {
-  static Future<void> displayQRCode(BuildContext context, String data, String type, Function(String) setStateCallback) async {
+  /// Displays a QR code containing type, sdp, and iceCandidates.
+  static Future<void> displayQRCode(
+    BuildContext context,
+    String type,
+    String sdp,
+    List<Map<String, dynamic>> iceCandidates,
+    Function(String) setStateCallback,
+  ) async {
     try {
-      String compressedData = _compressData(data);
-      String qrCodeData = jsonEncode({'type': type, 'data': compressedData});
+      // Construct the JSON object
+      final Map<String, dynamic> qrData = {
+        'type': type,
+        'sdp': sdp,
+        'iceCandidates': iceCandidates,
+      };
+
+      String jsonString = jsonEncode(qrData);
+      String compressedData = _compressData(jsonString);
+      String qrCodeData = compressedData;
+
       setStateCallback(qrCodeData);
+
       if (kDebugMode) {
         print("Generated QR Code Data: $qrCodeData");
       }
@@ -22,7 +40,9 @@ class QRCodeUtils {
     }
   }
 
-  static Future<void> scanQRCode(BuildContext context, Function(String, String) processScannedData) async {
+  /// Scans a QR code and extracts type, sdp, and iceCandidates.
+  static Future<void> scanQRCode(
+      BuildContext context, Function(String, String, List<Map<String, dynamic>>) processScannedData) async {
     try {
       String scannedData = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.QR);
@@ -43,20 +63,32 @@ class QRCodeUtils {
     }
   }
 
-  static void _processScannedData(BuildContext context, String scannedData, Function(String, String) processScannedData) {
+  /// Processes the scanned QR code data.
+  static void _processScannedData(BuildContext context, String scannedData,
+      Function(String, String, List<Map<String, dynamic>>) processScannedData) {
     try {
-      final Map<String, dynamic> receivedData = jsonDecode(scannedData);
+      // Assuming the data is already compressed
+      String decompressedData = _decompressData(scannedData);
+      final Map<String, dynamic> receivedData = jsonDecode(decompressedData);
+
       if (kDebugMode) {
         print("Decoded Data: $receivedData");
       }
+
       final String type = receivedData['type'];
-      final String compressedData = receivedData['data'];
-      final String data = _decompressData(compressedData);
+      final String sdp = receivedData['sdp'];
+      final List<dynamic> iceCandidatesDynamic = receivedData['iceCandidates'] ?? [];
+
+      // Convert dynamic list to List<Map<String, dynamic>>
+      List<Map<String, dynamic>> iceCandidates = iceCandidatesDynamic
+          .map((candidate) => Map<String, dynamic>.from(candidate))
+          .toList();
+
       if (kDebugMode) {
-        print("Type: $type, Data: $data");
+        print("Type: $type, SDP: $sdp, ICE Candidates: $iceCandidates");
       }
 
-      processScannedData(type, data);
+      processScannedData(type, sdp, iceCandidates);
     } catch (e) {
       if (kDebugMode) {
         print("Failed to decode QR code data: $e");
@@ -65,6 +97,7 @@ class QRCodeUtils {
     }
   }
 
+  /// Compresses data using GZip and encodes it in Base64.
   static String _compressData(String data) {
     try {
       List<int> stringBytes = utf8.encode(data);
@@ -78,6 +111,7 @@ class QRCodeUtils {
     }
   }
 
+  /// Decompresses Base64 encoded GZip data.
   static String _decompressData(String compressedData) {
     try {
       List<int> compressedBytes = base64Decode(compressedData);
@@ -91,6 +125,7 @@ class QRCodeUtils {
     }
   }
 
+  /// Displays an error alert dialog.
   static void _showErrorAlert(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -107,6 +142,7 @@ class QRCodeUtils {
     );
   }
 
+  /// Displays an informational snackbar.
   static void _showInfoSnackBar(BuildContext context, String message) {
     final snackBar = SnackBar(
       content: Text(message),
@@ -115,6 +151,7 @@ class QRCodeUtils {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  /// Builds the QR code widget to display on the screen.
   static Widget buildQRCodeWidget(String connectionCode) {
     return Column(
       children: [
