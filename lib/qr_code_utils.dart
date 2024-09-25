@@ -24,7 +24,15 @@ class QRCodeUtils {
       };
 
       String jsonString = jsonEncode(qrData);
+      
+      // Print the size of the data before compression
+      print("Size of data before compression: ${utf8.encode(jsonString).length} bytes");
+      
       String compressedData = _compressData(jsonString);
+      
+      // Print the size of the data after compression
+      print("Size of data after compression: ${utf8.encode(compressedData).length} bytes");
+
       String qrCodeData = compressedData;
 
       setStateCallback(qrCodeData);
