@@ -243,21 +243,14 @@ git push origin feature/YourFeature
 
 ## License
 
-[Specify your license here, e.g., MIT License]
+The source code for this project is not currently open to the public. Licensing details will be provided if and when the code is released.
 
-```text
-MIT License
-
-Copyright (c) 2023 Your Name
-
-Permission is hereby granted, free of charge, to any person obtaining a copy...
-```
 
 ## Contact
 
 For any inquiries or support, please contact:
-- Email: your.email@example.com
-- GitHub: yourusername
+- Email: sami.hekkanen@gmail.com
+- GitHub: shekkanen
 
 ## Getting Started
 

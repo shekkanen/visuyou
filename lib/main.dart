@@ -56,7 +56,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   final String _termsOfServiceText = '''
 **Terms of Service**
 
-_Last updated: October 1, 2023_
+_Last updated: September 25, 2024_
 
 **1. Acceptance of Terms**
 
@@ -104,11 +104,15 @@ We reserve the right to modify these Terms at any time. We will notify you of an
 
 These Terms shall be governed by and construed in accordance with the laws of [Your Country/State], without regard to its conflict of law provisions.
 
-**10. Contact Us**
+**10. Copyright**
+
+© 2024 Sami Hekkanen. All rights reserved.
+
+**11. Contact Us**
 
 If you have any questions about these Terms, please contact us at:
 
-[Your Contact Information]
+visuyouapp@gmail.com
 ''';
 
   @override

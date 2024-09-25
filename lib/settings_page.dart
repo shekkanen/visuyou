@@ -24,7 +24,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final String _privacyPolicyText = '''
 **Privacy Policy**
 
-_Last updated: October 1, 2023_
+_Last updated: September 25, 2024_
 
 **1. Introduction**
 
@@ -67,7 +67,7 @@ visuyouapp@gmail.com
   final String _termsOfServiceText = '''
 **Terms of Service**
 
-_Last updated: October 1, 2023_
+_Last updated: September 25, 2024_
 
 **1. Acceptance of Terms**
 
