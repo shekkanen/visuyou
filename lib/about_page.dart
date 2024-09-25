@@ -30,6 +30,11 @@ class AboutPage extends StatelessWidget {
               'This application provides a peer-to-peer VR streaming experience using WebRTC and Flutter. It is designed to be simple, reliable, and efficient, providing high-quality VR experiences across various devices.',
               style: TextStyle(fontSize: 16),
             ),
+            const SizedBox(height: 10),
+            const Text(
+              '© 2024 Sami Hekkanen. All rights reserved.',
+              style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+            ),
             const SizedBox(height: 20),
             const Text(
               'Dependencies:',
