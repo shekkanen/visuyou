@@ -44,15 +44,15 @@ class VoiceCommandUtils {
 
     // Subscribe to recognition events
     _speechService!.onPartial().listen((partialResult) {
-      if (kDebugMode) {
-        print('Partial result: $partialResult');
-      }
+//      if (kDebugMode) {
+//        print('Partial result: $partialResult');
+//      }
     });
 
     _speechService!.onResult().listen((finalResult) async {
-      if (kDebugMode) {
-        print('Final result: $finalResult');
-      }
+//      if (kDebugMode) {
+//        print('Final result: $finalResult');
+//      }
       await _processRecognizedText(finalResult);
     });
 
@@ -94,9 +94,9 @@ Future<void> _processRecognizedText(String recognizedJson) async {
   String recognizedText = result['text'] ?? '';
 
   recognizedText = recognizedText.toLowerCase();
-  if (kDebugMode) {
-    print('Recognized command: $recognizedText');
-  }
+//  if (kDebugMode) {
+//    print('Recognized command: $recognizedText');
+//  }
 
   // Get the view change word from SharedPreferences
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -105,9 +105,9 @@ Future<void> _processRecognizedText(String recognizedJson) async {
   if (recognizedText.contains(viewChangeWord.toLowerCase())) {
     onCommandRecognized('next');
   } else {
-    if (kDebugMode) {
-      print('Command not recognized');
-    }
+//    if (kDebugMode) {
+//      print('Command not recognized');
+//    }
   }
 }
 }
