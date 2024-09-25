@@ -47,7 +47,7 @@ class AboutPage extends StatelessWidget {
                 }
               },
               child: const Text(
-                'Buy Me a Coffee',
+                'Buy Me a Coffee (External Link)',
                 style: TextStyle(fontSize: 16),
               ),
             ),
