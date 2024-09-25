@@ -16,7 +16,7 @@ class PolicyPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Text(
+        child: SelectableText(
           content,
           style: const TextStyle(fontSize: 16.0),
         ),

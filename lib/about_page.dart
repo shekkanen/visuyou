@@ -8,6 +8,7 @@ class AboutPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('About VisuYou'),
+        backgroundColor: Colors.black,
       ),
       body: const Padding(
         padding: EdgeInsets.all(16.0),
@@ -19,7 +20,7 @@ class AboutPage extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            Text(
+            SelectableText(
               'This application provides a peer-to-peer VR streaming experience using WebRTC and Flutter. It is designed to be simple, reliable, and efficient, providing high-quality VR experiences across various devices.',
               style: TextStyle(fontSize: 16),
             ),

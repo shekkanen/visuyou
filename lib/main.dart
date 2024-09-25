@@ -17,6 +17,8 @@ void main() async {
   final enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true; // Get voice command setting
 
   runApp(MaterialApp(
+    title: 'VisuYou',
+    theme: ThemeData(primaryColor: Colors.black),
     home: CameraStreamingApp(enableAudio: enableAudio, enableVoiceCommands: enableVoiceCommands),
     debugShowCheckedModeBanner: false,
   )); // Pass the settings to the app
@@ -823,7 +825,7 @@ If you have any questions about these Terms, please contact us at:
             dropdownColor: Colors.black87,
             style: const TextStyle(color: Colors.white),
             underline: Container(),
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28), // Increased icon size
             items: _viewModes.map((String mode) {
               return DropdownMenuItem<String>(
                 value: mode,
