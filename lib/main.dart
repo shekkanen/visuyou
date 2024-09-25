@@ -102,7 +102,7 @@ We reserve the right to modify these Terms at any time. We will notify you of an
 
 **9. Governing Law**
 
-These Terms shall be governed by and construed in accordance with the laws of [Your Country/State], without regard to its conflict of law provisions.
+These Terms shall be governed by and construed in accordance with the laws of **Finland**, without regard to its conflict of law provisions.
 
 **10. Copyright**
 
