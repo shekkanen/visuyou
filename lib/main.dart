@@ -383,6 +383,7 @@ If you have any questions about these Terms, please contact us at:
 
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
+      Future.delayed(Duration(seconds: 2), _sendQRCode);
       if (kDebugMode) {
         print("Local SDP Offer: ${offer.sdp}");
       }
@@ -416,6 +417,8 @@ If you have any questions about these Terms, please contact us at:
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
+      Future.delayed(Duration(seconds: 2), _sendQRCode);
+      
       if (kDebugMode) {
         print("Local SDP Answer: ${answer.sdp}");
       }
