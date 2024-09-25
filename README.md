@@ -290,6 +290,13 @@ flutter pub get
 flutter build apk --release
 ```
 
+# include version to the app
+```
+dart scripts/generate_dependencies.dart
+```
+
+
+
 Your app offers a unique and private peer-to-peer VR experience that allows users to view the world from another person's perspective in real-time. This opens up a wide array of innovative use cases across various fields. Here are some ideas:
 
 Shared Experiences for Couples: Couples can use the app to enhance their connection by sharing perspectives in intimate or everyday moments. This can deepen empathy and understanding between partners by literally seeing through each other's eyes.

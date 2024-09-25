@@ -55,7 +55,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: 4.0.0
   flutter_launcher_icons: 0.9.3
-
+  yaml: ^3.1.0
+  
 flutter_icons:
   android: true
   ios: true
