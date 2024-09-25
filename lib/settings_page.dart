@@ -52,11 +52,15 @@ Our App does not target anyone under the age of 13. We do not knowingly collect 
 
 We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy within the App.
 
-**7. Contact Us**
+**7. Copyright**
+
+© 2024 Sami Hekkanen. All rights reserved.
+
+**8. Contact Us**
 
 If you have any questions about this Privacy Policy, please contact us at:
 
-[Your Contact Information]
+visuyou@gmail.com
 ''';
 
   // Terms of Service Text
@@ -111,11 +115,15 @@ We reserve the right to modify these Terms at any time. We will notify you of an
 
 These Terms shall be governed by and construed in accordance with the laws of [Your Country/State], without regard to its conflict of law provisions.
 
-**10. Contact Us**
+**10. Copyright**
+
+© 2024 Sami Hekkanen. All rights reserved.
+
+**11. Contact Us**
 
 If you have any questions about these Terms, please contact us at:
 
-[Your Contact Information]
+visuyou@gmail.com
 ''';
 
   @override
