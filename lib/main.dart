@@ -927,7 +927,7 @@ class FullVRVideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-        onTap: () {
+        onDoubleTap: () {
           // Restore the system UI when exiting VR mode
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
@@ -981,7 +981,7 @@ class VR50_50VideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-        onTap: () {
+        onDoubleTap: () {
           // Restore the system UI when exiting VR mode
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
@@ -1068,7 +1068,7 @@ class PiPVideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-        onTap: () {
+        onDoubleTap: () {
           // Restore the system UI when exiting VR mode
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
