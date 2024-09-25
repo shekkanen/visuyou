@@ -60,7 +60,7 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 
 If you have any questions about this Privacy Policy, please contact us at:
 
-visuyou@gmail.com
+visuyouapp@gmail.com
 ''';
 
   // Terms of Service Text
@@ -123,7 +123,7 @@ These Terms shall be governed by and construed in accordance with the laws of [Y
 
 If you have any questions about these Terms, please contact us at:
 
-visuyou@gmail.com
+visuyouapp@gmail.com
 ''';
 
   @override
