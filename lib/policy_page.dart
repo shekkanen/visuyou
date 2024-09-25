@@ -1,3 +1,4 @@
+// Copyright © 2024 Sami Hekkanen. All rights reserved.
 import 'package:flutter/material.dart';
 
 class PolicyPage extends StatelessWidget {

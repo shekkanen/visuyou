@@ -1,4 +1,5 @@
 // lib/about_page.dart
+// Copyright © 2024 Sami Hekkanen. All rights reserved.
 import 'package:flutter/material.dart';
 import 'generated/dependencies.dart'; // Import the generated dependencies
 

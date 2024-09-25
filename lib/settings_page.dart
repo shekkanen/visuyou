@@ -1,3 +1,5 @@
+// Copyright © 2024 Sami Hekkanen. All rights reserved.
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'policy_page.dart'; // Import the PolicyPage widget

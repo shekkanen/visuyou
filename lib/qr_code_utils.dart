@@ -1,4 +1,5 @@
 // lib/qr_code_utils.dart
+// Copyright © 2024 Sami Hekkanen. All rights reserved.
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';

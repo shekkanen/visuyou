@@ -1,3 +1,5 @@
+// Copyright © 2024 Sami Hekkanen. All rights reserved.
+
 import 'package:vosk_flutter/vosk_flutter.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:permission_handler/permission_handler.dart';

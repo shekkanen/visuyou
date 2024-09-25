@@ -1,4 +1,5 @@
 // lib/main.dart
+// Copyright © 2024 Sami Hekkanen. All rights reserved.
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
