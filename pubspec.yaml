@@ -69,5 +69,6 @@ flutter:
 
   assets:
     - assets/visuyou_logo.png
+    - assets/visuyou.png
     - assets/models/vosk-model-small-en-us-0.15.zip
 #    - assets/models/

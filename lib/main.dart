@@ -771,135 +771,151 @@ visuyouapp@gmail.com
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/visuyou_logo.png',
-                  height: 36.0, // Increased logo size
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: const Text(
-                    'VisuYou',
-                    style: TextStyle(
-                      fontSize: 22.0, // Larger font size for better readability
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
-                    maxLines: 1, // Prevent the title from taking too much space
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      centerTitle: true,
+      title: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/visuyou_logo.png',
+                height: 36.0, // Increased logo size
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8.0),
+              Expanded(
+                child: const Text(
+                  'VisuYou',
+                  style: TextStyle(
+                    fontSize: 22.0, // Larger font size for better readability
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6.0),
-            FittedBox(
-              fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
-              child: const Text(
-                'True P2P VR Experience',
-                style: TextStyle(
-                  fontSize: 16.0, // Slightly larger subtitle font
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white70,
+                  overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
+                  maxLines: 1, // Prevent the title from taking too much space
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 6.0),
+          FittedBox(
+            fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
+            child: const Text(
+              'True P2P VR Experience',
+              style: TextStyle(
+                fontSize: 16.0, // Slightly larger subtitle font
+                fontWeight: FontWeight.w300,
+                color: Colors.white70,
+              ),
             ),
-          ],
-        ),
-        backgroundColor: Colors.black,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, size: 28), // Increased icon size
-            onPressed: () => _navigateToSettingsPage(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
-            onPressed: () => _navigateToAboutPage(context),
-          ),
-          DropdownButton<String>(
-            value: _selectedViewMode,
-            dropdownColor: Colors.black87,
-            style: const TextStyle(color: Colors.white),
-            underline: Container(),
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28), // Increased icon size
-            items: _viewModes.map((String mode) {
-              return DropdownMenuItem<String>(
-                value: mode,
-                child: Text(mode),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              if (newValue == null) return;
-              setState(() {
-                _selectedViewMode = newValue;
-              });
-              switchViewMode(newValue);
-            },
-          ),
-          const SizedBox(width: 12),
         ],
       ),
-      body: _renderersInitialized
-          ? Column(
-              children: [
-                Expanded(
-                  child: RTCVideoView(
-                    _localRenderer,
-                    mirror: true,
+      backgroundColor: Colors.black,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings, size: 28), // Increased icon size
+          onPressed: () => _navigateToSettingsPage(context),
+        ),
+        IconButton(
+          icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
+          onPressed: () => _navigateToAboutPage(context),
+        ),
+        DropdownButton<String>(
+          value: _selectedViewMode,
+          dropdownColor: Colors.black87,
+          style: const TextStyle(color: Colors.white),
+          underline: Container(),
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28), // Increased icon size
+          items: _viewModes.map((String mode) {
+            return DropdownMenuItem<String>(
+              value: mode,
+              child: Text(mode),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            if (newValue == null) return;
+            setState(() {
+              _selectedViewMode = newValue;
+            });
+            switchViewMode(newValue);
+          },
+        ),
+        const SizedBox(width: 12),
+      ],
+    ),
+    body: Stack(
+      children: [
+        // Background image
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.2, // Adjust the opacity to make it subtle
+            child: Image.asset(
+              'assets/visuyou.png', // Path to the background image
+              fit: BoxFit.cover, // Cover the entire background
+            ),
+          ),
+        ),
+
+        // All other UI components come here
+        _renderersInitialized
+            ? Column(
+                children: [
+                  Expanded(
+                    child: RTCVideoView(
+                      _localRenderer,
+                      mirror: true,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: RTCVideoView(
-                    _remoteRenderer,
+                  Expanded(
+                    child: RTCVideoView(
+                      _remoteRenderer,
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0), // Increased padding
-                  child: _connectionCode.isNotEmpty
-                      ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                      : _connecting
-                          ? const CircularProgressIndicator()
-                          : const Text(
-                              'No data to display',
-                              style: TextStyle(fontSize: 16), // Increased text size
-                            ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                          textStyle: const TextStyle(fontSize: 18), // Larger text size
+                  Padding(
+                    padding: const EdgeInsets.all(12.0), // Increased padding
+                    child: _connectionCode.isNotEmpty
+                        ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                        : _connecting
+                            ? const CircularProgressIndicator()
+                            : const Text(
+                                'No data to display',
+                                style: TextStyle(fontSize: 16), // Increased text size
+                              ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                            textStyle: const TextStyle(fontSize: 18), // Larger text size
+                          ),
+                          onPressed: _isOfferer || _connecting ? null : _createOffer,
+                          child: const Text('Create Offer'),
                         ),
-                        onPressed: _isOfferer || _connecting ? null : _createOffer,
-                        child: const Text('Create Offer'),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                          textStyle: const TextStyle(fontSize: 18), // Larger text size
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                            textStyle: const TextStyle(fontSize: 18), // Larger text size
+                          ),
+                          onPressed: _connecting ? null : _scanQRCode,
+                          child: const Text('Scan QR Code'),
                         ),
-                        onPressed: _connecting ? null : _scanQRCode,
-                        child: const Text('Scan QR Code'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            )
-          : const Center(child: CircularProgressIndicator()),
+                ],
+              )
+            : const Center(child: CircularProgressIndicator()),
+        ],
+      ),
     );
   }
 
@@ -966,9 +982,9 @@ class FullVRVideoView extends StatelessWidget {
             );
           },
         ),
-      ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class VR50_50VideoView extends StatelessWidget {
