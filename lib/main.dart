@@ -887,28 +887,30 @@ Widget build(BuildContext context) {
                                 style: TextStyle(fontSize: 16), // Increased text size
                               ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                            textStyle: const TextStyle(fontSize: 18), // Larger text size
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                              textStyle: const TextStyle(fontSize: 18), // Larger text size
+                            ),
+                            onPressed: _isOfferer || _connecting ? null : _createOffer,
+                            child: const Text('Create Offer'),
                           ),
-                          onPressed: _isOfferer || _connecting ? null : _createOffer,
-                          child: const Text('Create Offer'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                            textStyle: const TextStyle(fontSize: 18), // Larger text size
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                              textStyle: const TextStyle(fontSize: 18), // Larger text size
+                            ),
+                            onPressed: _connecting ? null : _scanQRCode,
+                            child: const Text('Scan QR Code'),
                           ),
-                          onPressed: _connecting ? null : _scanQRCode,
-                          child: const Text('Scan QR Code'),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -918,6 +920,7 @@ Widget build(BuildContext context) {
       ),
     );
   }
+
 
   /// Navigates to the Settings page.
   void _navigateToSettingsPage(BuildContext context) {
