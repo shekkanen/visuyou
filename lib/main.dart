@@ -853,7 +853,7 @@ Widget build(BuildContext context) {
         // Background image
         Positioned.fill(
           child: Opacity(
-            opacity: 0.2, // Adjust the opacity to make it subtle
+            opacity: 0.10, // Adjust the opacity to make it subtle
             child: Image.asset(
               'assets/visuyou.png', // Path to the background image
               fit: BoxFit.cover, // Cover the entire background
