@@ -1,5 +1,6 @@
 // lib/main.dart
 // Copyright © 2024 Sami Hekkanen. All rights reserved.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,6 +14,7 @@ import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'policies.dart'; // Import the privacy policy and terms of service text
 import 'package:provider/provider.dart'; // Import provider
 import 'settings_model.dart'; // Import settings model
+import 'dart:async'; // Import for async functions
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
@@ -51,7 +53,12 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
   // Dropdown menu related
   String _selectedViewMode = 'Full VR Mode'; // Default selected mode
-  final List<String> _viewModes = ['Full VR Mode', '50/50 VR Mode', 'PIP VR Mode', 'PIP VR Mode2'];
+  final List<String> _viewModes = [
+    'Full VR Mode',
+    '50/50 VR Mode',
+    'PIP VR Mode',
+    'PIP VR Mode2'
+  ];
 
   VoiceCommandUtils? _voiceCommandUtils; // Modified to be nullable
   late SettingsModel _settingsModel; // Add this line
@@ -67,21 +74,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]); // Force portrait mode initially
-  }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+    // Initialize _settingsModel and add listener
     _settingsModel = Provider.of<SettingsModel>(context, listen: false);
-
-    // Initialize voice command utils if not already initialized
-    if (_settingsModel.enableVoiceCommands && _voiceCommandUtils == null) {
-      _voiceCommandUtils = VoiceCommandUtils(
-        onCommandRecognized: handleVoiceCommand,
-        settingsModel: _settingsModel,
-      );
-      _voiceCommandUtils!.initSpeech();
-    }
+    _settingsModel.addListener(_onSettingsChanged);
   }
 
   Future<void> _initializePreferences() async {
@@ -114,13 +110,14 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
     }
 
-    bool microphoneGranted = !enableAudio && !enableVoiceCommands || await Permission.microphone.isGranted;
+    bool microphoneGranted = !enableAudio && !enableVoiceCommands ||
+        await Permission.microphone.isGranted;
 
     if (await Permission.camera.isGranted && microphoneGranted) {
       await _initializeRenderers();
       await _createPeerConnection();
 
-      // Voice command initialization is moved to didChangeDependencies()
+      // Voice command initialization is handled in _onSettingsChanged()
     } else {
       _showPermissionAlert();
     }
@@ -137,7 +134,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       if (kDebugMode) {
         print('Failed to initialize renderers: $e');
       }
-      _showErrorAlert('Failed to initialize video renderers. Please restart the app.');
+      _showErrorAlert(
+          'Failed to initialize video renderers. Please restart the app.');
     }
   }
 
@@ -161,17 +159,21 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       _peerConnection = await createPeerConnection(configuration);
 
-      _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
+      _peerConnection!.onIceConnectionState =
+          (RTCIceConnectionState state) {
         if (kDebugMode) {
           print('ICE Connection State: $state');
         }
-        if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
+        if (state ==
+            RTCIceConnectionState.RTCIceConnectionStateConnected) {
           setState(() {
             _connecting = false;
           });
           _showInfoSnackBar('Connected successfully!');
-        } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
-            state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        } else if (state ==
+                RTCIceConnectionState.RTCIceConnectionStateFailed ||
+            state ==
+                RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
           setState(() {
             _connecting = false;
           });
@@ -211,11 +213,13 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         }
       };
 
-      _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
+      _peerConnection!.onIceGatheringState =
+          (RTCIceGatheringState state) {
         if (kDebugMode) {
           print('ICE Gathering State: $state');
         }
-        if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
+        if (state ==
+            RTCIceGatheringState.RTCIceGatheringStateComplete) {
           _sendQRCode();
         }
       };
@@ -225,7 +229,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       String? backCameraId;
 
       for (var device in mediaDevices) {
-        if (device.kind == 'videoinput' && device.label.toLowerCase().contains('back')) {
+        if (device.kind == 'videoinput' &&
+            device.label.toLowerCase().contains('back')) {
           backCameraId = device.deviceId;
           break;
         }
@@ -236,7 +241,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         final stream = await navigator.mediaDevices.getUserMedia({
           'audio': enableAudio, // Enable audio based on the setting
           'video': {
-            'deviceId': backCameraId,  // Pass the device ID directly as a string
+            'deviceId': backCameraId, // Pass the device ID directly as a string
           },
         });
         _localRenderer.srcObject = stream;
@@ -279,7 +284,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
 
     try {
-      RTCSessionDescription? localDescription = await _peerConnection!.getLocalDescription();
+      RTCSessionDescription? localDescription =
+          await _peerConnection!.getLocalDescription();
       if (localDescription == null) {
         if (kDebugMode) {
           print("Local description is not set");
@@ -288,7 +294,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
 
       // Prepare ICE candidates as a list of maps
-      List<Map<String, dynamic>> iceCandidates = _gatheredIceCandidates.map((candidate) {
+      List<Map<String, dynamic>> iceCandidates =
+          _gatheredIceCandidates.map((candidate) {
         return {
           'candidate': candidate.candidate,
           'sdpMid': candidate.sdpMid,
@@ -343,7 +350,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
-      Future.delayed(Duration(seconds: 2), _sendQRCode);
+      Future.delayed(const Duration(seconds: 2), _sendQRCode);
       if (kDebugMode) {
         print("Local SDP Offer: ${offer.sdp}");
       }
@@ -377,8 +384,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
-      Future.delayed(Duration(seconds: 2), _sendQRCode);
-      
+      Future.delayed(const Duration(seconds: 2), _sendQRCode);
+
       if (kDebugMode) {
         print("Local SDP Answer: ${answer.sdp}");
       }
@@ -396,7 +403,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Handles receiving an SDP offer.
-  Future<void> _onOfferReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  Future<void> _onOfferReceived(
+      String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -438,7 +446,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Handles receiving an SDP answer.
-  Future<void> _onAnswerReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  Future<void> _onAnswerReceived(
+      String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -476,7 +485,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Processes the scanned QR code data.
-  void _processScannedData(String type, String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  void _processScannedData(String type, String sdp,
+      List<Map<String, dynamic>> iceCandidates) async {
     if (type == 'offer') {
       await _onOfferReceived(sdp, iceCandidates);
     } else if (type == 'answer') {
@@ -623,7 +633,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Permissions required'),
-        content: const Text('Camera and microphone permissions are required to proceed.'),
+        content:
+            const Text('Camera and microphone permissions are required to proceed.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -710,12 +721,57 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     );
   }
 
+  /// Handles changes in the settings model.
+  void _onSettingsChanged() {
+    // Handle enableVoiceCommands changes
+    if (_settingsModel.enableVoiceCommands) {
+      if (_voiceCommandUtils == null) {
+        _voiceCommandUtils = VoiceCommandUtils(
+          onCommandRecognized: handleVoiceCommand,
+          settingsModel: _settingsModel,
+        );
+        _voiceCommandUtils!.initSpeech(); // Ignoring Future
+      }
+    } else {
+      if (_voiceCommandUtils != null) {
+        _voiceCommandUtils!.stopListening();
+        _voiceCommandUtils = null;
+      }
+    }
+
+    // Handle enableAudio changes
+    if (_peerConnection != null) {
+      _updateAudioTracks(); // Call the async function
+    }
+
+    setState(() {
+      // Update UI if necessary
+    });
+  }
+
+  /// Updates the audio tracks based on the enableAudio setting.
+  void _updateAudioTracks() async {
+    try {
+      var senders = await _peerConnection!.getSenders();
+      for (var sender in senders) {
+        if (sender.track != null && sender.track!.kind == 'audio') {
+          sender.track!.enabled = _settingsModel.enableAudio;
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating audio tracks: $e');
+      }
+    }
+  }
+
   @override
   void dispose() {
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _peerConnection?.dispose();
     _voiceCommandUtils?.stopListening(); // Stop voice command utils if initialized
+    _settingsModel.removeListener(_onSettingsChanged); // Remove settings listener
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -750,7 +806,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
-                    overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
+                    overflow:
+                        TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
                     maxLines: 1, // Prevent the title from taking too much space
                   ),
                 ),
@@ -785,7 +842,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
             dropdownColor: Colors.black87,
             style: const TextStyle(color: Colors.white),
             underline: Container(),
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28), // Increased icon size
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28),
             items: _viewModes.map((String mode) {
               return DropdownMenuItem<String>(
                 value: mode,
@@ -850,7 +907,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                           children: [
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24.0, vertical: 12.0), // Larger button size
                                 textStyle: const TextStyle(fontSize: 18), // Larger text size
                               ),
                               onPressed: _isOfferer || _connecting ? null : _createOffer,
@@ -858,7 +916,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24.0, vertical: 12.0), // Larger button size
                                 textStyle: const TextStyle(fontSize: 18), // Larger text size
                               ),
                               onPressed: _connecting ? null : _scanQRCode,
@@ -898,7 +957,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 class FullVRVideoView extends StatelessWidget {
   final RTCVideoRenderer remoteRenderer;
 
-  const FullVRVideoView({Key? key, required this.remoteRenderer}) : super(key: key);
+  const FullVRVideoView({Key? key, required this.remoteRenderer})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -923,7 +983,8 @@ class FullVRVideoView extends StatelessWidget {
                   height: constraints.maxHeight,
                   child: RTCVideoView(
                     remoteRenderer,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                    objectFit:
+                        RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
                   ),
                 ),
                 // Right Eye View
@@ -932,16 +993,17 @@ class FullVRVideoView extends StatelessWidget {
                   height: constraints.maxHeight,
                   child: RTCVideoView(
                     remoteRenderer,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                    objectFit:
+                        RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
                   ),
                 ),
               ],
             );
           },
         ),
-    ),
-  );
-}
+      ),
+    );
+  }
 }
 
 class VR50_50VideoView extends StatelessWidget {
@@ -982,7 +1044,7 @@ class VR50_50VideoView extends StatelessWidget {
                         height: constraints.maxHeight,
                         child: RTCVideoView(
                           localRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         ),
                       ),
                       SizedBox(
@@ -990,7 +1052,7 @@ class VR50_50VideoView extends StatelessWidget {
                         height: constraints.maxHeight,
                         child: RTCVideoView(
                           remoteRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         ),
                       ),
                     ],
@@ -1007,7 +1069,7 @@ class VR50_50VideoView extends StatelessWidget {
                         height: constraints.maxHeight,
                         child: RTCVideoView(
                           localRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         ),
                       ),
                       SizedBox(
@@ -1015,7 +1077,7 @@ class VR50_50VideoView extends StatelessWidget {
                         height: constraints.maxHeight,
                         child: RTCVideoView(
                           remoteRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         ),
                       ),
                     ],
@@ -1068,7 +1130,7 @@ class PiPVideoView extends StatelessWidget {
                     children: [
                       RTCVideoView(
                         mainRenderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure main video fills the box
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                       Positioned(
                         right: 20.0,
@@ -1077,11 +1139,11 @@ class PiPVideoView extends StatelessWidget {
                         height: pipSize,
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2), // Frame around the PiP view
+                            border: Border.all(color: Colors.white, width: 2),
                           ),
                           child: RTCVideoView(
                             pipRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure PiP video fills the box
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                           ),
                         ),
                       ),
@@ -1096,7 +1158,7 @@ class PiPVideoView extends StatelessWidget {
                     children: [
                       RTCVideoView(
                         mainRenderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure main video fills the box
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                       Positioned(
                         right: 20.0,
@@ -1105,11 +1167,11 @@ class PiPVideoView extends StatelessWidget {
                         height: pipSize,
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2), // Frame around the PiP view
+                            border: Border.all(color: Colors.white, width: 2),
                           ),
                           child: RTCVideoView(
                             pipRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure PiP video fills the box
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                           ),
                         ),
                       ),
