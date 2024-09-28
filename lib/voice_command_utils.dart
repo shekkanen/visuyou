@@ -1,20 +1,22 @@
+// lib/voice_command_utils.dart
 // Copyright © 2024 Sami Hekkanen. All rights reserved.
 
 import 'package:vosk_flutter/vosk_flutter.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart'; // Import for SharedPreferences
+import 'settings_model.dart'; // Import for SettingsModel
 
 class VoiceCommandUtils {
   final Function(String) onCommandRecognized;
+  final SettingsModel settingsModel; // Add SettingsModel as a parameter
   VoskFlutterPlugin? _vosk;
   Model? _model;
   Recognizer? _recognizer;
   SpeechService? _speechService;
   bool _isListening = false;
 
-  VoiceCommandUtils({required this.onCommandRecognized});
+  VoiceCommandUtils({required this.onCommandRecognized, required this.settingsModel});
 
   Future<void> initSpeech() async {
     // Request microphone permission
@@ -46,15 +48,15 @@ class VoiceCommandUtils {
 
     // Subscribe to recognition events
     _speechService!.onPartial().listen((partialResult) {
-//      if (kDebugMode) {
-//        print('Partial result: $partialResult');
-//      }
+  //      if (kDebugMode) {
+  //        print('Partial result: $partialResult');
+  //      }
     });
 
     _speechService!.onResult().listen((finalResult) async {
-//      if (kDebugMode) {
-//        print('Final result: $finalResult');
-//      }
+  //      if (kDebugMode) {
+  //        print('Final result: $finalResult');
+  //      }
       await _processRecognizedText(finalResult);
     });
 
@@ -90,26 +92,25 @@ class VoiceCommandUtils {
     }
   }
 
-Future<void> _processRecognizedText(String recognizedJson) async {
-  // Parse the JSON result
-  Map<String, dynamic> result = jsonDecode(recognizedJson);
-  String recognizedText = result['text'] ?? '';
+  Future<void> _processRecognizedText(String recognizedJson) async {
+    // Parse the JSON result
+    Map<String, dynamic> result = jsonDecode(recognizedJson);
+    String recognizedText = result['text'] ?? '';
 
-  recognizedText = recognizedText.toLowerCase();
-//  if (kDebugMode) {
-//    print('Recognized command: $recognizedText');
-//  }
+    recognizedText = recognizedText.toLowerCase();
+  //  if (kDebugMode) {
+  //    print('Recognized command: $recognizedText');
+  //  }
 
-  // Get the view change word from SharedPreferences
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String viewChangeWord = prefs.getString('viewChangeWord') ?? 'next';
+    // Get the view change word from SettingsModel
+    String viewChangeWord = settingsModel.selectedViewChangeWord;
 
-  if (recognizedText.contains(viewChangeWord.toLowerCase())) {
-    onCommandRecognized('next');
-  } else {
-//    if (kDebugMode) {
-//      print('Command not recognized');
-//    }
+    if (recognizedText.contains(viewChangeWord.toLowerCase())) {
+      onCommandRecognized('next');
+    } else {
+  //    if (kDebugMode) {
+  //      print('Command not recognized');
+  //    }
+    }
   }
-}
 }

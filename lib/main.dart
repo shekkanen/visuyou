@@ -11,26 +11,27 @@ import 'settings_page.dart'; // Import the Settings page
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'policies.dart'; // Import the privacy policy and terms of service text
-
+import 'package:provider/provider.dart'; // Import provider
+import 'settings_model.dart'; // Import settings model
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
-  final prefs = await SharedPreferences.getInstance(); // Load shared preferences
-  final enableAudio = prefs.getBool('enableAudio') ?? false; // Get audio setting
-  final enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true; // Get voice command setting
 
-  runApp(MaterialApp(
-    title: 'VisuYou',
-    theme: ThemeData(primaryColor: Colors.black),
-    home: CameraStreamingApp(enableAudio: enableAudio, enableVoiceCommands: enableVoiceCommands),
-    debugShowCheckedModeBanner: false,
-  )); // Pass the settings to the app
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => SettingsModel(),
+      child: MaterialApp(
+        title: 'VisuYou',
+        theme: ThemeData(primaryColor: Colors.black),
+        home: const CameraStreamingApp(),
+        debugShowCheckedModeBanner: false,
+      ),
+    ),
+  );
 }
 
 class CameraStreamingApp extends StatefulWidget {
-  final bool enableAudio;
-  final bool enableVoiceCommands;
-  const CameraStreamingApp({super.key, required this.enableAudio, required this.enableVoiceCommands});
+  const CameraStreamingApp({super.key});
 
   @override
   _CameraStreamingAppState createState() => _CameraStreamingAppState();
@@ -52,7 +53,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   String _selectedViewMode = 'Full VR Mode'; // Default selected mode
   final List<String> _viewModes = ['Full VR Mode', '50/50 VR Mode', 'PIP VR Mode', 'PIP VR Mode2'];
 
-  late VoiceCommandUtils _voiceCommandUtils; // Add this line
+  VoiceCommandUtils? _voiceCommandUtils; // Modified to be nullable
+  late SettingsModel _settingsModel; // Add this line
 
   @override
   void initState() {
@@ -65,6 +67,21 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]); // Force portrait mode initially
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _settingsModel = Provider.of<SettingsModel>(context, listen: false);
+
+    // Initialize voice command utils if not already initialized
+    if (_settingsModel.enableVoiceCommands && _voiceCommandUtils == null) {
+      _voiceCommandUtils = VoiceCommandUtils(
+        onCommandRecognized: handleVoiceCommand,
+        settingsModel: _settingsModel,
+      );
+      _voiceCommandUtils!.initSpeech();
+    }
   }
 
   Future<void> _initializePreferences() async {
@@ -83,8 +100,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
 
     // Check if either enableAudio or enableVoiceCommands is true
-    bool enableAudio = widget.enableAudio;
-    bool enableVoiceCommands = widget.enableVoiceCommands;
+    bool enableAudio = _settingsModel.enableAudio;
+    bool enableVoiceCommands = _settingsModel.enableVoiceCommands;
 
     if (enableAudio || enableVoiceCommands) {
       var microphoneStatus = await Permission.microphone.status;
@@ -103,10 +120,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       await _initializeRenderers();
       await _createPeerConnection();
 
-      if (enableVoiceCommands) {
-        _voiceCommandUtils = VoiceCommandUtils(onCommandRecognized: handleVoiceCommand);
-        _voiceCommandUtils.initSpeech();
-      }
+      // Voice command initialization is moved to didChangeDependencies()
     } else {
       _showPermissionAlert();
     }
@@ -135,7 +149,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       return;
     }
 
-    bool enableAudio = widget.enableAudio;
+    bool enableAudio = _settingsModel.enableAudio; // Use settingsModel
 
     try {
       final configuration = {
@@ -701,6 +715,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _peerConnection?.dispose();
+    _voiceCommandUtils?.stopListening(); // Stop voice command utils if initialized
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -710,156 +725,156 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     super.dispose();
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      centerTitle: true,
-      title: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/visuyou_logo.png',
-                height: 36.0, // Increased logo size
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: const Text(
-                  'VisuYou',
-                  style: TextStyle(
-                    fontSize: 22.0, // Larger font size for better readability
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+  @override
+  Widget build(BuildContext context) {
+    /// The build method remains mostly unchanged...
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/visuyou_logo.png',
+                  height: 36.0, // Increased logo size
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 8.0),
+                const Expanded(
+                  child: Text(
+                    'VisuYou',
+                    style: TextStyle(
+                      fontSize: 22.0, // Larger font size for better readability
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
+                    maxLines: 1, // Prevent the title from taking too much space
                   ),
-                  overflow: TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
-                  maxLines: 1, // Prevent the title from taking too much space
+                ),
+              ],
+            ),
+            const SizedBox(height: 6.0),
+            const FittedBox(
+              fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
+              child: Text(
+                'True P2P VR Experience',
+                style: TextStyle(
+                  fontSize: 16.0, // Slightly larger subtitle font
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white70,
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, size: 28), // Increased icon size
+            onPressed: () => _navigateToSettingsPage(context),
           ),
-          const SizedBox(height: 6.0),
-          FittedBox(
-            fit: BoxFit.scaleDown, // Scale down the subtitle to fit properly
-            child: const Text(
-              'True P2P VR Experience',
-              style: TextStyle(
-                fontSize: 16.0, // Slightly larger subtitle font
-                fontWeight: FontWeight.w300,
-                color: Colors.white70,
+          IconButton(
+            icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
+            onPressed: () => _navigateToAboutPage(context),
+          ),
+          DropdownButton<String>(
+            value: _selectedViewMode,
+            dropdownColor: Colors.black87,
+            style: const TextStyle(color: Colors.white),
+            underline: Container(),
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28), // Increased icon size
+            items: _viewModes.map((String mode) {
+              return DropdownMenuItem<String>(
+                value: mode,
+                child: Text(mode),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue == null) return;
+              setState(() {
+                _selectedViewMode = newValue;
+              });
+              switchViewMode(newValue);
+            },
+          ),
+          const SizedBox(width: 12),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.10, // Adjust the opacity to make it subtle
+              child: Image.asset(
+                'assets/visuyou.png', // Path to the background image
+                fit: BoxFit.cover, // Cover the entire background
               ),
             ),
           ),
-        ],
-      ),
-      backgroundColor: Colors.black,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings, size: 28), // Increased icon size
-          onPressed: () => _navigateToSettingsPage(context),
-        ),
-        IconButton(
-          icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
-          onPressed: () => _navigateToAboutPage(context),
-        ),
-        DropdownButton<String>(
-          value: _selectedViewMode,
-          dropdownColor: Colors.black87,
-          style: const TextStyle(color: Colors.white),
-          underline: Container(),
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28), // Increased icon size
-          items: _viewModes.map((String mode) {
-            return DropdownMenuItem<String>(
-              value: mode,
-              child: Text(mode),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            if (newValue == null) return;
-            setState(() {
-              _selectedViewMode = newValue;
-            });
-            switchViewMode(newValue);
-          },
-        ),
-        const SizedBox(width: 12),
-      ],
-    ),
-    body: Stack(
-      children: [
-        // Background image
-        Positioned.fill(
-          child: Opacity(
-            opacity: 0.10, // Adjust the opacity to make it subtle
-            child: Image.asset(
-              'assets/visuyou.png', // Path to the background image
-              fit: BoxFit.cover, // Cover the entire background
-            ),
-          ),
-        ),
 
-        // All other UI components come here
-        _renderersInitialized
-            ? Column(
-                children: [
-                  Expanded(
-                    child: RTCVideoView(
-                      _localRenderer,
-                      mirror: true,
-                    ),
-                  ),
-                  Expanded(
-                    child: RTCVideoView(
-                      _remoteRenderer,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0), // Increased padding
-                    child: _connectionCode.isNotEmpty
-                        ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                        : _connecting
-                            ? const CircularProgressIndicator()
-                            : const Text(
-                                'No data to display',
-                                style: TextStyle(fontSize: 16), // Increased text size
-                              ),
-                  ),
-                  SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                              textStyle: const TextStyle(fontSize: 18), // Larger text size
-                            ),
-                            onPressed: _isOfferer || _connecting ? null : _createOffer,
-                            child: const Text('Create Offer'),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
-                              textStyle: const TextStyle(fontSize: 18), // Larger text size
-                            ),
-                            onPressed: _connecting ? null : _scanQRCode,
-                            child: const Text('Scan QR Code'),
-                          ),
-                        ],
+          // All other UI components come here
+          _renderersInitialized
+              ? Column(
+                  children: [
+                    Expanded(
+                      child: RTCVideoView(
+                        _localRenderer,
+                        mirror: true,
                       ),
                     ),
-                  ),
-                ],
-              )
-            : const Center(child: CircularProgressIndicator()),
+                    Expanded(
+                      child: RTCVideoView(
+                        _remoteRenderer,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0), // Increased padding
+                      child: _connectionCode.isNotEmpty
+                          ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                          : _connecting
+                              ? const CircularProgressIndicator()
+                              : const Text(
+                                  'No data to display',
+                                  style: TextStyle(fontSize: 16), // Increased text size
+                                ),
+                    ),
+                    SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                                textStyle: const TextStyle(fontSize: 18), // Larger text size
+                              ),
+                              onPressed: _isOfferer || _connecting ? null : _createOffer,
+                              child: const Text('Create Offer'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Larger button size
+                                textStyle: const TextStyle(fontSize: 18), // Larger text size
+                              ),
+                              onPressed: _connecting ? null : _scanQRCode,
+                              child: const Text('Scan QR Code'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
   }
-
 
   /// Navigates to the Settings page.
   void _navigateToSettingsPage(BuildContext context) {
