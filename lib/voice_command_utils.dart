@@ -48,15 +48,15 @@ class VoiceCommandUtils {
 
     // Subscribe to recognition events
     _speechService!.onPartial().listen((partialResult) {
-  //      if (kDebugMode) {
-  //        print('Partial result: $partialResult');
-  //      }
+        if (kDebugMode) {
+          print('Partial result: $partialResult');
+        }
     });
 
     _speechService!.onResult().listen((finalResult) async {
-  //      if (kDebugMode) {
-  //        print('Final result: $finalResult');
-  //      }
+        if (kDebugMode) {
+          print('Final result: $finalResult');
+        }
       await _processRecognizedText(finalResult);
     });
 
@@ -92,25 +92,33 @@ class VoiceCommandUtils {
     }
   }
 
-  Future<void> _processRecognizedText(String recognizedJson) async {
-    // Parse the JSON result
-    Map<String, dynamic> result = jsonDecode(recognizedJson);
-    String recognizedText = result['text'] ?? '';
+Future<void> _processRecognizedText(String recognizedJson) async {
+  // Parse the JSON result
+  Map<String, dynamic> result = jsonDecode(recognizedJson);
+  String recognizedText = result['text'] ?? '';
 
-    recognizedText = recognizedText.toLowerCase();
-  //  if (kDebugMode) {
-  //    print('Recognized command: $recognizedText');
-  //  }
+  recognizedText = recognizedText.toLowerCase();
 
-    // Get the view change word from SettingsModel
-    String viewChangeWord = settingsModel.selectedViewChangeWord;
-
-    if (recognizedText.contains(viewChangeWord.toLowerCase())) {
-      onCommandRecognized('next');
-    } else {
-  //    if (kDebugMode) {
-  //      print('Command not recognized');
-  //    }
+  // Check for voice commands based on settings
+  if (recognizedText.contains(settingsModel.viewNextWord.toLowerCase())) {
+    onCommandRecognized('next');
+  } else if (recognizedText.contains(settingsModel.viewBackWord.toLowerCase())) {
+    onCommandRecognized('back');
+  } else if (recognizedText.contains(settingsModel.enableAudioWord.toLowerCase())) {
+    onCommandRecognized('toggle_audio');
+  } else if (recognizedText.contains(settingsModel.fullVrModeWord.toLowerCase())) {
+    onCommandRecognized('full_vr_mode');
+  } else if (recognizedText.contains(settingsModel.vr50_50ModeWord.toLowerCase())) {
+    onCommandRecognized('50_50_vr_mode');
+  } else if (recognizedText.contains(settingsModel.pipVrModeWord.toLowerCase())) {
+    onCommandRecognized('pip_vr_mode');
+  } else if (recognizedText.contains(settingsModel.pipVrMode2Word.toLowerCase())) {
+    onCommandRecognized('pip_vr_mode2');
+  } else {
+    if (kDebugMode) {
+      print('Command not recognized: $recognizedText');
     }
   }
+}
+
 }

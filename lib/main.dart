@@ -509,6 +509,39 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         _selectedViewMode = nextMode;
       });
       switchViewMode(nextMode);
+    } else if (command == 'back') {
+      int currentIndex = _viewModes.indexOf(_selectedViewMode);
+      int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
+      String prevMode = _viewModes[prevIndex];
+      setState(() {
+        _selectedViewMode = prevMode;
+      });
+      switchViewMode(prevMode);
+    } else if (command == 'toggle_audio') {
+      // Toggle audio
+      bool newEnableAudio = !_settingsModel.enableAudio;
+      _settingsModel.updateEnableAudio(newEnableAudio);
+      _updateAudioTracks(); // Ensure audio tracks are updated
+    } else if (command == 'full_vr_mode') {
+      setState(() {
+        _selectedViewMode = 'Full VR Mode';
+      });
+      switchViewMode('Full VR Mode');
+    } else if (command == '50_50_vr_mode') {
+      setState(() {
+        _selectedViewMode = '50/50 VR Mode';
+      });
+      switchViewMode('50/50 VR Mode');
+    } else if (command == 'pip_vr_mode') {
+      setState(() {
+        _selectedViewMode = 'PIP VR Mode';
+      });
+      switchViewMode('PIP VR Mode');
+    } else if (command == 'pip_vr_mode2') {
+      setState(() {
+        _selectedViewMode = 'PIP VR Mode2';
+      });
+      switchViewMode('PIP VR Mode2');
     }
   }
 

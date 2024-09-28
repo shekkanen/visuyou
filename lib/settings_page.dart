@@ -10,8 +10,14 @@ import 'settings_model.dart'; // Import settings model
 class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
-  // New: View Change Words
+  // View Change Words
   static const List<String> _viewChangeWords = ['next', 'green', 'red', 'one', 'six'];
+  static const List<String> _backWords = ['back', 'previous', 'reverse', 'left', 'right'];
+  static const List<String> _enableAudioWords = ['enable audio', 'audio on', 'mute', 'unmute'];
+  static const List<String> _fullVrModeWords = ['full vr mode', 'full mode', 'full screen'];
+  static const List<String> _vr50_50ModeWords = ['50/50 vr mode', 'split screen', 'half mode'];
+  static const List<String> _pipVrModeWords = ['pip vr mode', 'picture in picture', 'pip mode'];
+  static const List<String> _pipVrMode2Words = ['pip vr mode2', 'pip mode2', 'alternate pip'];
 
   void _navigateToPolicyPage(BuildContext context, String title, String content) {
     Navigator.push(
@@ -44,14 +50,14 @@ class SettingsPage extends StatelessWidget {
             onChanged: (value) => settingsModel.updateEnableVoiceCommands(value),
           ),
           ListTile(
-            title: const Text('View Change Word'),
-            subtitle: Text('Current: ${settingsModel.selectedViewChangeWord}'),
+            title: const Text('View Next Word'),
+            subtitle: Text('Current: ${settingsModel.viewNextWord}'),
             onTap: () async {
               String? selectedWord = await showDialog<String>(
                 context: context,
                 builder: (BuildContext context) {
                   return SimpleDialog(
-                    title: const Text('Select View Change Word'),
+                    title: const Text('Select View Next Word'),
                     children: _viewChangeWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
@@ -64,7 +70,157 @@ class SettingsPage extends StatelessWidget {
                 },
               );
               if (selectedWord != null) {
-                await settingsModel.updateViewChangeWord(selectedWord);
+                await settingsModel.updateViewNextWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('View Back Word'),
+            subtitle: Text('Current: ${settingsModel.viewBackWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select View Back Word'),
+                    children: _backWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateViewBackWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('Enable Audio Word'),
+            subtitle: Text('Current: ${settingsModel.enableAudioWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select Enable Audio Word'),
+                    children: _enableAudioWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateEnableAudioWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('Full VR Mode Word'),
+            subtitle: Text('Current: ${settingsModel.fullVrModeWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select Full VR Mode Word'),
+                    children: _fullVrModeWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateFullVrModeWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('50/50 VR Mode Word'),
+            subtitle: Text('Current: ${settingsModel.vr50_50ModeWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select 50/50 VR Mode Word'),
+                    children: _vr50_50ModeWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateVr50_50ModeWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('PiP VR Mode Word'),
+            subtitle: Text('Current: ${settingsModel.pipVrModeWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select PiP VR Mode Word'),
+                    children: _pipVrModeWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updatePipVrModeWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('PiP VR Mode2 Word'),
+            subtitle: Text('Current: ${settingsModel.pipVrMode2Word}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select PiP VR Mode2 Word'),
+                    children: _pipVrMode2Words.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updatePipVrMode2Word(selectedWord);
               }
             },
           ),
