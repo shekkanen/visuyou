@@ -11,7 +11,7 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
   // New: View Change Words
-  final List<String> _viewChangeWords = ['next', 'green', 'red', 'one', 'six'];
+  static const List<String> _viewChangeWords = ['next', 'green', 'red', 'one', 'six'];
 
   void _navigateToPolicyPage(BuildContext context, String title, String content) {
     Navigator.push(
