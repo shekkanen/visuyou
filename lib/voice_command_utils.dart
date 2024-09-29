@@ -18,6 +18,18 @@ class VoiceCommandUtils {
   SpeechService? _speechService;
   bool _isListening = false;
 
+List<String> _getGrammar() {
+  return [
+    settingsModel.viewNextWord.toLowerCase(),
+    settingsModel.viewBackWord.toLowerCase(),
+    settingsModel.enableAudioWord.toLowerCase(),
+    settingsModel.fullVrModeWord.toLowerCase(),
+    settingsModel.vr50_50ModeWord.toLowerCase(),
+    settingsModel.pipVrModeWord.toLowerCase(),
+    settingsModel.pipVrMode2Word.toLowerCase(),
+  ];
+}
+
   VoiceCommandUtils({required this.onCommandRecognized, required this.settingsModel});
 
   Future<void> initSpeech() async {
@@ -42,24 +54,14 @@ class VoiceCommandUtils {
     // Create the model
     _model = await _vosk!.createModel(modelPath);
 
-// List<String> _getGrammar() {
-//   return [
-//     settingsModel.viewNextWord.toLowerCase(),
-//     settingsModel.viewBackWord.toLowerCase(),
-//     settingsModel.enableAudioWord.toLowerCase(),
-//     settingsModel.fullVrModeWord.toLowerCase(),
-//     settingsModel.vr50_50ModeWord.toLowerCase(),
-//     settingsModel.pipVrModeWord.toLowerCase(),
-//     settingsModel.pipVrMode2Word.toLowerCase(),
-//   ];
-// }
+
   
     // Create the recognizer
   _recognizer = await _vosk!.createRecognizer(
     model: _model!,
     sampleRate: 16000,
-  //  grammar: _getGrammar());
-  );
+    grammar: _getGrammar());
+ 
 
 
 
@@ -141,5 +143,70 @@ if (recognizedText == settingsModel.viewNextWord.toLowerCase()) {
   }
 }
 }
+
+
+Future<void> updateGrammar() async {
+  if (_speechService != null) {
+    // Stop and dispose the speech service
+    await _speechService!.stop();
+    await _speechService!.cancel();
+    _speechService = null;
+  }
+
+  if (_recognizer != null) {
+    // Dispose the old recognizer
+    await _recognizer!.dispose();
+    _recognizer = null;
+  }
+
+  // Create new recognizer with updated grammar
+  _recognizer = await _vosk!.createRecognizer(
+    model: _model!,
+    sampleRate: 16000,
+    grammar: _getGrammar(),
+  );
+
+  // Reinitialize the speech service
+  _speechService = await _vosk!.initSpeechService(_recognizer!);
+
+  // Subscribe to recognition events
+  _speechService!.onPartial().listen((partialResult) {
+    if (kDebugMode) {
+      print('Partial result: $partialResult');
+    }
+  });
+
+  _speechService!.onResult().listen((finalResult) async {
+    if (kDebugMode) {
+      print('Final result: $finalResult');
+    }
+    await _processRecognizedText(finalResult);
+  });
+
+  // Start listening again
+  startListening();
+}
+
+Future<void> dispose() async {
+  if (_speechService != null) {
+    await _speechService!.stop();
+    await _speechService!.cancel();
+    _speechService = null;
+  }
+
+  if (_recognizer != null) {
+    await _recognizer!.dispose();
+    _recognizer = null;
+  }
+
+  if (_model != null) {
+    _model!.dispose(); // Removed 'await' here
+    _model = null;
+  }
+
+  _isListening = false;
+}
+
+
 
 }

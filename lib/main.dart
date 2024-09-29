@@ -59,26 +59,40 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     'PIP VR Mode',
     'PIP VR Mode2'
   ];
-
+  Map<String, String> _previousVoiceCommands = {};
   VoiceCommandUtils? _voiceCommandUtils; // Modified to be nullable
   late SettingsModel _settingsModel; // Add this line
 
-  @override
-  void initState() {
-    super.initState();
-    _initializePreferences(); // Initialize preferences
-    _checkFirstLaunch(); // Check if the user has accepted the terms
-    _localRenderer = RTCVideoRenderer();
-    _remoteRenderer = RTCVideoRenderer();
-    _requestPermissions();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]); // Force portrait mode initially
+@override
+void initState() {
+  super.initState();
+  _initializePreferences(); // Initialize preferences
+  _checkFirstLaunch(); // Check if the user has accepted the terms
 
-    // Initialize _settingsModel and add listener
-    _settingsModel = Provider.of<SettingsModel>(context, listen: false);
-    _settingsModel.addListener(_onSettingsChanged);
-  }
+  _localRenderer = RTCVideoRenderer();
+  _remoteRenderer = RTCVideoRenderer();
+
+  // Initialize _settingsModel and add listener
+  _settingsModel = Provider.of<SettingsModel>(context, listen: false);
+  _settingsModel.addListener(_onSettingsChanged);
+
+  // Initialize previous voice commands after _settingsModel is initialized
+  _previousVoiceCommands = {
+    'viewNextWord': _settingsModel.viewNextWord,
+    'viewBackWord': _settingsModel.viewBackWord,
+    'enableAudioWord': _settingsModel.enableAudioWord,
+    'fullVrModeWord': _settingsModel.fullVrModeWord,
+    'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
+    'pipVrModeWord': _settingsModel.pipVrModeWord,
+    'pipVrMode2Word': _settingsModel.pipVrMode2Word,
+  };
+
+  _requestPermissions();
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]); // Force portrait mode initially
+}
 
   Future<void> _initializePreferences() async {
     prefs = await SharedPreferences.getInstance();
@@ -499,51 +513,59 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     }
   }
 
-  /// Handles recognized voice commands.
-  void handleVoiceCommand(String command) {
-    if (command == 'next') {
-      int currentIndex = _viewModes.indexOf(_selectedViewMode);
-      int nextIndex = (currentIndex + 1) % _viewModes.length;
-      String nextMode = _viewModes[nextIndex];
-      setState(() {
-        _selectedViewMode = nextMode;
-      });
-      switchViewMode(nextMode);
-    } else if (command == 'back') {
-      int currentIndex = _viewModes.indexOf(_selectedViewMode);
-      int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
-      String prevMode = _viewModes[prevIndex];
-      setState(() {
-        _selectedViewMode = prevMode;
-      });
-      switchViewMode(prevMode);
-    } else if (command == 'toggle_audio') {
-      // Toggle audio
-      bool newEnableAudio = !_settingsModel.enableAudio;
-      _settingsModel.updateEnableAudio(newEnableAudio);
-      _updateAudioTracks(); // Ensure audio tracks are updated
-    } else if (command == 'full_vr_mode') {
-      setState(() {
-        _selectedViewMode = 'Full VR Mode';
-      });
-      switchViewMode('Full VR Mode');
-    } else if (command == '50_50_vr_mode') {
-      setState(() {
-        _selectedViewMode = '50/50 VR Mode';
-      });
-      switchViewMode('50/50 VR Mode');
-    } else if (command == 'pip_vr_mode') {
-      setState(() {
-        _selectedViewMode = 'PIP VR Mode';
-      });
-      switchViewMode('PIP VR Mode');
-    } else if (command == 'pip_vr_mode2') {
-      setState(() {
-        _selectedViewMode = 'PIP VR Mode2';
-      });
-      switchViewMode('PIP VR Mode2');
+void handleVoiceCommand(String command) {
+  command = command.toLowerCase();
+
+  if (command == _settingsModel.viewNextWord.toLowerCase()) {
+    // Handle 'next' command
+    int currentIndex = _viewModes.indexOf(_selectedViewMode);
+    int nextIndex = (currentIndex + 1) % _viewModes.length;
+    String nextMode = _viewModes[nextIndex];
+    setState(() {
+      _selectedViewMode = nextMode;
+    });
+    switchViewMode(nextMode);
+  } else if (command == _settingsModel.viewBackWord.toLowerCase()) {
+    // Handle 'back' command
+    int currentIndex = _viewModes.indexOf(_selectedViewMode);
+    int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
+    String prevMode = _viewModes[prevIndex];
+    setState(() {
+      _selectedViewMode = prevMode;
+    });
+    switchViewMode(prevMode);
+  } else if (command == _settingsModel.enableAudioWord.toLowerCase()) {
+    // Toggle audio
+    bool newEnableAudio = !_settingsModel.enableAudio;
+    _settingsModel.updateEnableAudio(newEnableAudio);
+    _updateAudioTracks(); // Ensure audio tracks are updated
+  } else if (command == _settingsModel.fullVrModeWord.toLowerCase()) {
+    setState(() {
+      _selectedViewMode = 'Full VR Mode';
+    });
+    switchViewMode('Full VR Mode');
+  } else if (command == _settingsModel.vr50_50ModeWord.toLowerCase()) {
+    setState(() {
+      _selectedViewMode = '50/50 VR Mode';
+    });
+    switchViewMode('50/50 VR Mode');
+  } else if (command == _settingsModel.pipVrModeWord.toLowerCase()) {
+    setState(() {
+      _selectedViewMode = 'PIP VR Mode';
+    });
+    switchViewMode('PIP VR Mode');
+  } else if (command == _settingsModel.pipVrMode2Word.toLowerCase()) {
+    setState(() {
+      _selectedViewMode = 'PIP VR Mode2';
+    });
+    switchViewMode('PIP VR Mode2');
+  } else {
+    if (kDebugMode) {
+      print('Unknown command received: $command');
     }
   }
+}
+
 
   /// Switches the view mode based on the selected mode.
   void switchViewMode(String mode) {
@@ -755,32 +777,60 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Handles changes in the settings model.
-  void _onSettingsChanged() {
-    // Handle enableVoiceCommands changes
-    if (_settingsModel.enableVoiceCommands) {
-      if (_voiceCommandUtils == null) {
-        _voiceCommandUtils = VoiceCommandUtils(
-          onCommandRecognized: handleVoiceCommand,
-          settingsModel: _settingsModel,
-        );
-        _voiceCommandUtils!.initSpeech(); // Ignoring Future
-      }
+void _onSettingsChanged() {
+  // Handle enableVoiceCommands changes
+  if (_settingsModel.enableVoiceCommands) {
+    if (_voiceCommandUtils == null) {
+      _voiceCommandUtils = VoiceCommandUtils(
+        onCommandRecognized: handleVoiceCommand,
+        settingsModel: _settingsModel,
+      );
+      _voiceCommandUtils!.initSpeech(); // Ignoring Future
     } else {
-      if (_voiceCommandUtils != null) {
-        _voiceCommandUtils!.stopListening();
-        _voiceCommandUtils = null;
+      // Check if voice command words have changed
+      bool voiceCommandsChanged = false;
+      if (_previousVoiceCommands['viewNextWord'] != _settingsModel.viewNextWord ||
+          _previousVoiceCommands['viewBackWord'] != _settingsModel.viewBackWord ||
+          _previousVoiceCommands['enableAudioWord'] != _settingsModel.enableAudioWord ||
+          _previousVoiceCommands['fullVrModeWord'] != _settingsModel.fullVrModeWord ||
+          _previousVoiceCommands['vr50_50ModeWord'] != _settingsModel.vr50_50ModeWord ||
+          _previousVoiceCommands['pipVrModeWord'] != _settingsModel.pipVrModeWord ||
+          _previousVoiceCommands['pipVrMode2Word'] != _settingsModel.pipVrMode2Word) {
+        voiceCommandsChanged = true;
+      }
+
+      if (voiceCommandsChanged) {
+        _voiceCommandUtils!.updateGrammar();
+
+        // Update _previousVoiceCommands
+        _previousVoiceCommands = {
+          'viewNextWord': _settingsModel.viewNextWord,
+          'viewBackWord': _settingsModel.viewBackWord,
+          'enableAudioWord': _settingsModel.enableAudioWord,
+          'fullVrModeWord': _settingsModel.fullVrModeWord,
+          'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
+          'pipVrModeWord': _settingsModel.pipVrModeWord,
+          'pipVrMode2Word': _settingsModel.pipVrMode2Word,
+        };
       }
     }
-
-    // Handle enableAudio changes
-    if (_peerConnection != null) {
-      _updateAudioTracks(); // Call the async function
+  } else {
+    if (_voiceCommandUtils != null) {
+      _voiceCommandUtils!.stopListening();
+      _voiceCommandUtils = null;
     }
-
-    setState(() {
-      // Update UI if necessary
-    });
   }
+
+  // Handle enableAudio changes
+  if (_peerConnection != null) {
+    _updateAudioTracks(); // Call the async function
+  }
+
+  setState(() {
+    // Update UI if necessary
+  });
+}
+
 
   /// Updates the audio tracks based on the enableAudio setting.
 void _updateAudioTracks() async {
@@ -799,21 +849,24 @@ void _updateAudioTracks() async {
 }
 
 
-  @override
-  void dispose() {
-    _localRenderer.dispose();
-    _remoteRenderer.dispose();
-    _peerConnection?.dispose();
-    _voiceCommandUtils?.stopListening(); // Stop voice command utils if initialized
-    _settingsModel.removeListener(_onSettingsChanged); // Remove settings listener
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]); // Reset to dynamic orientation on dispose
-    super.dispose();
-  }
+@override
+void dispose() {
+  _localRenderer.dispose();
+  _remoteRenderer.dispose();
+  _peerConnection?.dispose();
+
+  _voiceCommandUtils?.dispose(); // Dispose voice command utils if initialized
+
+  _settingsModel.removeListener(_onSettingsChanged); // Remove settings listener
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+  ]); // Reset to dynamic orientation on dispose
+  super.dispose();
+}
+
 
   @override
   Widget build(BuildContext context) {
