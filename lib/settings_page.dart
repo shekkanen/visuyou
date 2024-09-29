@@ -11,13 +11,25 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
   // View Change Words
-  static const List<String> _viewChangeWords = ['next', 'green', 'red', 'one', 'six'];
-  static const List<String> _backWords = ['back', 'previous', 'reverse', 'left', 'right'];
-  static const List<String> _enableAudioWords = ['enable audio', 'audio on', 'mute', 'unmute'];
-  static const List<String> _fullVrModeWords = ['full vr mode', 'full mode', 'full screen'];
-  static const List<String> _vr50_50ModeWords = ['50/50 vr mode', 'split screen', 'half mode'];
-  static const List<String> _pipVrModeWords = ['pip vr mode', 'picture in picture', 'pip mode'];
-  static const List<String> _pipVrMode2Words = ['pip vr mode2', 'pip mode2', 'alternate pip'];
+// View Change Words
+static const List<String> _viewChangeWords = ['next', 'forward', 'advance', 'step forward', 'move ahead'];
+static const List<String> _backWords = ['back', 'previous', 'go back', 'undo', 'reverse'];
+
+// Enable Audio Words
+static const List<String> _enableAudioWords = ['audio', 'sound'];
+
+// Full VR Mode
+static const List<String> _fullVrModeWords = ['enter full vr', 'full screen', 'immersive mode', 'all in', 'max view'];
+
+// 50/50 VR Mode
+static const List<String> _vr50_50ModeWords = ['split view', 'half screen', 'dual view', '50/50 view', 'half vr'];
+
+// Picture in Picture VR Mode
+static const List<String> _pipVrModeWords = ['enter pip mode', 'small screen', 'picture in picture', 'tiny view'];
+
+// Alternate Picture in Picture VR Mode
+static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'switch pip mode', 'alternate view'];
+
 
   void _navigateToPolicyPage(BuildContext context, String title, String content) {
     Navigator.push(
