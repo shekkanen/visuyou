@@ -239,7 +239,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       if (backCameraId != null) {
         // Get video stream from back camera using the device ID
         final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': enableAudio, // Enable audio based on the setting
+          'audio': true, 
           'video': {
             'deviceId': backCameraId, // Pass the device ID directly as a string
           },
@@ -783,20 +783,21 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Updates the audio tracks based on the enableAudio setting.
-  void _updateAudioTracks() async {
-    try {
-      var senders = await _peerConnection!.getSenders();
-      for (var sender in senders) {
-        if (sender.track != null && sender.track!.kind == 'audio') {
-          sender.track!.enabled = _settingsModel.enableAudio;
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error updating audio tracks: $e');
+void _updateAudioTracks() async {
+  try {
+    var senders = await _peerConnection!.getSenders();
+    for (var sender in senders) {
+      if (sender.track != null && sender.track!.kind == 'audio') {
+        sender.track!.enabled = _settingsModel.enableAudio;
       }
     }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error updating audio tracks: $e');
+    }
   }
+}
+
 
   @override
   void dispose() {
