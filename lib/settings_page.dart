@@ -12,23 +12,23 @@ class SettingsPage extends StatelessWidget {
 
   // View Change Words
 // View Change Words
-static const List<String> _viewChangeWords = ['next', 'forward', 'advance', 'step forward', 'move ahead'];
-static const List<String> _backWords = ['back', 'previous', 'go back', 'undo', 'reverse'];
+static const List<String> viewChangeWords = ['next', 'forward'];
+static const List<String> backWords = ['back', 'previous'];
 
 // Enable Audio Words
-static const List<String> _enableAudioWords = ['audio', 'sound'];
+static const List<String> enableAudioWords = ['audio', 'sound'];
 
 // Full VR Mode
-static const List<String> _fullVrModeWords = ['enter full vr', 'full screen', 'immersive mode', 'all in', 'max view'];
+static const List<String> fullVrModeWords = ['mode one','screen one'];
 
 // 50/50 VR Mode
-static const List<String> _vr50_50ModeWords = ['split view', 'half screen', 'dual view', '50/50 view', 'half vr'];
+static const List<String> vr50_50ModeWords = ['mode two', 'screen two'];
 
 // Picture in Picture VR Mode
-static const List<String> _pipVrModeWords = ['enter pip mode', 'small screen', 'picture in picture', 'tiny view'];
+static const List<String> pipVrModeWords = ['mode three', 'screen three'];
 
 // Alternate Picture in Picture VR Mode
-static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'switch pip mode', 'alternate view'];
+static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
 
 
   void _navigateToPolicyPage(BuildContext context, String title, String content) {
@@ -70,7 +70,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select View Next Word'),
-                    children: _viewChangeWords.map((String word) {
+                    children: viewChangeWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -95,7 +95,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select View Back Word'),
-                    children: _backWords.map((String word) {
+                    children: backWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -120,7 +120,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select Enable Audio Word'),
-                    children: _enableAudioWords.map((String word) {
+                    children: enableAudioWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -145,7 +145,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select Full VR Mode Word'),
-                    children: _fullVrModeWords.map((String word) {
+                    children: fullVrModeWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -170,7 +170,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select 50/50 VR Mode Word'),
-                    children: _vr50_50ModeWords.map((String word) {
+                    children: vr50_50ModeWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -195,7 +195,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select PiP VR Mode Word'),
-                    children: _pipVrModeWords.map((String word) {
+                    children: pipVrModeWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -220,7 +220,7 @@ static const List<String> _pipVrMode2Words = ['alternate pip', 'second pip', 'sw
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select PiP VR Mode2 Word'),
-                    children: _pipVrMode2Words.map((String word) {
+                    children: pipVrMode2Words.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);

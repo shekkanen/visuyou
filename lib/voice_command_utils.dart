@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'settings_model.dart'; // Import for SettingsModel
-
+import 'settings_page.dart';
 
 
 class VoiceCommandUtils {
@@ -20,13 +20,13 @@ class VoiceCommandUtils {
 
 List<String> _getGrammar() {
   return [
-    settingsModel.viewNextWord.toLowerCase(),
-    settingsModel.viewBackWord.toLowerCase(),
-    settingsModel.enableAudioWord.toLowerCase(),
-    settingsModel.fullVrModeWord.toLowerCase(),
-    settingsModel.vr50_50ModeWord.toLowerCase(),
-    settingsModel.pipVrModeWord.toLowerCase(),
-    settingsModel.pipVrMode2Word.toLowerCase(),
+    ...SettingsPage.viewChangeWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.backWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.enableAudioWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.fullVrModeWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.vr50_50ModeWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.pipVrModeWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.pipVrMode2Words.map((word) => word.toLowerCase()),
   ];
 }
 
