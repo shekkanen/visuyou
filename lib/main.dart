@@ -76,6 +76,10 @@ void initState() {
   _settingsModel = Provider.of<SettingsModel>(context, listen: false);
   _settingsModel.addListener(_onSettingsChanged);
 
+    // Wait for settings to load before proceeding
+  _settingsModel.settingsLoaded.then((_) {
+    _requestPermissions(); // Proceed with the rest after settings are loaded
+
   // Initialize previous voice commands after _settingsModel is initialized
   _previousVoiceCommands = {
     'viewNextWord': _settingsModel.viewNextWord,
@@ -87,7 +91,9 @@ void initState() {
     'pipVrMode2Word': _settingsModel.pipVrMode2Word,
   };
 
-  _requestPermissions();
+  // Manually trigger the settings changed handler
+    _onSettingsChanged();
+  });
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

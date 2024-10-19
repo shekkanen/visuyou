@@ -3,6 +3,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class SettingsModel extends ChangeNotifier {
   bool _enableAudio = false;
@@ -29,6 +30,8 @@ class SettingsModel extends ChangeNotifier {
   String get pipVrModeWord => _pipVrModeWord;
   String get pipVrMode2Word => _pipVrMode2Word;
 
+  final Completer<void> _settingsLoadedCompleter = Completer<void>();
+
   SettingsModel() {
     _loadSettings();
   }
@@ -46,8 +49,12 @@ class SettingsModel extends ChangeNotifier {
     _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'pip vr mode';
     _pipVrMode2Word = prefs.getString('pipVrMode2Word') ?? 'pip vr mode2';
 
+    _settingsLoadedCompleter.complete(); // Signal that settings are loaded
     notifyListeners();
   }
+
+  
+  Future<void> get settingsLoaded => _settingsLoadedCompleter.future;
 
   // Update methods
 
