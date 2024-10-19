@@ -123,25 +123,25 @@ Future<void> _processRecognizedText(String recognizedJson) async {
   recognizedText = recognizedText.toLowerCase();
 
   // Check for voice commands based on settings
-if (recognizedText == settingsModel.viewNextWord.toLowerCase()) {
-  onCommandRecognized('next');
-} else if (recognizedText == settingsModel.viewBackWord.toLowerCase()) {
-  onCommandRecognized('back');
-} else if (recognizedText == settingsModel.enableAudioWord.toLowerCase()) {
-  onCommandRecognized('toggle_audio');
-} else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase()) {
-  onCommandRecognized('full_vr_mode');
-} else if (recognizedText == settingsModel.vr50_50ModeWord.toLowerCase()) {
-  onCommandRecognized('50_50_vr_mode');
-} else if (recognizedText == settingsModel.pipVrModeWord.toLowerCase()) {
-  onCommandRecognized('pip_vr_mode');
-} else if (recognizedText == settingsModel.pipVrMode2Word.toLowerCase()) {
-  onCommandRecognized('pip_vr_mode2');
-} else {
-  if (kDebugMode) {
-    print('Command not recognized: $recognizedText');
+  if (recognizedText == settingsModel.viewNextWord.toLowerCase()) {
+    onCommandRecognized('view_next');
+  } else if (recognizedText == settingsModel.viewBackWord.toLowerCase()) {
+    onCommandRecognized('view_back');
+  } else if (recognizedText == settingsModel.enableAudioWord.toLowerCase()) {
+    onCommandRecognized('toggle_audio');
+  } else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase()) {
+    onCommandRecognized('full_vr_mode');
+  } else if (recognizedText == settingsModel.vr50_50ModeWord.toLowerCase()) {
+    onCommandRecognized('vr50_50_mode');
+  } else if (recognizedText == settingsModel.pipVrModeWord.toLowerCase()) {
+    onCommandRecognized('pip_vr_mode');
+  } else if (recognizedText == settingsModel.pipVrMode2Word.toLowerCase()) {
+    onCommandRecognized('pip_vr_mode2');
+  } else {
+    if (kDebugMode) {
+      print('Command not recognized: $recognizedText');
+    }
   }
-}
 }
 
 

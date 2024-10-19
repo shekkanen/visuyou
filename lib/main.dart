@@ -179,21 +179,17 @@ void initState() {
 
       _peerConnection = await createPeerConnection(configuration);
 
-      _peerConnection!.onIceConnectionState =
-          (RTCIceConnectionState state) {
+      _peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
         if (kDebugMode) {
           print('ICE Connection State: $state');
         }
-        if (state ==
-            RTCIceConnectionState.RTCIceConnectionStateConnected) {
+        if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
           setState(() {
             _connecting = false;
           });
           _showInfoSnackBar('Connected successfully!');
-        } else if (state ==
-                RTCIceConnectionState.RTCIceConnectionStateFailed ||
-            state ==
-                RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
+        } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
+            state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
           setState(() {
             _connecting = false;
           });
@@ -233,13 +229,11 @@ void initState() {
         }
       };
 
-      _peerConnection!.onIceGatheringState =
-          (RTCIceGatheringState state) {
+      _peerConnection!.onIceGatheringState = (RTCIceGatheringState state) {
         if (kDebugMode) {
           print('ICE Gathering State: $state');
         }
-        if (state ==
-            RTCIceGatheringState.RTCIceGatheringStateComplete) {
+        if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
           _sendQRCode();
         }
       };
@@ -249,8 +243,7 @@ void initState() {
       String? backCameraId;
 
       for (var device in mediaDevices) {
-        if (device.kind == 'videoinput' &&
-            device.label.toLowerCase().contains('back')) {
+        if (device.kind == 'videoinput' && device.label.toLowerCase().contains('back')) {
           backCameraId = device.deviceId;
           break;
         }
@@ -304,8 +297,7 @@ void initState() {
     }
 
     try {
-      RTCSessionDescription? localDescription =
-          await _peerConnection!.getLocalDescription();
+      RTCSessionDescription? localDescription = await _peerConnection!.getLocalDescription();
       if (localDescription == null) {
         if (kDebugMode) {
           print("Local description is not set");
@@ -314,8 +306,7 @@ void initState() {
       }
 
       // Prepare ICE candidates as a list of maps
-      List<Map<String, dynamic>> iceCandidates =
-          _gatheredIceCandidates.map((candidate) {
+      List<Map<String, dynamic>> iceCandidates = _gatheredIceCandidates.map((candidate) {
         return {
           'candidate': candidate.candidate,
           'sdpMid': candidate.sdpMid,
@@ -370,7 +361,7 @@ void initState() {
 
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
-      Future.delayed(const Duration(seconds: 2), _sendQRCode);
+      Future.delayed(Duration(seconds: 2), _sendQRCode);
       if (kDebugMode) {
         print("Local SDP Offer: ${offer.sdp}");
       }
@@ -404,8 +395,8 @@ void initState() {
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
-      Future.delayed(const Duration(seconds: 2), _sendQRCode);
-
+      Future.delayed(Duration(seconds: 2), _sendQRCode);
+      
       if (kDebugMode) {
         print("Local SDP Answer: ${answer.sdp}");
       }
@@ -423,8 +414,7 @@ void initState() {
   }
 
   /// Handles receiving an SDP offer.
-  Future<void> _onOfferReceived(
-      String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  Future<void> _onOfferReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -466,8 +456,7 @@ void initState() {
   }
 
   /// Handles receiving an SDP answer.
-  Future<void> _onAnswerReceived(
-      String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  Future<void> _onAnswerReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -505,8 +494,7 @@ void initState() {
   }
 
   /// Processes the scanned QR code data.
-  void _processScannedData(String type, String sdp,
-      List<Map<String, dynamic>> iceCandidates) async {
+  void _processScannedData(String type, String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (type == 'offer') {
       await _onOfferReceived(sdp, iceCandidates);
     } else if (type == 'answer') {
@@ -522,7 +510,7 @@ void initState() {
 void handleVoiceCommand(String command) {
   command = command.toLowerCase();
 
-  if (command == _settingsModel.viewNextWord.toLowerCase()) {
+  if (command == 'view_next') {
     // Handle 'next' command
     int currentIndex = _viewModes.indexOf(_selectedViewMode);
     int nextIndex = (currentIndex + 1) % _viewModes.length;
@@ -531,7 +519,7 @@ void handleVoiceCommand(String command) {
       _selectedViewMode = nextMode;
     });
     switchViewMode(nextMode);
-  } else if (command == _settingsModel.viewBackWord.toLowerCase()) {
+  } else if (command == 'view_back') {
     // Handle 'back' command
     int currentIndex = _viewModes.indexOf(_selectedViewMode);
     int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
@@ -540,27 +528,27 @@ void handleVoiceCommand(String command) {
       _selectedViewMode = prevMode;
     });
     switchViewMode(prevMode);
-  } else if (command == _settingsModel.enableAudioWord.toLowerCase()) {
+  } else if (command == 'toggle_audio') {
     // Toggle audio
     bool newEnableAudio = !_settingsModel.enableAudio;
     _settingsModel.updateEnableAudio(newEnableAudio);
     _updateAudioTracks(); // Ensure audio tracks are updated
-  } else if (command == _settingsModel.fullVrModeWord.toLowerCase()) {
+  } else if (command == 'full_vr_mode') {
     setState(() {
       _selectedViewMode = 'Full VR Mode';
     });
     switchViewMode('Full VR Mode');
-  } else if (command == _settingsModel.vr50_50ModeWord.toLowerCase()) {
+  } else if (command == 'vr50_50_mode') {
     setState(() {
       _selectedViewMode = '50/50 VR Mode';
     });
     switchViewMode('50/50 VR Mode');
-  } else if (command == _settingsModel.pipVrModeWord.toLowerCase()) {
+  } else if (command == 'pip_vr_mode') {
     setState(() {
       _selectedViewMode = 'PIP VR Mode';
     });
     switchViewMode('PIP VR Mode');
-  } else if (command == _settingsModel.pipVrMode2Word.toLowerCase()) {
+  } else if (command == 'pip_vr_mode2') {
     setState(() {
       _selectedViewMode = 'PIP VR Mode2';
     });
