@@ -145,48 +145,6 @@ if (recognizedText == settingsModel.viewNextWord.toLowerCase()) {
 }
 
 
-Future<void> updateGrammar() async {
-  if (_speechService != null) {
-    // Stop and dispose the speech service
-    await _speechService!.stop();
-    await _speechService!.cancel();
-    _speechService = null;
-  }
-
-  if (_recognizer != null) {
-    // Dispose the old recognizer
-    await _recognizer!.dispose();
-    _recognizer = null;
-  }
-
-  // Create new recognizer with updated grammar
-  _recognizer = await _vosk!.createRecognizer(
-    model: _model!,
-    sampleRate: 16000,
-    grammar: _getGrammar(),
-  );
-
-  // Reinitialize the speech service
-  _speechService = await _vosk!.initSpeechService(_recognizer!);
-
-  // Subscribe to recognition events
-  _speechService!.onPartial().listen((partialResult) {
-    if (kDebugMode) {
-      print('Partial result: $partialResult');
-    }
-  });
-
-  _speechService!.onResult().listen((finalResult) async {
-    if (kDebugMode) {
-      print('Final result: $finalResult');
-    }
-    await _processRecognizedText(finalResult);
-  });
-
-  // Start listening again
-  startListening();
-}
-
 Future<void> dispose() async {
   if (_speechService != null) {
     await _speechService!.stop();

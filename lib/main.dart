@@ -786,33 +786,6 @@ void _onSettingsChanged() {
         settingsModel: _settingsModel,
       );
       _voiceCommandUtils!.initSpeech(); // Ignoring Future
-    } else {
-      // Check if voice command words have changed
-      bool voiceCommandsChanged = false;
-      if (_previousVoiceCommands['viewNextWord'] != _settingsModel.viewNextWord ||
-          _previousVoiceCommands['viewBackWord'] != _settingsModel.viewBackWord ||
-          _previousVoiceCommands['enableAudioWord'] != _settingsModel.enableAudioWord ||
-          _previousVoiceCommands['fullVrModeWord'] != _settingsModel.fullVrModeWord ||
-          _previousVoiceCommands['vr50_50ModeWord'] != _settingsModel.vr50_50ModeWord ||
-          _previousVoiceCommands['pipVrModeWord'] != _settingsModel.pipVrModeWord ||
-          _previousVoiceCommands['pipVrMode2Word'] != _settingsModel.pipVrMode2Word) {
-        voiceCommandsChanged = true;
-      }
-
-      if (voiceCommandsChanged) {
-        _voiceCommandUtils!.updateGrammar();
-
-        // Update _previousVoiceCommands
-        _previousVoiceCommands = {
-          'viewNextWord': _settingsModel.viewNextWord,
-          'viewBackWord': _settingsModel.viewBackWord,
-          'enableAudioWord': _settingsModel.enableAudioWord,
-          'fullVrModeWord': _settingsModel.fullVrModeWord,
-          'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
-          'pipVrModeWord': _settingsModel.pipVrModeWord,
-          'pipVrMode2Word': _settingsModel.pipVrMode2Word,
-        };
-      }
     }
   } else {
     if (_voiceCommandUtils != null) {
