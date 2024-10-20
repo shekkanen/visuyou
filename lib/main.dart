@@ -63,42 +63,47 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   VoiceCommandUtils? _voiceCommandUtils; // Modified to be nullable
   late SettingsModel _settingsModel; // Add this line
 
-@override
-void initState() {
-  super.initState();
-  _initializePreferences(); // Initialize preferences
-  _checkFirstLaunch(); // Check if the user has accepted the terms
+  // Added member variables for audio control
+  MediaStream? _localStream;
+  MediaStreamTrack? _audioTrack;
+  RTCRtpSender? _audioSender;
 
-  _localRenderer = RTCVideoRenderer();
-  _remoteRenderer = RTCVideoRenderer();
+  @override
+  void initState() {
+    super.initState();
+    _initializePreferences(); // Initialize preferences
+    _checkFirstLaunch(); // Check if the user has accepted the terms
 
-  // Initialize _settingsModel and add listener
-  _settingsModel = Provider.of<SettingsModel>(context, listen: false);
-  _settingsModel.addListener(_onSettingsChanged);
+    _localRenderer = RTCVideoRenderer();
+    _remoteRenderer = RTCVideoRenderer();
+
+    // Initialize _settingsModel and add listener
+    _settingsModel = Provider.of<SettingsModel>(context, listen: false);
+    _settingsModel.addListener(_onSettingsChanged);
 
     // Wait for settings to load before proceeding
-  _settingsModel.settingsLoaded.then((_) {
-    _requestPermissions(); // Proceed with the rest after settings are loaded
+    _settingsModel.settingsLoaded.then((_) {
+      _requestPermissions(); // Proceed with the rest after settings are loaded
 
-  // Initialize previous voice commands after _settingsModel is initialized
-  _previousVoiceCommands = {
-    'viewNextWord': _settingsModel.viewNextWord,
-    'viewBackWord': _settingsModel.viewBackWord,
-    'enableAudioWord': _settingsModel.enableAudioWord,
-    'fullVrModeWord': _settingsModel.fullVrModeWord,
-    'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
-    'pipVrModeWord': _settingsModel.pipVrModeWord,
-    'pipVrMode2Word': _settingsModel.pipVrMode2Word,
-  };
+      // Initialize previous voice commands after _settingsModel is initialized
+      _previousVoiceCommands = {
+        'viewNextWord': _settingsModel.viewNextWord,
+        'viewBackWord': _settingsModel.viewBackWord,
+        'enableAudioWord': _settingsModel.enableAudioWord,
+        'fullVrModeWord': _settingsModel.fullVrModeWord,
+        'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
+        'pipVrModeWord': _settingsModel.pipVrModeWord,
+        'pipVrMode2Word': _settingsModel.pipVrMode2Word,
+      };
 
-  // Manually trigger the settings changed handler
-    _onSettingsChanged();
-  });
+      // Manually trigger the settings changed handler
+      _onSettingsChanged();
+    });
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]); // Force portrait mode initially
-}
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]); // Force portrait mode initially
+  }
 
   Future<void> _initializePreferences() async {
     prefs = await SharedPreferences.getInstance();
@@ -166,8 +171,6 @@ void initState() {
       }
       return;
     }
-
-    bool enableAudio = _settingsModel.enableAudio; // Use settingsModel
 
     try {
       final configuration = {
@@ -243,41 +246,43 @@ void initState() {
       String? backCameraId;
 
       for (var device in mediaDevices) {
-        if (device.kind == 'videoinput' && device.label.toLowerCase().contains('back')) {
+        if (device.kind == 'videoinput' &&
+            device.label.toLowerCase().contains('back')) {
           backCameraId = device.deviceId;
           break;
         }
       }
 
-      if (backCameraId != null) {
-        // Get video stream from back camera using the device ID
-        final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': true, 
-          'video': {
-            'deviceId': backCameraId, // Pass the device ID directly as a string
-          },
-        });
-        _localRenderer.srcObject = stream;
+      // Always request audio and video
+      final stream = await navigator.mediaDevices.getUserMedia({
+        'audio': true, // Always request audio
+        'video': backCameraId != null
+            ? {
+                'deviceId': backCameraId,
+              }
+            : true,
+      });
 
-        for (var track in stream.getTracks()) {
-          await _peerConnection!.addTrack(track, stream);
-        }
-      } else {
+      _localRenderer.srcObject = stream;
+      _localStream = stream;
+
+      // Add video track
+      var videoTrack = stream.getVideoTracks()[0];
+      await _peerConnection!.addTrack(videoTrack, stream);
+
+      // Store the audio track for later use
+      _audioTrack = stream.getAudioTracks()[0];
+
+      // Conditionally add audio track
+      if (_settingsModel.enableAudio) {
+        _audioSender = await _peerConnection!.addTrack(_audioTrack!, stream);
+      }
+
+      if (backCameraId == null) {
         if (kDebugMode) {
           print('Back camera not found');
         }
         _showErrorSnackBar('Back camera not found. Using default camera.');
-
-        // Fallback to default camera if back camera is not found
-        final stream = await navigator.mediaDevices.getUserMedia({
-          'audio': enableAudio,
-          'video': true,
-        });
-        _localRenderer.srcObject = stream;
-
-        for (var track in stream.getTracks()) {
-          await _peerConnection!.addTrack(track, stream);
-        }
       }
     } catch (e) {
       if (kDebugMode) {
@@ -297,7 +302,8 @@ void initState() {
     }
 
     try {
-      RTCSessionDescription? localDescription = await _peerConnection!.getLocalDescription();
+      RTCSessionDescription? localDescription =
+          await _peerConnection!.getLocalDescription();
       if (localDescription == null) {
         if (kDebugMode) {
           print("Local description is not set");
@@ -306,7 +312,8 @@ void initState() {
       }
 
       // Prepare ICE candidates as a list of maps
-      List<Map<String, dynamic>> iceCandidates = _gatheredIceCandidates.map((candidate) {
+      List<Map<String, dynamic>> iceCandidates =
+          _gatheredIceCandidates.map((candidate) {
         return {
           'candidate': candidate.candidate,
           'sdpMid': candidate.sdpMid,
@@ -361,7 +368,7 @@ void initState() {
 
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
-      Future.delayed(Duration(seconds: 2), _sendQRCode);
+      Future.delayed(const Duration(seconds: 2), _sendQRCode);
       if (kDebugMode) {
         print("Local SDP Offer: ${offer.sdp}");
       }
@@ -395,8 +402,8 @@ void initState() {
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
-      Future.delayed(Duration(seconds: 2), _sendQRCode);
-      
+      Future.delayed(const Duration(seconds: 2), _sendQRCode);
+
       if (kDebugMode) {
         print("Local SDP Answer: ${answer.sdp}");
       }
@@ -414,7 +421,8 @@ void initState() {
   }
 
   /// Handles receiving an SDP offer.
-  Future<void> _onOfferReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  Future<void> _onOfferReceived(
+      String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -456,7 +464,8 @@ void initState() {
   }
 
   /// Handles receiving an SDP answer.
-  Future<void> _onAnswerReceived(String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  Future<void> _onAnswerReceived(
+      String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (_peerConnection == null) {
       if (kDebugMode) {
         print("PeerConnection is not initialized");
@@ -494,7 +503,8 @@ void initState() {
   }
 
   /// Processes the scanned QR code data.
-  void _processScannedData(String type, String sdp, List<Map<String, dynamic>> iceCandidates) async {
+  void _processScannedData(String type, String sdp,
+      List<Map<String, dynamic>> iceCandidates) async {
     if (type == 'offer') {
       await _onOfferReceived(sdp, iceCandidates);
     } else if (type == 'answer') {
@@ -507,59 +517,58 @@ void initState() {
     }
   }
 
-void handleVoiceCommand(String command) {
-  command = command.toLowerCase();
+  void handleVoiceCommand(String command) {
+    command = command.toLowerCase();
 
-  if (command == 'view_next') {
-    // Handle 'next' command
-    int currentIndex = _viewModes.indexOf(_selectedViewMode);
-    int nextIndex = (currentIndex + 1) % _viewModes.length;
-    String nextMode = _viewModes[nextIndex];
-    setState(() {
-      _selectedViewMode = nextMode;
-    });
-    switchViewMode(nextMode);
-  } else if (command == 'view_back') {
-    // Handle 'back' command
-    int currentIndex = _viewModes.indexOf(_selectedViewMode);
-    int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
-    String prevMode = _viewModes[prevIndex];
-    setState(() {
-      _selectedViewMode = prevMode;
-    });
-    switchViewMode(prevMode);
-  } else if (command == 'toggle_audio') {
-    // Toggle audio
-    bool newEnableAudio = !_settingsModel.enableAudio;
-    _settingsModel.updateEnableAudio(newEnableAudio);
-    _updateAudioTracks(); // Ensure audio tracks are updated
-  } else if (command == 'full_vr_mode') {
-    setState(() {
-      _selectedViewMode = 'Full VR Mode';
-    });
-    switchViewMode('Full VR Mode');
-  } else if (command == 'vr50_50_mode') {
-    setState(() {
-      _selectedViewMode = '50/50 VR Mode';
-    });
-    switchViewMode('50/50 VR Mode');
-  } else if (command == 'pip_vr_mode') {
-    setState(() {
-      _selectedViewMode = 'PIP VR Mode';
-    });
-    switchViewMode('PIP VR Mode');
-  } else if (command == 'pip_vr_mode2') {
-    setState(() {
-      _selectedViewMode = 'PIP VR Mode2';
-    });
-    switchViewMode('PIP VR Mode2');
-  } else {
-    if (kDebugMode) {
-      print('Unknown command received: $command');
+    if (command == 'view_next') {
+      // Handle 'next' command
+      int currentIndex = _viewModes.indexOf(_selectedViewMode);
+      int nextIndex = (currentIndex + 1) % _viewModes.length;
+      String nextMode = _viewModes[nextIndex];
+      setState(() {
+        _selectedViewMode = nextMode;
+      });
+      switchViewMode(nextMode);
+    } else if (command == 'view_back') {
+      // Handle 'back' command
+      int currentIndex = _viewModes.indexOf(_selectedViewMode);
+      int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
+      String prevMode = _viewModes[prevIndex];
+      setState(() {
+        _selectedViewMode = prevMode;
+      });
+      switchViewMode(prevMode);
+    } else if (command == 'toggle_audio') {
+      // Toggle audio
+      bool newEnableAudio = !_settingsModel.enableAudio;
+      _settingsModel.updateEnableAudio(newEnableAudio);
+      _toggleAudio(newEnableAudio); // Use the new method to toggle audio
+    } else if (command == 'full_vr_mode') {
+      setState(() {
+        _selectedViewMode = 'Full VR Mode';
+      });
+      switchViewMode('Full VR Mode');
+    } else if (command == 'vr50_50_mode') {
+      setState(() {
+        _selectedViewMode = '50/50 VR Mode';
+      });
+      switchViewMode('50/50 VR Mode');
+    } else if (command == 'pip_vr_mode') {
+      setState(() {
+        _selectedViewMode = 'PIP VR Mode';
+      });
+      switchViewMode('PIP VR Mode');
+    } else if (command == 'pip_vr_mode2') {
+      setState(() {
+        _selectedViewMode = 'PIP VR Mode2';
+      });
+      switchViewMode('PIP VR Mode2');
+    } else {
+      if (kDebugMode) {
+        print('Unknown command received: $command');
+      }
     }
   }
-}
-
 
   /// Switches the view mode based on the selected mode.
   void switchViewMode(String mode) {
@@ -771,69 +780,73 @@ void handleVoiceCommand(String command) {
   }
 
   /// Handles changes in the settings model.
-void _onSettingsChanged() {
-  // Handle enableVoiceCommands changes
-  if (_settingsModel.enableVoiceCommands) {
-    if (_voiceCommandUtils == null) {
-      _voiceCommandUtils = VoiceCommandUtils(
-        onCommandRecognized: handleVoiceCommand,
-        settingsModel: _settingsModel,
-      );
-      _voiceCommandUtils!.initSpeech(); // Ignoring Future
-    }
-  } else {
-    if (_voiceCommandUtils != null) {
-      _voiceCommandUtils!.stopListening();
-      _voiceCommandUtils = null;
-    }
-  }
-
-  // Handle enableAudio changes
-  if (_peerConnection != null) {
-    _updateAudioTracks(); // Call the async function
-  }
-
-  setState(() {
-    // Update UI if necessary
-  });
-}
-
-
-  /// Updates the audio tracks based on the enableAudio setting.
-void _updateAudioTracks() async {
-  try {
-    var senders = await _peerConnection!.getSenders();
-    for (var sender in senders) {
-      if (sender.track != null && sender.track!.kind == 'audio') {
-        sender.track!.enabled = _settingsModel.enableAudio;
+  void _onSettingsChanged() {
+    // Handle enableVoiceCommands changes
+    if (_settingsModel.enableVoiceCommands) {
+      if (_voiceCommandUtils == null) {
+        _voiceCommandUtils = VoiceCommandUtils(
+          onCommandRecognized: handleVoiceCommand,
+          settingsModel: _settingsModel,
+        );
+        _voiceCommandUtils!.initSpeech(); // Ignoring Future
+      }
+    } else {
+      if (_voiceCommandUtils != null) {
+        _voiceCommandUtils!.stopListening();
+        _voiceCommandUtils = null;
       }
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error updating audio tracks: $e');
+
+    // Handle enableAudio changes
+    if (_peerConnection != null) {
+      _toggleAudio(_settingsModel.enableAudio); // Use the new method
+    }
+
+    setState(() {
+      // Update UI if necessary
+    });
+  }
+
+  /// Toggles the audio track based on the enableAudio setting.
+  Future<void> _toggleAudio(bool enable) async {
+    try {
+      if (_audioSender == null && _audioTrack != null) {
+        // Audio sender not yet created
+        if (enable) {
+          _audioSender =
+              await _peerConnection!.addTrack(_audioTrack!, _localStream!);
+        }
+      } else if (_audioSender != null) {
+        if (enable) {
+          await _audioSender!.replaceTrack(_audioTrack!);
+        } else {
+          await _audioSender!.replaceTrack(null);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error toggling audio tracks: $e');
+      }
     }
   }
-}
 
+  @override
+  void dispose() {
+    _localRenderer.dispose();
+    _remoteRenderer.dispose();
+    _peerConnection?.dispose();
 
-@override
-void dispose() {
-  _localRenderer.dispose();
-  _remoteRenderer.dispose();
-  _peerConnection?.dispose();
+    _voiceCommandUtils?.dispose(); // Dispose voice command utils if initialized
 
-  _voiceCommandUtils?.dispose(); // Dispose voice command utils if initialized
-
-  _settingsModel.removeListener(_onSettingsChanged); // Remove settings listener
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-    DeviceOrientation.landscapeRight,
-    DeviceOrientation.landscapeLeft,
-  ]); // Reset to dynamic orientation on dispose
-  super.dispose();
-}
-
+    _settingsModel.removeListener(_onSettingsChanged); // Remove settings listener
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]); // Reset to dynamic orientation on dispose
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -919,7 +932,7 @@ void dispose() {
           // Background image
           Positioned.fill(
             child: Opacity(
-              opacity: 0.10, // Adjust the opacity to make it subtle
+              opacity: 0.05, // Adjust the opacity to make it subtle
               child: Image.asset(
                 'assets/visuyou.png', // Path to the background image
                 fit: BoxFit.cover, // Cover the entire background
@@ -1172,7 +1185,8 @@ class PiPVideoView extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
-            final pipSize = constraints.maxWidth / 5; // Adjust the size of the PiP view here
+            final pipSize =
+                constraints.maxWidth / 5; // Adjust the size of the PiP view here
 
             return Row(
               children: [
