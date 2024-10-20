@@ -71,15 +71,15 @@ List<String> _getGrammar() {
 
     // Subscribe to recognition events
     _speechService!.onPartial().listen((partialResult) {
-        if (kDebugMode) {
-          print('Partial result: $partialResult');
-        }
+        // if (kDebugMode) {
+        //   print('Partial result: $partialResult');
+        // }
     });
 
     _speechService!.onResult().listen((finalResult) async {
-        if (kDebugMode) {
-          print('Final result: $finalResult');
-        }
+        // if (kDebugMode) {
+        //   print('Final result: $finalResult');
+        // }
       await _processRecognizedText(finalResult);
     });
 

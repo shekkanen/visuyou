@@ -808,27 +808,36 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Toggles the audio track based on the enableAudio setting.
-  Future<void> _toggleAudio(bool enable) async {
-    try {
-      if (_audioSender == null && _audioTrack != null) {
-        // Audio sender not yet created
-        if (enable) {
-          _audioSender =
-              await _peerConnection!.addTrack(_audioTrack!, _localStream!);
-        }
-      } else if (_audioSender != null) {
-        if (enable) {
-          await _audioSender!.replaceTrack(_audioTrack!);
-        } else {
-          await _audioSender!.replaceTrack(null);
+Future<void> _toggleAudio(bool enable) async {
+  try {
+    if (_audioSender == null && _audioTrack != null) {
+      // Audio sender not yet created
+      if (enable) {
+        _audioSender = await _peerConnection!.addTrack(_audioTrack!, _localStream!);
+        if (kDebugMode) {
+          print('Audio has been enabled.');
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error toggling audio tracks: $e');
+    } else if (_audioSender != null) {
+      if (enable) {
+        await _audioSender!.replaceTrack(_audioTrack!);
+        if (kDebugMode) {
+          print('Audio has been enabled.');
+        }
+      } else {
+        await _audioSender!.replaceTrack(null);
+        if (kDebugMode) {
+          print('Audio has been disabled.');
+        }
       }
     }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error toggling audio tracks: $e');
+    }
   }
+}
+
 
   @override
   void dispose() {
