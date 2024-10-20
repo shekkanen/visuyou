@@ -43,11 +43,11 @@ class SettingsModel extends ChangeNotifier {
 
     _viewNextWord = prefs.getString('viewNextWord') ?? 'next';
     _viewBackWord = prefs.getString('viewBackWord') ?? 'back';
-    _enableAudioWord = prefs.getString('enableAudioWord') ?? 'enable audio voice command';
-    _fullVrModeWord = prefs.getString('fullVrModeWord') ?? 'full vr mode';
-    _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? '50/50 vr mode';
-    _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'pip vr mode';
-    _pipVrMode2Word = prefs.getString('pipVrMode2Word') ?? 'pip vr mode2';
+    _enableAudioWord = prefs.getString('enableAudioWord') ?? 'audio';
+    _fullVrModeWord = prefs.getString('fullVrModeWord') ?? 'mode one';
+    _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? 'mode two';
+    _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'mode three';
+    _pipVrMode2Word = prefs.getString('pipVrMode2Word') ?? 'mode four';
 
     _settingsLoadedCompleter.complete(); // Signal that settings are loaded
     notifyListeners();
