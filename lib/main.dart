@@ -307,14 +307,15 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
 
       // Prepare ICE candidates as a list of maps
-      List<Map<String, dynamic>> iceCandidates =
-          _gatheredIceCandidates.map((candidate) {
-        return {
-          'candidate': candidate.candidate,
-          'sdpMid': candidate.sdpMid,
-          'sdpMLineIndex': candidate.sdpMLineIndex,
-        };
-      }).toList();
+List<Map<String, dynamic>> iceCandidates = [];
+if (_gatheredIceCandidates.isNotEmpty) {
+  var candidate = _gatheredIceCandidates.first;
+  iceCandidates.add({
+    'candidate': candidate.candidate,
+    'sdpMid': candidate.sdpMid,
+    'sdpMLineIndex': candidate.sdpMLineIndex,
+  });
+}
 
       // Determine type based on whether this device is the offerer
       String type = _isOfferer ? 'offer' : 'answer';
