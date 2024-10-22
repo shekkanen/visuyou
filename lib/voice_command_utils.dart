@@ -22,7 +22,10 @@ List<String> _getGrammar() {
   return [
     ...SettingsPage.viewChangeWords.map((word) => word.toLowerCase()),
     ...SettingsPage.backWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.enableAudioWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.muteMicWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.unmuteMicWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.muteSpeakerWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.unmuteSpeakerWords.map((word) => word.toLowerCase()),
     ...SettingsPage.fullVrModeWords.map((word) => word.toLowerCase()),
     ...SettingsPage.vr50_50ModeWords.map((word) => word.toLowerCase()),
     ...SettingsPage.pipVrModeWords.map((word) => word.toLowerCase()),
@@ -127,8 +130,14 @@ Future<void> _processRecognizedText(String recognizedJson) async {
     onCommandRecognized('view_next');
   } else if (recognizedText == settingsModel.viewBackWord.toLowerCase()) {
     onCommandRecognized('view_back');
-  } else if (recognizedText == settingsModel.enableAudioWord.toLowerCase()) {
-    onCommandRecognized('toggle_audio');
+  } else if (recognizedText == settingsModel.micEnabledWord.toLowerCase()) {
+    onCommandRecognized('unmute_mic');
+  } else if (recognizedText == settingsModel.micDisableWord.toLowerCase()) {
+    onCommandRecognized('mute_mic');
+  } else if (recognizedText == settingsModel.speakerEnabledWord.toLowerCase()) {
+    onCommandRecognized('unmute_speaker');
+  } else if (recognizedText == settingsModel.speakerDisableWord.toLowerCase()) {
+    onCommandRecognized('mute_speaker');
   } else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase()) {
     onCommandRecognized('full_vr_mode');
   } else if (recognizedText == settingsModel.vr50_50ModeWord.toLowerCase()) {

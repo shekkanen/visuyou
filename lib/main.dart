@@ -90,7 +90,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       _previousVoiceCommands = {
         'viewNextWord': _settingsModel.viewNextWord,
         'viewBackWord': _settingsModel.viewBackWord,
-        'enableAudioWord': _settingsModel.enableAudioWord,
+        'micEnabledWord': _settingsModel.micEnabledWord,
+        'micDisableWord': _settingsModel.micDisableWord,
+        'speakerEnabledWord': _settingsModel.speakerEnabledWord,
+        'speakerDisableWord': _settingsModel.speakerDisableWord,
         'fullVrModeWord': _settingsModel.fullVrModeWord,
         'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
         'pipVrModeWord': _settingsModel.pipVrModeWord,
@@ -267,7 +270,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       _audioTrack = stream.getAudioTracks()[0];
 
       // Conditionally add audio track
-      if (_settingsModel.enableAudio) {
+      if (_settingsModel.micEnabled) {
         _audioSender = await _peerConnection!.addTrack(_audioTrack!, stream);
       }
 
@@ -531,14 +534,23 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         _selectedViewMode = prevMode;
       });
       switchViewMode(prevMode);
-    } else if (command == 'toggle_audio') {
-      if (kDebugMode) {
-        print('Toggling/untoggling audio');
-      }
-      // Toggle audio
-      bool newEnableAudio = !_settingsModel.enableAudio;
-      _settingsModel.updateEnableAudio(newEnableAudio);
-      _toggleAudio(newEnableAudio); // Use the new method to toggle audio
+    } else if (command == 'mute_mic') {
+    _settingsModel.updatemicEnabled(false);
+    _toggleMic(false);
+    _showInfoSnackBar('Mic has been muted.');
+  } else if (command == 'unmute_mic') {
+    _settingsModel.updatemicEnabled(true);
+    _toggleMic(true);
+    _showInfoSnackBar('Mic has been unmuted.');
+  } else if (command == 'mute_speaker') {
+    _settingsModel.updateSpeakerEnabled(false);
+    _toggleSpeaker(false);
+    _showInfoSnackBar('Speaker has been muted.');
+  } else if (command == 'unmute_speaker') {
+    _settingsModel.updateSpeakerEnabled(true);
+    _toggleSpeaker(true);
+    _showInfoSnackBar('Speaker has been unmuted.');
+  
     } else if (command == 'full_vr_mode') {
       setState(() {
         _selectedViewMode = 'Full VR Mode';
@@ -793,46 +805,56 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
     }
 
-    // Handle enableAudio changes
-    if (_peerConnection != null) {
-      _toggleAudio(_settingsModel.enableAudio); // Use the new method
-    }
+
 
     setState(() {
       // Update UI if necessary
     });
   }
 
-  /// Toggles the audio track based on the enableAudio setting.
-Future<void> _toggleAudio(bool enable) async {
+
+// main.dart
+Future<void> _toggleMic(bool enable) async {
   try {
-    if (_audioSender == null && _audioTrack != null) {
-      // Audio sender not yet created
-      if (enable) {
-        _audioSender = await _peerConnection!.addTrack(_audioTrack!, _localStream!);
-        if (kDebugMode) {
-          print('Audio has been enabled.');
-        }
+    if (_audioSender != null) {
+      await _peerConnection!.removeTrack(_audioSender!);
+      _audioSender = null;
+    }
+    if (enable && _audioTrack != null) {
+      _audioSender = await _peerConnection!.addTrack(_audioTrack!, _localStream!);
+      if (kDebugMode) {
+        print('Mic has been enabled.');
       }
-    } else if (_audioSender != null) {
-      if (enable) {
-        await _audioSender!.replaceTrack(_audioTrack!);
-        if (kDebugMode) {
-          print('Audio has been enabled.');
-        }
-      } else {
-        await _audioSender!.replaceTrack(null);
-        if (kDebugMode) {
-          print('Audio has been disabled.');
-        }
+    } else {
+      if (kDebugMode) {
+        print('Mic has been disabled.');
       }
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Error toggling audio tracks: $e');
+      print('Error toggling mic: $e');
     }
   }
 }
+
+Future<void> _toggleSpeaker(bool enable) async {
+  try {
+    if (_remoteRenderer.srcObject != null) {
+      var audioTracks = _remoteRenderer.srcObject!.getAudioTracks();
+      for (var track in audioTracks) {
+        track.enabled = enable;
+      }
+      if (kDebugMode) {
+        print('Speaker has been ${enable ? 'enabled' : 'disabled'}.');
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error toggling speaker: $e');
+    }
+  }
+}
+
 
 
   @override

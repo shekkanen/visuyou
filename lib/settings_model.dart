@@ -6,25 +6,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
 class SettingsModel extends ChangeNotifier {
-  bool _enableAudio = false;
+  bool _micEnabled = false;
+  bool _speakerEnabled = true;
   bool _enableVoiceCommands = true;
 
   // Voice command keywords
   String _viewNextWord = 'next';
   String _viewBackWord = 'back';
-  String _enableAudioWord = 'enable audio voice command';
-  String _fullVrModeWord = 'full vr mode';
-  String _vr50_50ModeWord = '50/50 vr mode';
-  String _pipVrModeWord = 'pip vr mode';
-  String _pipVrMode2Word = 'pip vr mode2';
+  String _micEnabledWord = 'unmute mic';
+  String _micDisableWord = 'mute mic';
+  String _speakerEnabledWord = 'unmute speaker';
+  String _speakerDisableWord = 'mute speaker';
+  String _fullVrModeWord = 'mode one';
+  String _vr50_50ModeWord = 'mode two';
+  String _pipVrModeWord = 'mode three';
+  String _pipVrMode2Word = 'mode four';
 
   // Getters
-  bool get enableAudio => _enableAudio;
+  bool get micEnabled => _micEnabled;
+  bool get speakerEnabled => _speakerEnabled;
   bool get enableVoiceCommands => _enableVoiceCommands;
 
   String get viewNextWord => _viewNextWord;
   String get viewBackWord => _viewBackWord;
-  String get enableAudioWord => _enableAudioWord;
+  String get micEnabledWord => _micEnabledWord;
+  String get micDisableWord => _micDisableWord;
+  String get speakerEnabledWord => _speakerEnabledWord;
+  String get speakerDisableWord => _speakerDisableWord;
   String get fullVrModeWord => _fullVrModeWord;
   String get vr50_50ModeWord => _vr50_50ModeWord;
   String get pipVrModeWord => _pipVrModeWord;
@@ -38,12 +46,15 @@ class SettingsModel extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _enableAudio = prefs.getBool('enableAudio') ?? false;
+    _micEnabled = prefs.getBool('micEnabled') ?? false;
+    _speakerEnabled = prefs.getBool('speakerEnabled') ?? true;
     _enableVoiceCommands = prefs.getBool('enableVoiceCommands') ?? true;
 
     _viewNextWord = prefs.getString('viewNextWord') ?? 'next';
     _viewBackWord = prefs.getString('viewBackWord') ?? 'back';
-    _enableAudioWord = prefs.getString('enableAudioWord') ?? 'audio';
+    _micEnabledWord = prefs.getString('micEnabledWord') ?? 'unmute mic';
+    _micDisableWord = prefs.getString('micDisableWord') ?? 'mute mic';
+    _speakerEnabledWord = prefs.getString('speakerEnabledWord') ?? 'unmute speaker';
     _fullVrModeWord = prefs.getString('fullVrModeWord') ?? 'mode one';
     _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? 'mode two';
     _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'mode three';
@@ -58,11 +69,18 @@ class SettingsModel extends ChangeNotifier {
 
   // Update methods
 
-  Future<void> updateEnableAudio(bool value) async {
-    _enableAudio = value;
+  Future<void> updatemicEnabled(bool value) async {
+    _micEnabled = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('enableAudio', value);
+    await prefs.setBool('micEnabled', value);
     notifyListeners();
+  }
+
+  Future<void> updateSpeakerEnabled(bool value) async {
+  _speakerEnabled = value;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('speakerEnabled', value);
+  notifyListeners();
   }
 
   Future<void> updateEnableVoiceCommands(bool value) async {
@@ -86,12 +104,34 @@ class SettingsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateEnableAudioWord(String value) async {
-    _enableAudioWord = value;
+  Future<void> updatemicEnabledWord(String value) async {
+    _micEnabledWord = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('enableAudioWord', value);
+    await prefs.setString('micEnabledWord', value);
     notifyListeners();
   }
+
+  Future<void> updatemicDisableWord(String value) async {
+    _micEnabledWord = value;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('micDisableWord', value);
+    notifyListeners();
+  }
+
+  Future<void> updateSpeakerEnabledWord(String value) async {
+    _micEnabledWord = value;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('speakerEnabledWord', value);
+    notifyListeners();
+  }
+
+  Future<void> updateSpeakerDisableWord(String value) async {
+    _micEnabledWord = value;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('speakerDisableWord', value);
+    notifyListeners();
+  }
+
 
   Future<void> updateFullVrModeWord(String value) async {
     _fullVrModeWord = value;

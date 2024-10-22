@@ -15,8 +15,13 @@ class SettingsPage extends StatelessWidget {
 static const List<String> viewChangeWords = ['next', 'forward'];
 static const List<String> backWords = ['back', 'previous'];
 
-// Enable Audio Words
-static const List<String> enableAudioWords = ['audio', 'sound'];
+// Mute/Unmute Mic Words
+static const List<String> muteMicWords = ['mute mic', 'disable mic'];
+static const List<String> unmuteMicWords = ['unmute mic', 'enable mic'];
+
+// Mute/Unmute Speaker Words
+static const List<String> muteSpeakerWords = ['mute speaker', 'speaker off'];
+static const List<String> unmuteSpeakerWords = ['unmute speaker', 'speaker on'];
 
 // Full VR Mode
 static const List<String> fullVrModeWords = ['mode one','screen one'];
@@ -50,12 +55,18 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
         backgroundColor: Colors.black, // Match your app's theme
       ),
       body: ListView(
-        children: [
-          SwitchListTile(
-            title: const Text('Enable Audio'),
-            value: settingsModel.enableAudio,
-            onChanged: (value) => settingsModel.updateEnableAudio(value),
+          children: [
+            SwitchListTile(
+            title: const Text('Enable Mic'),
+            value: settingsModel.micEnabled,
+            onChanged: (value) => settingsModel.updatemicEnabled(value),
           ),
+          SwitchListTile(
+            title: const Text('Enable Speaker'),
+            value: settingsModel.speakerEnabled,
+            onChanged: (value) => settingsModel.updateSpeakerEnabled(value),
+          ),
+
           SwitchListTile(
             title: const Text('Enable Voice Commands'),
             value: settingsModel.enableVoiceCommands,
@@ -112,15 +123,15 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
             },
           ),
           ListTile(
-            title: const Text('Enable Audio Word'),
-            subtitle: Text('Current: ${settingsModel.enableAudioWord}'),
+            title: const Text('Enable Mic Word'),
+            subtitle: Text('Current: ${settingsModel.micEnabledWord}'),
             onTap: () async {
               String? selectedWord = await showDialog<String>(
                 context: context,
                 builder: (BuildContext context) {
                   return SimpleDialog(
-                    title: const Text('Select Enable Audio Word'),
-                    children: enableAudioWords.map((String word) {
+                    title: const Text('Select Enable Mic Word'),
+                    children: unmuteMicWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -132,10 +143,85 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
                 },
               );
               if (selectedWord != null) {
-                await settingsModel.updateEnableAudioWord(selectedWord);
+                await settingsModel.updatemicEnabledWord(selectedWord);
               }
             },
           ),
+          ListTile(
+            title: const Text('Disable Mic Word'),
+            subtitle: Text('Current: ${settingsModel.micDisableWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select Disable Mic Word'),
+                    children: muteMicWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updatemicDisableWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('Enable Speaker Word'),
+            subtitle: Text('Current: ${settingsModel.speakerEnabledWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select Enable Speaker Word'),
+                    children: muteSpeakerWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateSpeakerEnabledWord(selectedWord);
+              }
+            },
+          ),
+          ListTile(
+            title: const Text('Disable Speaker Word'),
+            subtitle: Text('Current: ${settingsModel.speakerDisableWord}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select Disable Speaker Word'),
+                    children: unmuteSpeakerWords.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateSpeakerDisableWord(selectedWord);
+              }
+            },
+          ),          
           ListTile(
             title: const Text('Full VR Mode Word'),
             subtitle: Text('Current: ${settingsModel.fullVrModeWord}'),
