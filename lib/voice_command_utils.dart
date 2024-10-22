@@ -77,9 +77,9 @@ List<String> _getGrammar() {
     });
 
     _speechService!.onResult().listen((finalResult) async {
-        // if (kDebugMode) {
-        //   print('Final result: $finalResult');
-        // }
+        if (kDebugMode) {
+          print('Final result: $finalResult');
+        }
       await _processRecognizedText(finalResult);
     });
 

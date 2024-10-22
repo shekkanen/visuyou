@@ -73,6 +73,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     super.initState();
     _initializePreferences(); // Initialize preferences
     _checkFirstLaunch(); // Check if the user has accepted the terms
+    _requestPermissions();
 
     _localRenderer = RTCVideoRenderer();
     _remoteRenderer = RTCVideoRenderer();
@@ -120,11 +121,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       }
     }
 
-    // Check if either enableAudio or enableVoiceCommands is true
-    bool enableAudio = _settingsModel.enableAudio;
-    bool enableVoiceCommands = _settingsModel.enableVoiceCommands;
-
-    if (enableAudio || enableVoiceCommands) {
       var microphoneStatus = await Permission.microphone.status;
       if (microphoneStatus.isDenied) {
         microphoneStatus = await Permission.microphone.request();
@@ -132,13 +128,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
           _showPermissionAlert();
           return;
         }
-      }
     }
 
-    bool microphoneGranted = !enableAudio && !enableVoiceCommands ||
-        await Permission.microphone.isGranted;
 
-    if (await Permission.camera.isGranted && microphoneGranted) {
+    if (await Permission.camera.isGranted && await Permission.microphone.isGranted) {
       await _initializeRenderers();
       await _createPeerConnection();
 
@@ -539,6 +532,9 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       });
       switchViewMode(prevMode);
     } else if (command == 'toggle_audio') {
+      if (kDebugMode) {
+        print('Toggling/untoggling audio');
+      }
       // Toggle audio
       bool newEnableAudio = !_settingsModel.enableAudio;
       _settingsModel.updateEnableAudio(newEnableAudio);
