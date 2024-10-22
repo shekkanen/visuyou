@@ -268,11 +268,10 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       // Store the audio track for later use
       _audioTrack = stream.getAudioTracks()[0];
+      _audioTrack!.enabled = _settingsModel.micEnabled;
 
-      // Conditionally add audio track
-      if (_settingsModel.micEnabled) {
-        _audioSender = await _peerConnection!.addTrack(_audioTrack!, stream);
-      }
+      // Always add the audio track
+      _audioSender = await _peerConnection!.addTrack(_audioTrack!, stream);
 
       if (backCameraId == null) {
         if (kDebugMode) {
@@ -788,46 +787,41 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Handles changes in the settings model.
-  void _onSettingsChanged() {
-    // Handle enableVoiceCommands changes
-    if (_settingsModel.enableVoiceCommands) {
-      if (_voiceCommandUtils == null) {
-        _voiceCommandUtils = VoiceCommandUtils(
-          onCommandRecognized: handleVoiceCommand,
-          settingsModel: _settingsModel,
-        );
-        _voiceCommandUtils!.initSpeech(); // Ignoring Future
-      }
-    } else {
-      if (_voiceCommandUtils != null) {
-        _voiceCommandUtils!.stopListening();
-        _voiceCommandUtils = null;
-      }
+void _onSettingsChanged() {
+  // Handle enableVoiceCommands changes
+  if (_settingsModel.enableVoiceCommands) {
+    if (_voiceCommandUtils == null) {
+      _voiceCommandUtils = VoiceCommandUtils(
+        onCommandRecognized: handleVoiceCommand,
+        settingsModel: _settingsModel,
+      );
+      _voiceCommandUtils!.initSpeech(); // Ignoring Future
     }
-
-
-
-    setState(() {
-      // Update UI if necessary
-    });
+  } else {
+    if (_voiceCommandUtils != null) {
+      _voiceCommandUtils!.stopListening();
+      _voiceCommandUtils = null;
+    }
   }
+
+  // Handle micEnabled changes
+  if (_audioTrack != null) {
+    _toggleMic(_settingsModel.micEnabled);
+  }
+
+  setState(() {
+    // Update UI if necessary
+  });
+}
 
 
 // main.dart
 Future<void> _toggleMic(bool enable) async {
   try {
-    if (_audioSender != null) {
-      await _peerConnection!.removeTrack(_audioSender!);
-      _audioSender = null;
-    }
-    if (enable && _audioTrack != null) {
-      _audioSender = await _peerConnection!.addTrack(_audioTrack!, _localStream!);
+    if (_audioTrack != null) {
+      _audioTrack!.enabled = enable;
       if (kDebugMode) {
-        print('Mic has been enabled.');
-      }
-    } else {
-      if (kDebugMode) {
-        print('Mic has been disabled.');
+        print('Mic has been ${enable ? 'enabled' : 'disabled'}.');
       }
     }
   } catch (e) {
@@ -837,6 +831,7 @@ Future<void> _toggleMic(bool enable) async {
   }
 }
 
+// main.dart
 Future<void> _toggleSpeaker(bool enable) async {
   try {
     if (_remoteRenderer.srcObject != null) {
@@ -854,6 +849,7 @@ Future<void> _toggleSpeaker(bool enable) async {
     }
   }
 }
+
 
 
 
