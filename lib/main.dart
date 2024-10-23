@@ -47,6 +47,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   bool _renderersInitialized = false;
   bool _isOfferer = false; // Track if the device is the offerer
   bool _connecting = false; // Track connection status
+  
 
   String _connectionCode = '';
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
@@ -215,6 +216,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         if (event.streams.isNotEmpty) {
           setState(() {
             _remoteRenderer.srcObject = event.streams[0];
+            // Set the muted state based on the speaker setting
+            _remoteRenderer.muted = !_settingsModel.speakerEnabled;
           });
         }
       };
@@ -272,6 +275,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
       // Always add the audio track
       _audioSender = await _peerConnection!.addTrack(_audioTrack!, stream);
+
+
 
       if (backCameraId == null) {
         if (kDebugMode) {
@@ -805,9 +810,15 @@ void _onSettingsChanged() {
     }
   }
 
+   // Handle speakerEnabled changes
+  if (_remoteRenderer.srcObject != null) {
+    _remoteRenderer.muted = !_settingsModel.speakerEnabled;
+  }
+
   // Handle micEnabled changes
+ // Handle micEnabled changes
   if (_audioTrack != null) {
-    _toggleMic(_settingsModel.micEnabled);
+    _audioTrack!.enabled = _settingsModel.micEnabled;
   }
 
   setState(() {
@@ -815,14 +826,13 @@ void _onSettingsChanged() {
   });
 }
 
-
 // main.dart
 Future<void> _toggleMic(bool enable) async {
   try {
     if (_audioTrack != null) {
       _audioTrack!.enabled = enable;
       if (kDebugMode) {
-        print('Mic has been ${enable ? 'enabled' : 'disabled'}.');
+        print('Microphone has been ${enable ? 'enabled' : 'disabled'}.');
       }
     }
   } catch (e) {
@@ -836,12 +846,13 @@ Future<void> _toggleMic(bool enable) async {
 Future<void> _toggleSpeaker(bool enable) async {
   try {
     if (_remoteRenderer.srcObject != null) {
-      var audioTracks = _remoteRenderer.srcObject!.getAudioTracks();
-      for (var track in audioTracks) {
-        track.enabled = enable;
-      }
+      _remoteRenderer.muted = !enable; // Mute when enable is false
       if (kDebugMode) {
         print('Speaker has been ${enable ? 'enabled' : 'disabled'}.');
+      }
+    } else {
+      if (kDebugMode) {
+        print('Cannot toggle speaker: Remote renderer has no media stream.');
       }
     }
   } catch (e) {
