@@ -52,6 +52,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   String _connectionCode = '';
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
 
+  MediaStream? _remoteStream;
+
   // Dropdown menu related
   String _selectedViewMode = 'Full VR Mode'; // Default selected mode
   final List<String> _viewModes = [
@@ -209,18 +211,18 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         }
       };
 
-      _peerConnection!.onTrack = (RTCTrackEvent event) {
-        if (kDebugMode) {
-          print('Received track: ${event.track.kind}');
-        }
-        if (event.streams.isNotEmpty) {
-          setState(() {
-            _remoteRenderer.srcObject = event.streams[0];
-            // Set the muted state based on the speaker setting
-            _remoteRenderer.muted = !_settingsModel.speakerEnabled;
-          });
-        }
-      };
+_peerConnection!.onTrack = (RTCTrackEvent event) {
+  if (kDebugMode) {
+    print('Received track: ${event.track.kind}');
+  }
+  if (event.streams.isNotEmpty) {
+    setState(() {
+      _remoteRenderer.srcObject = event.streams[0];
+      _remoteStream = event.streams[0]; // Store the remote stream
+      _toggleSpeaker(_settingsModel.speakerEnabled); // Apply speaker setting
+    });
+  }
+};
 
       _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
         if (candidate.candidate != null) {
@@ -810,12 +812,9 @@ void _onSettingsChanged() {
     }
   }
 
-   // Handle speakerEnabled changes
-  if (_remoteRenderer.srcObject != null) {
-    _remoteRenderer.muted = !_settingsModel.speakerEnabled;
-  }
+  // Handle speakerEnabled changes
+  _toggleSpeaker(_settingsModel.speakerEnabled);
 
-  // Handle micEnabled changes
  // Handle micEnabled changes
   if (_audioTrack != null) {
     _audioTrack!.enabled = _settingsModel.micEnabled;
@@ -842,17 +841,20 @@ Future<void> _toggleMic(bool enable) async {
   }
 }
 
-// main.dart
+// Modify _toggleSpeaker function
 Future<void> _toggleSpeaker(bool enable) async {
   try {
-    if (_remoteRenderer.srcObject != null) {
-      _remoteRenderer.muted = !enable; // Mute when enable is false
+    if (_remoteStream != null) {
+      var audioTracks = _remoteStream!.getAudioTracks();
+      for (var track in audioTracks) {
+        track.enabled = enable;
+      }
       if (kDebugMode) {
         print('Speaker has been ${enable ? 'enabled' : 'disabled'}.');
       }
     } else {
       if (kDebugMode) {
-        print('Cannot toggle speaker: Remote renderer has no media stream.');
+        print('Cannot toggle speaker: Remote stream is null.');
       }
     }
   } catch (e) {
