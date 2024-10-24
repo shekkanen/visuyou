@@ -260,6 +260,9 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         'video': backCameraId != null
             ? {
                 'deviceId': backCameraId,
+                 'minWidth': 1280,
+                'minHeight': 720,
+                'minFrameRate': 30,
               }
             : true,
       });
