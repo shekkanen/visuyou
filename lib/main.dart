@@ -315,8 +315,8 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
 
       // Prepare ICE candidates as a list of maps
 List<Map<String, dynamic>> iceCandidates = [];
-if (_gatheredIceCandidates.isNotEmpty) {
-  var candidate = _gatheredIceCandidates.first;
+for (var i = 0; i < _gatheredIceCandidates.length && i < 3; i++) {
+  var candidate = _gatheredIceCandidates[i];
   iceCandidates.add({
     'candidate': candidate.candidate,
     'sdpMid': candidate.sdpMid,
@@ -934,11 +934,11 @@ Future<void> _toggleSpeaker(bool enable) async {
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, size: 28), // Increased icon size
+            icon: const Icon(Icons.settings, size: 28, color: Colors.grey), // Increased icon size and set color to grey
             onPressed: () => _navigateToSettingsPage(context),
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline, size: 28), // Increased icon size
+            icon: const Icon(Icons.info_outline, size: 28, color: Colors.grey), // Increased icon size and set color to grey
             onPressed: () => _navigateToAboutPage(context),
           ),
           DropdownButton<String>(

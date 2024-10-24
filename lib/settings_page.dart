@@ -51,8 +51,12 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.black, // Match your app's theme
+      title: const Text(
+        'Settings',
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.black, // Match your app's theme
+      iconTheme: const IconThemeData(color: Colors.grey), // Set back icon color to gray
       ),
       body: ListView(
           children: [
