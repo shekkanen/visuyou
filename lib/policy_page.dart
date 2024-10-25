@@ -14,6 +14,7 @@ class PolicyPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         backgroundColor: Colors.black, // Match your app's theme
+        iconTheme: const IconThemeData(color: Colors.grey), // Set back icon color to gray
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
