@@ -12,7 +12,10 @@ class PolicyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.black, // Match your app's theme
         iconTheme: const IconThemeData(color: Colors.grey), // Set back icon color to gray
       ),
