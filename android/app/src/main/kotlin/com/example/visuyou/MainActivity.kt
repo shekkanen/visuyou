@@ -1,4 +1,4 @@
-package com.example.visuyou
+package com.samihekkanen.visuyou
 
 import io.flutter.embedding.android.FlutterActivity
 
