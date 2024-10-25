@@ -344,3 +344,9 @@ Session Recording: Offer the option to record sessions for later viewing, with c
 
 # Android emulator
  emulator -avd Medium_Phone_API_35
+
+ # Terms of Service 
+ https://shekkanen.github.io/visuyou-policies/terms_of_service.html
+
+ # Privacy Policy
+ https://shekkanen.github.io/visuyou-policies/privacy_policy.html
