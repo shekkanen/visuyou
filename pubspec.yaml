@@ -63,14 +63,14 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/visuyou_logo.png"
+  image_path: "assets/visuyou_logo_512x512.png"
 
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/visuyou_logo.png
-    - assets/visuyou.png
+    - assets/visuyou_logo_512x512.png
+    - assets/visuyou_background.png
     - assets/models/vosk-model-small-en-us-0.15.zip
 #    - assets/models/

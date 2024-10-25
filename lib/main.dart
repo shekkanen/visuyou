@@ -900,7 +900,7 @@ Future<void> _toggleSpeaker(bool enable) async {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/visuyou_logo.png',
+                  'assets/visuyou_logo_512x512.png',
                   height: 36.0, // Increased logo size
                   fit: BoxFit.contain,
                 ),
@@ -974,7 +974,7 @@ Future<void> _toggleSpeaker(bool enable) async {
             child: Opacity(
               opacity: 0.05, // Adjust the opacity to make it subtle
               child: Image.asset(
-                'assets/visuyou.png', // Path to the background image
+                'assets/visuyou_background.png', // Path to the background image
                 fit: BoxFit.cover, // Cover the entire background
               ),
             ),
