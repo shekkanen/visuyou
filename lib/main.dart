@@ -15,6 +15,7 @@ import 'policies.dart'; // Import the privacy policy and terms of service text
 import 'package:provider/provider.dart'; // Import provider
 import 'settings_model.dart'; // Import settings model
 import 'dart:async'; // Import for async functions
+import 'package:vibration/vibration.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
@@ -318,7 +319,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
 
       // Prepare ICE candidates as a list of maps
 List<Map<String, dynamic>> iceCandidates = [];
-for (var i = 0; i < _gatheredIceCandidates.length && i < 6; i++) {
+for (var i = 0; i < _gatheredIceCandidates.length && i < 8; i++) {
   var candidate = _gatheredIceCandidates[i];
   iceCandidates.add({
     'candidate': candidate.candidate,
@@ -525,9 +526,18 @@ for (var i = 0; i < _gatheredIceCandidates.length && i < 6; i++) {
     }
   }
 
-  void handleVoiceCommand(String command) {
-    command = command.toLowerCase();
+  Future<void> handleVoiceCommand(String command) async {
+      command = command.toLowerCase();
+  
+  // Check if the device has a vibrator
+  bool? hasVibrator = await Vibration.hasVibrator();
 
+  if (hasVibrator != null && hasVibrator) {
+    // Define a vibration pattern [delay, vibrate, pause, vibrate, ...]
+    List<int> pattern = [0, 200, 100, 200]; // Adjust as needed
+    Vibration.vibrate(pattern: pattern);
+  }
+  
     if (command == 'view_next') {
       // Handle 'next' command
       int currentIndex = _viewModes.indexOf(_selectedViewMode);
@@ -830,7 +840,6 @@ void _onSettingsChanged() {
   });
 }
 
-// main.dart
 Future<void> _toggleMic(bool enable) async {
   try {
     if (_audioTrack != null) {
