@@ -20,5 +20,5 @@ else
   echo "Build failed, not installing APK."
 fi
 
-adb -s e7d36532 logcat | grep 'com.samihekkanen.visuyou' > xiaomi_logcat.txt &
-adb -s 18a3a90b9907 logcat | grep 'com.samihekkanen.visuyou' > redmi_logcat.txt &
+adb -s e7d36532 logcat | grep 'com.samihekkanen.visuyou' > xiaomi_logcat.log &
+adb -s 18a3a90b9907 logcat | grep 'com.samihekkanen.visuyou' > redmi_logcat.log &

@@ -318,7 +318,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
 
       // Prepare ICE candidates as a list of maps
 List<Map<String, dynamic>> iceCandidates = [];
-for (var i = 0; i < _gatheredIceCandidates.length && i < 3; i++) {
+for (var i = 0; i < _gatheredIceCandidates.length && i < 6; i++) {
   var candidate = _gatheredIceCandidates[i];
   iceCandidates.add({
     'candidate': candidate.candidate,
@@ -374,7 +374,8 @@ for (var i = 0; i < _gatheredIceCandidates.length && i < 3; i++) {
 
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
-      Future.delayed(const Duration(seconds: 2), _sendQRCode);
+      Future.delayed(const Duration(seconds: 5), _sendQRCode);
+//      _sendQRCode();
       if (kDebugMode) {
         print("Local SDP Offer: ${offer.sdp}");
       }
@@ -408,7 +409,8 @@ for (var i = 0; i < _gatheredIceCandidates.length && i < 3; i++) {
 
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
-      Future.delayed(const Duration(seconds: 2), _sendQRCode);
+      Future.delayed(const Duration(seconds: 5), _sendQRCode);
+      //_sendQRCode();
 
       if (kDebugMode) {
         print("Local SDP Answer: ${answer.sdp}");
