@@ -112,21 +112,21 @@ class SettingsModel extends ChangeNotifier {
   }
 
   Future<void> updatemicDisableWord(String value) async {
-    _micEnabledWord = value;
+    _micDisableWord = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('micDisableWord', value);
     notifyListeners();
   }
 
   Future<void> updateSpeakerEnabledWord(String value) async {
-    _micEnabledWord = value;
+    _speakerEnabledWord = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('speakerEnabledWord', value);
     notifyListeners();
   }
 
   Future<void> updateSpeakerDisableWord(String value) async {
-    _micEnabledWord = value;
+    _speakerDisableWord = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('speakerDisableWord', value);
     notifyListeners();
