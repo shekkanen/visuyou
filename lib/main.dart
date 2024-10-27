@@ -195,13 +195,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
           _showInfoSnackBar('Connected successfully!');
         } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
             state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-          setState(() {
-            _connecting = false;
-            _isOfferer = false;
-            _connectionCode = '';
-            _isConnected = false;
-          });
           _showErrorSnackBar('Connection failed. Please try again.');
+          _resetApp();
         }
       };
 
@@ -904,6 +899,47 @@ Future<void> _toggleSpeaker(bool enable) async {
     super.dispose();
   }
 
+    Future<void> _resetApp() async {
+    // Close the peer connection
+    if (_peerConnection != null) {
+      await _peerConnection!.close();
+      _peerConnection = null;
+    }
+
+    // Stop and dispose of local media stream
+    if (_localStream != null) {
+      _localStream!.getTracks().forEach((track) => track.stop());
+      _localStream = null;
+    }
+
+    // Stop and dispose of remote media stream
+    if (_remoteStream != null) {
+      _remoteStream!.getTracks().forEach((track) => track.stop());
+      _remoteStream = null;
+    }
+
+    // Dispose of the renderers
+    await _localRenderer.dispose();
+    _localRenderer = RTCVideoRenderer();
+    await _localRenderer.initialize();
+
+    await _remoteRenderer.dispose();
+    _remoteRenderer = RTCVideoRenderer();
+    await _remoteRenderer.initialize();
+
+    // Reset variables
+      setState(() {
+        _connectionCode = '';
+        _isOfferer = false;
+        _connecting = false;
+        _isConnected = false;
+        _renderersInitialized = true; // Since we re-initialized them
+      });
+
+    // Re-initialize the peer connection and media streams
+    await _createPeerConnection();
+  }
+
   @override
   Widget build(BuildContext context) {
     /// The build method remains mostly unchanged...
@@ -952,6 +988,10 @@ Future<void> _toggleSpeaker(bool enable) async {
         ),
         backgroundColor: Colors.black,
         actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh, size: 28, color: Colors.grey), // Reset icon
+          onPressed: () => _resetApp(), // Call your reset method
+        ),          
           IconButton(
             icon: const Icon(Icons.settings, size: 28, color: Colors.grey), // Increased icon size and set color to grey
             onPressed: () => _navigateToSettingsPage(context),
