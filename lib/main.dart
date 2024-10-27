@@ -48,6 +48,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   bool _renderersInitialized = false;
   bool _isOfferer = false; // Track if the device is the offerer
   bool _connecting = false; // Track connection status
+  bool _isConnected = false; // Track connection status
   
 
   String _connectionCode = '';
@@ -189,12 +190,16 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         if (state == RTCIceConnectionState.RTCIceConnectionStateConnected) {
           setState(() {
             _connecting = false;
+            _isConnected = true;
           });
           _showInfoSnackBar('Connected successfully!');
         } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
             state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
           setState(() {
             _connecting = false;
+            _isOfferer = false;
+            _connectionCode = '';
+            _isConnected = false;
           });
           _showErrorSnackBar('Connection failed. Please try again.');
         }
@@ -319,7 +324,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
 
       // Prepare ICE candidates as a list of maps
 List<Map<String, dynamic>> iceCandidates = [];
-for (var i = 0; i < _gatheredIceCandidates.length && i < 8; i++) {
+for (var i = 0; i < _gatheredIceCandidates.length && i < 15; i++) {
   var candidate = _gatheredIceCandidates[i];
   iceCandidates.add({
     'candidate': candidate.candidate,

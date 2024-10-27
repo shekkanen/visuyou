@@ -1,8 +1,12 @@
 #!/bin/bash
 
-flutter clean
+# Kill all previous logcat processes
+pkill -f "adb -s e7d36532 logcat"
+pkill -f "adb -s 18a3a90b9907 logcat"
 
-flutter pub get
+#flutter clean
+
+#flutter pub get
 
 # Build debug APK
 if flutter build apk --debug; then
