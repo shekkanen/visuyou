@@ -961,7 +961,7 @@ Future<void> _toggleSpeaker(bool enable) async {
                   child: Text(
                     'VisuYou',
                     style: TextStyle(
-                      fontSize: 22.0, // Larger font size for better readability
+                      fontSize: 8.0, // Larger font size for better readability
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -988,10 +988,6 @@ Future<void> _toggleSpeaker(bool enable) async {
         ),
         backgroundColor: Colors.black,
         actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh, size: 28, color: Colors.grey), // Reset icon
-          onPressed: () => _resetApp(), // Call your reset method
-        ),          
           IconButton(
             icon: const Icon(Icons.settings, size: 28, color: Colors.grey), // Increased icon size and set color to grey
             onPressed: () => _navigateToSettingsPage(context),
@@ -1071,7 +1067,7 @@ Future<void> _toggleSpeaker(bool enable) async {
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 24.0, vertical: 12.0), // Larger button size
+                                    horizontal: 12.0, vertical: 12.0), // Larger button size
                                 textStyle: const TextStyle(fontSize: 18), // Larger text size
                               ),
                               onPressed: _isOfferer || _connecting ? null : _createOffer,
@@ -1080,12 +1076,21 @@ Future<void> _toggleSpeaker(bool enable) async {
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 24.0, vertical: 12.0), // Larger button size
+                                    horizontal: 12.0, vertical: 12.0), // Larger button size
                                 textStyle: const TextStyle(fontSize: 18), // Larger text size
                               ),
                               onPressed: _connecting ? null : _scanQRCode,
                               child: const Text('Scan QR Code'),
                             ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0, vertical: 12.0), // Larger button size
+                                textStyle: const TextStyle(fontSize: 18), // Larger text size
+                              ),
+                              onPressed: _resetApp,
+                              child: const Text('Reset'),
+                            ),                            
                           ],
                         ),
                       ),
