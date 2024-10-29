@@ -148,25 +148,26 @@ Future<void> _processRecognizedText(String recognizedJson) async {
 }
 
 
-Future<void> dispose() async {
-  if (_speechService != null) {
-    await _speechService!.stop();
-    await _speechService!.cancel();
-    _speechService = null;
+  void dispose() {
+    if (_speechService != null) {
+      _speechService!.stop(); // Stop listening
+      _speechService!.cancel(); // Cancel any pending operations
+      _speechService = null;
+    }
+
+    if (_recognizer != null) {
+      _recognizer!.dispose(); // Dispose of the recognizer
+      _recognizer = null;
+    }
+
+    if (_model != null) {
+      _model!.dispose(); // Dispose of the model as per the plugin's example
+      _model = null;
+    }
+
+    _isListening = false;
   }
 
-  if (_recognizer != null) {
-    await _recognizer!.dispose();
-    _recognizer = null;
-  }
-
-  if (_model != null) {
-    _model!.dispose(); // Removed 'await' here
-    _model = null;
-  }
-
-  _isListening = false;
-}
 
 
 

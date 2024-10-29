@@ -817,10 +817,16 @@ Future<void> _onSettingsChanged() async {
         _showErrorSnackBar('Voice command initialization failed.');
         _voiceCommandUtils = null;
       }
+      _voiceCommandUtils?.startListening();
     }
+    else
+      {
+        _voiceCommandUtils?.startListening();
+      }
   } else {
-    _voiceCommandUtils?.stopListening();
-    _voiceCommandUtils = null;
+    if (_voiceCommandUtils != null) {
+      _voiceCommandUtils!.stopListening();
+    }
   }
 
 
