@@ -21,7 +21,7 @@ static const List<String> unmuteMicWords = ['mic on', 'enable mic'];
 
 // Mute/Unmute Speaker Words
 static const List<String> muteSpeakerWords = ['speaker off', 'disable speaker'];
-static const List<String> unmuteSpeakerWords = ['speaker on', 'disable speaker'];
+static const List<String> unmuteSpeakerWords = ['speaker on', 'enable speaker'];
 
 // Full VR Mode
 static const List<String> fullVrModeWords = ['mode one','screen one'];
@@ -185,7 +185,7 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select Enable Speaker Word'),
-                    children: muteSpeakerWords.map((String word) {
+                    children: unmuteSpeakerWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
@@ -210,7 +210,7 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
                 builder: (BuildContext context) {
                   return SimpleDialog(
                     title: const Text('Select Disable Speaker Word'),
-                    children: unmuteSpeakerWords.map((String word) {
+                    children: muteSpeakerWords.map((String word) {
                       return SimpleDialogOption(
                         onPressed: () {
                           Navigator.pop(context, word);
