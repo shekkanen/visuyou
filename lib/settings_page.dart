@@ -16,12 +16,12 @@ static const List<String> viewChangeWords = ['next', 'forward'];
 static const List<String> backWords = ['back', 'previous'];
 
 // Mute/Unmute Mic Words
-static const List<String> muteMicWords = ['mute mic', 'disable mic'];
-static const List<String> unmuteMicWords = ['unmute mic', 'enable mic'];
+static const List<String> muteMicWords = ['mic off', 'disable mic'];
+static const List<String> unmuteMicWords = ['mic on', 'enable mic'];
 
 // Mute/Unmute Speaker Words
-static const List<String> muteSpeakerWords = ['mute speaker', 'speaker off'];
-static const List<String> unmuteSpeakerWords = ['unmute speaker', 'speaker on'];
+static const List<String> muteSpeakerWords = ['speaker off', 'disable speaker'];
+static const List<String> unmuteSpeakerWords = ['speaker on', 'disable speaker'];
 
 // Full VR Mode
 static const List<String> fullVrModeWords = ['mode one','screen one'];

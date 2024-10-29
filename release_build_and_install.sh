@@ -4,9 +4,9 @@
 pkill -f "adb -s e7d36532 logcat"
 pkill -f "adb -s 18a3a90b9907 logcat"
 
-#flutter clean
+flutter clean
 
-#flutter pub get
+flutter pub get
 
 dart scripts/generate_dependencies.dart
 

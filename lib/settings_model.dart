@@ -13,10 +13,10 @@ class SettingsModel extends ChangeNotifier {
   // Voice command keywords
   String _viewNextWord = 'next';
   String _viewBackWord = 'back';
-  String _micEnabledWord = 'unmute mic';
-  String _micDisableWord = 'mute mic';
-  String _speakerEnabledWord = 'unmute speaker';
-  String _speakerDisableWord = 'mute speaker';
+  String _micEnabledWord = 'mic on';
+  String _micDisableWord = 'mic off';
+  String _speakerEnabledWord = 'speaker on';
+  String _speakerDisableWord = 'speaker off';
   String _fullVrModeWord = 'mode one';
   String _vr50_50ModeWord = 'mode two';
   String _pipVrModeWord = 'mode three';
@@ -52,9 +52,10 @@ class SettingsModel extends ChangeNotifier {
 
     _viewNextWord = prefs.getString('viewNextWord') ?? 'next';
     _viewBackWord = prefs.getString('viewBackWord') ?? 'back';
-    _micEnabledWord = prefs.getString('micEnabledWord') ?? 'unmute mic';
-    _micDisableWord = prefs.getString('micDisableWord') ?? 'mute mic';
-    _speakerEnabledWord = prefs.getString('speakerEnabledWord') ?? 'unmute speaker';
+    _micEnabledWord = prefs.getString('micEnabledWord') ?? 'mic on';
+    _micDisableWord = prefs.getString('micDisableWord') ?? 'mic off';
+    _speakerEnabledWord = prefs.getString('speakerEnabledWord') ?? 'speaker on';
+    _speakerDisableWord = prefs.getString('speakerDisableWord') ?? 'speaker off';
     _fullVrModeWord = prefs.getString('fullVrModeWord') ?? 'mode one';
     _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? 'mode two';
     _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'mode three';

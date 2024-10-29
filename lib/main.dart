@@ -195,8 +195,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
           _showInfoSnackBar('Connected successfully!');
         } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
             state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-          _showErrorSnackBar('Connection failed. Please try again.');
-          _resetApp();
+//          _showErrorSnackBar('Connection failed. Please try again.');
+//          _resetApp();
         }
       };
 
