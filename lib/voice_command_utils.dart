@@ -36,18 +36,12 @@ List<String> _getGrammar() {
   VoiceCommandUtils({required this.onCommandRecognized, required this.settingsModel});
 
   Future<void> initSpeech() async {
-    // Request microphone permission
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
-      status = await Permission.microphone.request();
-      if (!status.isGranted) {
-        if (kDebugMode) {
-          print('Microphone permission not granted');
-        }
-        return;
-      }
+  if (!await Permission.microphone.isGranted || !await Permission.camera.isGranted) {
+    if (kDebugMode) {
+      print('Permissions not granted. Speech recognition initialization aborted.');
     }
-
+    return;
+  }
     // Initialize the VoskFlutterPlugin instance
     _vosk = VoskFlutterPlugin.instance();
 

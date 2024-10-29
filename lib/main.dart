@@ -78,7 +78,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     super.initState();
     _initializePreferences(); // Initialize preferences
     _checkFirstLaunch(); // Check if the user has accepted the terms
-    _requestPermissions();
 
     _localRenderer = RTCVideoRenderer();
     _remoteRenderer = RTCVideoRenderer();
@@ -88,8 +87,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     _settingsModel.addListener(_onSettingsChanged);
 
     // Wait for settings to load before proceeding
-    _settingsModel.settingsLoaded.then((_) {
-      _requestPermissions(); // Proceed with the rest after settings are loaded
+    _settingsModel.settingsLoaded.then((_) async {
+      await _requestPermissions(); // Proceed with the rest after settings are loaded
 
       // Initialize previous voice commands after _settingsModel is initialized
       _previousVoiceCommands = {
@@ -119,35 +118,22 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     // No need to retrieve settings here; we'll get them in _requestPermissions()
   }
 
-  Future<void> _requestPermissions() async {
-    var cameraStatus = await Permission.camera.status;
-    if (cameraStatus.isDenied) {
-      cameraStatus = await Permission.camera.request();
-      if (!cameraStatus.isGranted) {
-        _showPermissionAlert();
-        return;
-      }
-    }
+Future<void> _requestPermissions() async {
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.camera,
+    Permission.microphone,
+  ].request();
 
-      var microphoneStatus = await Permission.microphone.status;
-      if (microphoneStatus.isDenied) {
-        microphoneStatus = await Permission.microphone.request();
-        if (!microphoneStatus.isGranted) {
-          _showPermissionAlert();
-          return;
-        }
-    }
-
-
-    if (await Permission.camera.isGranted && await Permission.microphone.isGranted) {
-      await _initializeRenderers();
-      await _createPeerConnection();
-
-      // Voice command initialization is handled in _onSettingsChanged()
-    } else {
-      _showPermissionAlert();
-    }
+  if (statuses[Permission.camera] != PermissionStatus.granted ||
+      statuses[Permission.microphone] != PermissionStatus.granted) {
+    _showPermissionAlert();
+    return;
   }
+
+  // Proceed with initialization after permissions are granted
+  await _initializeRenderers();
+  await _createPeerConnection();
+}
 
   Future<void> _initializeRenderers() async {
     try {
@@ -810,22 +796,33 @@ for (var i = 0; i < _gatheredIceCandidates.length && i < 15; i++) {
   }
 
   /// Handles changes in the settings model.
-void _onSettingsChanged() {
-  // Handle enableVoiceCommands changes
+Future<void> _onSettingsChanged() async {
   if (_settingsModel.enableVoiceCommands) {
     if (_voiceCommandUtils == null) {
+      // Check if permissions are granted
+      if (!await Permission.microphone.isGranted || !await Permission.camera.isGranted) {
+        // Permissions not granted; do not initialize speech recognition
+        return;
+      }
       _voiceCommandUtils = VoiceCommandUtils(
         onCommandRecognized: handleVoiceCommand,
         settingsModel: _settingsModel,
       );
-      _voiceCommandUtils!.initSpeech(); // Ignoring Future
+      try {
+        await _voiceCommandUtils!.initSpeech();
+      } catch (e) {
+        if (kDebugMode) {
+          print('Failed to initialize speech: $e');
+        }
+        _showErrorSnackBar('Voice command initialization failed.');
+        _voiceCommandUtils = null;
+      }
     }
   } else {
-    if (_voiceCommandUtils != null) {
-      _voiceCommandUtils!.stopListening();
-      _voiceCommandUtils = null;
-    }
+    _voiceCommandUtils?.stopListening();
+    _voiceCommandUtils = null;
   }
+
 
   // Handle speakerEnabled changes
   _toggleSpeaker(_settingsModel.speakerEnabled);
