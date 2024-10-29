@@ -964,7 +964,7 @@ Future<void> _toggleSpeaker(bool enable) async {
                   child: Text(
                     'VisuYou',
                     style: TextStyle(
-                      fontSize: 8.0, // Larger font size for better readability
+                      fontSize: 10.0, // Larger font size for better readability
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1038,16 +1038,22 @@ Future<void> _toggleSpeaker(bool enable) async {
           // All other UI components come here
           _renderersInitialized
               ? Column(
-                  children: [
+                    children: [
                     Expanded(
+                      child: Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: RTCVideoView(
                         _localRenderer,
                         mirror: true,
                       ),
+                      ),
                     ),
                     Expanded(
+                      child: Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: RTCVideoView(
                         _remoteRenderer,
+                      ),
                       ),
                     ),
                     Padding(
