@@ -310,16 +310,16 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
       }
 
       // Prepare ICE candidates as a list of maps
-List<Map<String, dynamic>> iceCandidates = [];
-for (var i = 0; i < _gatheredIceCandidates.length && i < 15; i++) {
-  var candidate = _gatheredIceCandidates[i];
-  iceCandidates.add({
-    'candidate': candidate.candidate,
-    'sdpMid': candidate.sdpMid,
-    'sdpMLineIndex': candidate.sdpMLineIndex,
-  });
-}
-
+      List<Map<String, dynamic>> iceCandidates = [];
+      for (var i = 0; i < _gatheredIceCandidates.length && i < 15; i++) {
+        var candidate = _gatheredIceCandidates[i];
+        iceCandidates.add({
+          'candidate': candidate.candidate,
+          'sdpMid': candidate.sdpMid,
+          'sdpMLineIndex': candidate.sdpMLineIndex,
+        });
+      }
+      
       // Determine type based on whether this device is the offerer
       String type = _isOfferer ? 'offer' : 'answer';
 
@@ -331,7 +331,11 @@ for (var i = 0; i < _gatheredIceCandidates.length && i < 15; i++) {
         (String qrCodeData) {
           setState(() {
             _connectionCode = qrCodeData;
-            _connecting = false;
+            // Only set _connecting to false if we are the offerer
+            if (_isOfferer) {
+              _connecting = false;
+            }
+            // Do not set _connecting to false if we are the answerer
           });
         },
       );
