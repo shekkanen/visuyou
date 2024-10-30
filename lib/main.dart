@@ -181,8 +181,14 @@ Future<void> _requestPermissions() async {
           _showInfoSnackBar('Connected successfully!');
         } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
             state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-//          _showErrorSnackBar('Connection failed. Please try again.');
-//          _resetApp();
+
+          if (_isConnected) {
+            setState(() {
+              _isConnected = false;
+             });
+            _showErrorSnackBar('Connection lost. Please try again.');
+          _resetApp();
+          }
         }
       };
 
