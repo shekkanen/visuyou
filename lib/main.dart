@@ -1305,12 +1305,15 @@ class PiPVideoView extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
-            final pipSize =
-                constraints.maxWidth / 5; // Adjust the size of the PiP view here
+            final pipSize = halfWidth / 3; // Adjust as needed
+
+            // Define proportional positions
+            final leftEyeRightPosition = halfWidth * 0.05; // 5% of half screen width
+            final rightEyeRightPosition = halfWidth * 0.2; // 20% of half screen width
 
             return Row(
               children: [
-                // Main View
+                // Left Eye View
                 SizedBox(
                   width: halfWidth,
                   height: constraints.maxHeight,
@@ -1321,24 +1324,16 @@ class PiPVideoView extends StatelessWidget {
                         objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                       Positioned(
-                        right: 20.0,
+                        right: leftEyeRightPosition,
                         bottom: 20.0,
                         width: pipSize,
                         height: pipSize,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: RTCVideoView(
-                            pipRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                          ),
-                        ),
+                        child: _buildPipContainer(),
                       ),
                     ],
                   ),
                 ),
-                // Secondary View
+                // Right Eye View
                 SizedBox(
                   width: halfWidth,
                   height: constraints.maxHeight,
@@ -1349,19 +1344,11 @@ class PiPVideoView extends StatelessWidget {
                         objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                       Positioned(
-                        right: 20.0,
+                        right: rightEyeRightPosition,
                         bottom: 20.0,
                         width: pipSize,
                         height: pipSize,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: RTCVideoView(
-                            pipRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                          ),
-                        ),
+                        child: _buildPipContainer(),
                       ),
                     ],
                   ),
@@ -1370,6 +1357,18 @@ class PiPVideoView extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildPipContainer() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: RTCVideoView(
+        pipRenderer,
+        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
       ),
     );
   }
