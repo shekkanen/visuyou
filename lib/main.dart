@@ -18,6 +18,9 @@ import 'dart:async'; // Import for async functions
 import 'package:vibration/vibration.dart';
 import 'animated_styled_button.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
 
@@ -190,6 +193,11 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
             });
             _showErrorSnackBar('Connection lost. Please try again.');
             _resetApp();
+          // Navigate back to the main screen if in VR mode
+          if (_isInVRMode()) {
+            navigatorKey.currentState?.popUntil((route) => route.isFirst);
+            _showErrorSnackBar('Connection lost. Returning to main screen.');
+          }            
           }
         }
       };
@@ -602,6 +610,11 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
   /// Switches the view mode based on the selected mode.
   void switchViewMode(String mode) {
+    if (_isInVRMode()) {
+      // If already in VR mode, pop the current VR view before navigating
+      navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    }
+
     if (mode.contains('VR Mode')) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeRight,
