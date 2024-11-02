@@ -8,7 +8,6 @@ import 'dart:convert';
 import 'settings_model.dart'; // Import for SettingsModel
 import 'settings_page.dart';
 
-
 class VoiceCommandUtils {
   final Function(String) onCommandRecognized;
   final SettingsModel settingsModel; // Add SettingsModel as a parameter
@@ -18,31 +17,15 @@ class VoiceCommandUtils {
   SpeechService? _speechService;
   bool _isListening = false;
 
-List<String> _getGrammar() {
-  return [
-    ...SettingsPage.viewChangeWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.backWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.muteMicWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.unmuteMicWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.muteSpeakerWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.unmuteSpeakerWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.fullVrModeWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.fullVrMode2Words.map((word) => word.toLowerCase()),
-    ...SettingsPage.vr50_50ModeWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.pipVrModeWords.map((word) => word.toLowerCase()),
-    ...SettingsPage.pipVrMode2Words.map((word) => word.toLowerCase()),
-  ];
-}
-
   VoiceCommandUtils({required this.onCommandRecognized, required this.settingsModel});
 
   Future<void> initSpeech() async {
-  if (!await Permission.microphone.isGranted || !await Permission.camera.isGranted) {
-    if (kDebugMode) {
-      print('Permissions not granted. Speech recognition initialization aborted.');
+    if (!await Permission.microphone.isGranted || !await Permission.camera.isGranted) {
+      if (kDebugMode) {
+        print('Permissions not granted. Speech recognition initialization aborted.');
+      }
+      return;
     }
-    return;
-  }
     // Initialize the VoskFlutterPlugin instance
     _vosk = VoskFlutterPlugin.instance();
 
@@ -52,32 +35,26 @@ List<String> _getGrammar() {
     // Create the model
     _model = await _vosk!.createModel(modelPath);
 
-
-  
     // Create the recognizer
-  _recognizer = await _vosk!.createRecognizer(
-    model: _model!,
-    sampleRate: 16000,
-    grammar: _getGrammar());
- 
-
-
-
+    _recognizer = await _vosk!.createRecognizer(
+        model: _model!,
+        sampleRate: 16000,
+        grammar: _getGrammar());
 
     // Initialize the SpeechService for recognition
     _speechService = await _vosk!.initSpeechService(_recognizer!);
 
     // Subscribe to recognition events
     _speechService!.onPartial().listen((partialResult) {
-        // if (kDebugMode) {
-        //   print('Partial result: $partialResult');
-        // }
+      // if (kDebugMode) {
+      //   print('Partial result: $partialResult');
+      // }
     });
 
     _speechService!.onResult().listen((finalResult) async {
-        if (kDebugMode) {
-          print('Final result: $finalResult');
-        }
+      if (kDebugMode) {
+        print('Final result: $finalResult');
+      }
       await _processRecognizedText(finalResult);
     });
 
@@ -113,43 +90,70 @@ List<String> _getGrammar() {
     }
   }
 
-Future<void> _processRecognizedText(String recognizedJson) async {
-  // Parse the JSON result
-  Map<String, dynamic> result = jsonDecode(recognizedJson);
-  String recognizedText = result['text'] ?? '';
+  Future<void> _processRecognizedText(String recognizedJson) async {
+    // Parse the JSON result
+    Map<String, dynamic> result = jsonDecode(recognizedJson);
+    String recognizedText = result['text'] ?? '';
 
-  recognizedText = recognizedText.toLowerCase();
+    recognizedText = recognizedText.toLowerCase();
 
-  // Check for voice commands based on settings
-  if (recognizedText == settingsModel.viewNextWord.toLowerCase()) {
-    onCommandRecognized('view_next');
-  } else if (recognizedText == settingsModel.viewBackWord.toLowerCase()) {
-    onCommandRecognized('view_back');
-  } else if (recognizedText == settingsModel.micEnabledWord.toLowerCase()) {
-    onCommandRecognized('unmute_mic');
-  } else if (recognizedText == settingsModel.micDisableWord.toLowerCase()) {
-    onCommandRecognized('mute_mic');
-  } else if (recognizedText == settingsModel.speakerEnabledWord.toLowerCase()) {
-    onCommandRecognized('unmute_speaker');
-  } else if (recognizedText == settingsModel.speakerDisableWord.toLowerCase()) {
-    onCommandRecognized('mute_speaker');
-  } else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase()) {
-    onCommandRecognized('full_vr_mode');
-  } else if (recognizedText == settingsModel.fullVrMode2Word.toLowerCase()) {
-    onCommandRecognized('full_vr_mode2');
-  } else if (recognizedText == settingsModel.vr50_50ModeWord.toLowerCase()) {
-    onCommandRecognized('vr50_50_mode');
-  } else if (recognizedText == settingsModel.pipVrModeWord.toLowerCase()) {
-    onCommandRecognized('pip_vr_mode');
-  } else if (recognizedText == settingsModel.pipVrMode2Word.toLowerCase()) {
-    onCommandRecognized('pip_vr_mode2');
-  } else {
-    if (kDebugMode) {
-      print('Command not recognized: $recognizedText');
+    // Check for voice commands based on settings and whether they are enabled
+    if (recognizedText == settingsModel.viewNextWord.toLowerCase() &&
+        settingsModel.viewNextCommandEnabled) {
+      onCommandRecognized('view_next');
+    } else if (recognizedText == settingsModel.viewBackWord.toLowerCase() &&
+        settingsModel.viewBackCommandEnabled) {
+      onCommandRecognized('view_back');
+    } else if (recognizedText == settingsModel.micEnabledWord.toLowerCase() &&
+        settingsModel.micEnabledCommandEnabled) {
+      onCommandRecognized('unmute_mic');
+    } else if (recognizedText == settingsModel.micDisableWord.toLowerCase() &&
+        settingsModel.micDisableCommandEnabled) {
+      onCommandRecognized('mute_mic');
+    } else if (recognizedText == settingsModel.speakerEnabledWord.toLowerCase() &&
+        settingsModel.speakerEnabledCommandEnabled) {
+      onCommandRecognized('unmute_speaker');
+    } else if (recognizedText == settingsModel.speakerDisableWord.toLowerCase() &&
+        settingsModel.speakerDisableCommandEnabled) {
+      onCommandRecognized('mute_speaker');
+    } else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase() &&
+        settingsModel.fullVrModeCommandEnabled) {
+      onCommandRecognized('full_vr_mode');
+    } else if (recognizedText == settingsModel.fullVrMode2Word.toLowerCase() &&
+        settingsModel.fullVrMode2CommandEnabled) {
+      onCommandRecognized('full_vr_mode2');
+    } else if (recognizedText == settingsModel.vr50_50ModeWord.toLowerCase() &&
+        settingsModel.vr50_50ModeCommandEnabled) {
+      onCommandRecognized('vr50_50_mode');
+    } else if (recognizedText == settingsModel.pipVrModeWord.toLowerCase() &&
+        settingsModel.pipVrModeCommandEnabled) {
+      onCommandRecognized('pip_vr_mode');
+    } else if (recognizedText == settingsModel.pipVrMode2Word.toLowerCase() &&
+        settingsModel.pipVrMode2CommandEnabled) {
+      onCommandRecognized('pip_vr_mode2');
+    } else {
+      if (kDebugMode) {
+        print('Command not recognized or disabled: $recognizedText');
+      }
     }
   }
-}
 
+  // The _getGrammar() function remains unchanged
+  List<String> _getGrammar() {
+    return [
+      ...SettingsPage.viewNextWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.viewBackWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.micOffWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.micOnWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.speakerOffWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.speakerOnWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.fullVrModeWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.fullVrMode2Words.map((word) => word.toLowerCase()),
+      ...SettingsPage.vr50_50ModeWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.pipVrModeWords.map((word) => word.toLowerCase()),
+      ...SettingsPage.pipVrMode2Words.map((word) => word.toLowerCase()),
+    ];
+  }
 
   void dispose() {
     if (_speechService != null) {
@@ -170,8 +174,4 @@ Future<void> _processRecognizedText(String recognizedJson) async {
 
     _isListening = false;
   }
-
-
-
-
 }
