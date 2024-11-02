@@ -50,7 +50,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   bool _isOfferer = false; // Track if the device is the offerer
   bool _connecting = false; // Track connection status
   bool _isConnected = false; // Track connection status
-  
 
   String _connectionCode = '';
   final List<RTCIceCandidate> _gatheredIceCandidates = [];
@@ -122,22 +121,22 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     // No need to retrieve settings here; we'll get them in _requestPermissions()
   }
 
-Future<void> _requestPermissions() async {
-  Map<Permission, PermissionStatus> statuses = await [
-    Permission.camera,
-    Permission.microphone,
-  ].request();
+  Future<void> _requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.camera,
+      Permission.microphone,
+    ].request();
 
-  if (statuses[Permission.camera] != PermissionStatus.granted ||
-      statuses[Permission.microphone] != PermissionStatus.granted) {
-    _showPermissionAlert();
-    return;
+    if (statuses[Permission.camera] != PermissionStatus.granted ||
+        statuses[Permission.microphone] != PermissionStatus.granted) {
+      _showPermissionAlert();
+      return;
+    }
+
+    // Proceed with initialization after permissions are granted
+    await _initializeRenderers();
+    await _createPeerConnection();
   }
-
-  // Proceed with initialization after permissions are granted
-  await _initializeRenderers();
-  await _createPeerConnection();
-}
 
   Future<void> _initializeRenderers() async {
     try {
@@ -185,13 +184,12 @@ Future<void> _requestPermissions() async {
           _showInfoSnackBar('Connected successfully!');
         } else if (state == RTCIceConnectionState.RTCIceConnectionStateFailed ||
             state == RTCIceConnectionState.RTCIceConnectionStateDisconnected) {
-
           if (_isConnected) {
             setState(() {
               _isConnected = false;
-             });
+            });
             _showErrorSnackBar('Connection lost. Please try again.');
-          _resetApp();
+            _resetApp();
           }
         }
       };
@@ -208,18 +206,18 @@ Future<void> _requestPermissions() async {
         }
       };
 
-_peerConnection!.onTrack = (RTCTrackEvent event) {
-  if (kDebugMode) {
-    print('Received track: ${event.track.kind}');
-  }
-  if (event.streams.isNotEmpty) {
-    setState(() {
-      _remoteRenderer.srcObject = event.streams[0];
-      _remoteStream = event.streams[0]; // Store the remote stream
-      _toggleSpeaker(_settingsModel.speakerEnabled); // Apply speaker setting
-    });
-  }
-};
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
+        if (kDebugMode) {
+          print('Received track: ${event.track.kind}');
+        }
+        if (event.streams.isNotEmpty) {
+          setState(() {
+            _remoteRenderer.srcObject = event.streams[0];
+            _remoteStream = event.streams[0]; // Store the remote stream
+            _toggleSpeaker(_settingsModel.speakerEnabled); // Apply speaker setting
+          });
+        }
+      };
 
       _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
         if (candidate.candidate != null) {
@@ -257,7 +255,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         'video': backCameraId != null
             ? {
                 'deviceId': backCameraId,
-                 'minWidth': 1280,
+                'minWidth': 1280,
                 'minHeight': 720,
                 'minFrameRate': 30,
               }
@@ -277,8 +275,6 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
 
       // Always add the audio track
       _audioSender = await _peerConnection!.addTrack(_audioTrack!, stream);
-
-
 
       if (backCameraId == null) {
         if (kDebugMode) {
@@ -323,7 +319,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
           'sdpMLineIndex': candidate.sdpMLineIndex,
         });
       }
-      
+
       // Determine type based on whether this device is the offerer
       String type = _isOfferer ? 'offer' : 'answer';
 
@@ -376,7 +372,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
       final offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
       Future.delayed(const Duration(seconds: 5), _sendQRCode);
-//      _sendQRCode();
+      // _sendQRCode();
       if (kDebugMode) {
         print("Local SDP Offer: ${offer.sdp}");
       }
@@ -411,7 +407,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
       final answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
       Future.delayed(const Duration(seconds: 5), _sendQRCode);
-      //_sendQRCode();
+      // _sendQRCode();
 
       if (kDebugMode) {
         print("Local SDP Answer: ${answer.sdp}");
@@ -527,17 +523,17 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
   }
 
   Future<void> handleVoiceCommand(String command) async {
-      command = command.toLowerCase();
-  
-  // Check if the device has a vibrator
-  bool? hasVibrator = await Vibration.hasVibrator();
+    command = command.toLowerCase();
 
-  if (hasVibrator != null && hasVibrator) {
-    // Define a vibration pattern [delay, vibrate, pause, vibrate, ...]
-    List<int> pattern = [0, 200, 100, 200]; // Adjust as needed
-    Vibration.vibrate(pattern: pattern);
-  }
-  
+    // Check if the device has a vibrator
+    bool? hasVibrator = await Vibration.hasVibrator();
+
+    if (hasVibrator != null && hasVibrator) {
+      // Define a vibration pattern [delay, vibrate, pause, vibrate, ...]
+      List<int> pattern = [0, 200, 100, 200]; // Adjust as needed
+      Vibration.vibrate(pattern: pattern);
+    }
+
     if (command == 'view_next') {
       // Handle 'next' command
       int currentIndex = _viewModes.indexOf(_selectedViewMode);
@@ -557,22 +553,21 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
       });
       switchViewMode(prevMode);
     } else if (command == 'mute_mic') {
-    _settingsModel.updatemicEnabled(false);
-    _toggleMic(false);
-    _showInfoSnackBar('Mic has been muted.');
-  } else if (command == 'unmute_mic') {
-    _settingsModel.updatemicEnabled(true);
-    _toggleMic(true);
-    _showInfoSnackBar('Mic has been unmuted.');
-  } else if (command == 'mute_speaker') {
-    _settingsModel.updateSpeakerEnabled(false);
-    _toggleSpeaker(false);
-    _showInfoSnackBar('Speaker has been muted.');
-  } else if (command == 'unmute_speaker') {
-    _settingsModel.updateSpeakerEnabled(true);
-    _toggleSpeaker(true);
-    _showInfoSnackBar('Speaker has been unmuted.');
-  
+      _settingsModel.updatemicEnabled(false);
+      _toggleMic(false);
+      _showInfoSnackBar('Mic has been muted.');
+    } else if (command == 'unmute_mic') {
+      _settingsModel.updatemicEnabled(true);
+      _toggleMic(true);
+      _showInfoSnackBar('Mic has been unmuted.');
+    } else if (command == 'mute_speaker') {
+      _settingsModel.updateSpeakerEnabled(false);
+      _toggleSpeaker(false);
+      _showInfoSnackBar('Speaker has been muted.');
+    } else if (command == 'unmute_speaker') {
+      _settingsModel.updateSpeakerEnabled(true);
+      _toggleSpeaker(true);
+      _showInfoSnackBar('Speaker has been unmuted.');
     } else if (command == 'full_vr_mode') {
       setState(() {
         _selectedViewMode = 'Full VR Mode';
@@ -642,15 +637,15 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
   void _enterFullVRMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => FullVRVideoView(
-        renderer: _remoteRenderer,
-        messageNotifier: _vrMessageNotifier,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullVRVideoView(
+          renderer: _remoteRenderer,
+          messageNotifier: _vrMessageNotifier,
+        ),
       ),
-    ),
-  ).then((_) {
+    ).then((_) {
       // This will reset the orientation when the VR view is popped from the navigation stack.
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
@@ -663,15 +658,15 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
   void _enterFullVRMode2() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => FullVRVideoView(
-        renderer: _localRenderer,
-        messageNotifier: _vrMessageNotifier,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullVRVideoView(
+          renderer: _localRenderer,
+          messageNotifier: _vrMessageNotifier,
+        ),
       ),
-    ),
-  ).then((_) {
+    ).then((_) {
       // This will reset the orientation when the VR view is popped from the navigation stack.
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
@@ -691,7 +686,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         builder: (context) => VR50_50VideoView(
           localRenderer: _localRenderer,
           remoteRenderer: _remoteRenderer,
-            messageNotifier: _vrMessageNotifier,
+          messageNotifier: _vrMessageNotifier,
         ),
       ),
     ).then((_) {
@@ -714,7 +709,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         builder: (context) => PiPVideoView(
           mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
           pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
-          messageNotifier: _vrMessageNotifier,          
+          messageNotifier: _vrMessageNotifier,
         ),
       ),
     ).then((_) {
@@ -737,7 +732,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         builder: (context) => PiPVideoView(
           mainRenderer: _localRenderer, // Assuming localRenderer as main view
           pipRenderer: _remoteRenderer, // Assuming remoteRenderer as PiP view
-          messageNotifier: _vrMessageNotifier,          
+          messageNotifier: _vrMessageNotifier,
         ),
       ),
     ).then((_) {
@@ -786,45 +781,29 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
   }
 
   /// Shows an error snackbar.
-void _showErrorSnackBar(String message) {
-  if (_isInVRMode()) {
+  void _showErrorSnackBar(String message) {
     _displayVRMessage(message);
-  } else {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.red,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-}
 
   /// Shows an informational snackbar.
-void _showInfoSnackBar(String message) {
-  if (_isInVRMode()) {
+  void _showInfoSnackBar(String message) {
     _displayVRMessage(message);
-  } else {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.green,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-}
 
-// Helper method to check if in VR mode
-bool _isInVRMode() {
-  // Implement logic to determine if the app is currently in VR mode
-  return _selectedViewMode.contains('VR Mode');
-}
+  // Helper method to check if in VR mode
+  bool _isInVRMode() {
+    // Implement logic to determine if the app is currently in VR mode
+    return _selectedViewMode.contains('VR Mode');
+  }
 
-// Display message in VR
-void _displayVRMessage(String message) {
-  _vrMessageNotifier.value = message;
-  // Hide the message after a delay
-  Future.delayed(const Duration(seconds: 3), () {
-    _vrMessageNotifier.value = null;
-  });
-}
+  // Display message in VR or non-VR mode
+  void _displayVRMessage(String message) {
+    _vrMessageNotifier.value = message;
+    // Hide the message after a delay
+    Future.delayed(const Duration(seconds: 3), () {
+      _vrMessageNotifier.value = null;
+    });
+  }
 
   /// Checks if it's the first launch and shows Terms of Service if needed.
   void _checkFirstLaunch() async {
@@ -868,93 +847,88 @@ void _displayVRMessage(String message) {
   }
 
   /// Handles changes in the settings model.
-Future<void> _onSettingsChanged() async {
-  if (_settingsModel.enableVoiceCommands) {
-    if (_voiceCommandUtils == null) {
-      // Check if permissions are granted
-      if (!await Permission.microphone.isGranted || !await Permission.camera.isGranted) {
-        // Permissions not granted; do not initialize speech recognition
-        return;
-      }
-      _voiceCommandUtils = VoiceCommandUtils(
-        onCommandRecognized: handleVoiceCommand,
-        settingsModel: _settingsModel,
-      );
-      try {
-        await _voiceCommandUtils!.initSpeech();
-      } catch (e) {
-        if (kDebugMode) {
-          print('Failed to initialize speech: $e');
+  Future<void> _onSettingsChanged() async {
+    if (_settingsModel.enableVoiceCommands) {
+      if (_voiceCommandUtils == null) {
+        // Check if permissions are granted
+        if (!await Permission.microphone.isGranted ||
+            !await Permission.camera.isGranted) {
+          // Permissions not granted; do not initialize speech recognition
+          return;
         }
-        _showErrorSnackBar('Voice command initialization failed.');
-        _voiceCommandUtils = null;
-      }
-      _voiceCommandUtils?.startListening();
-    }
-    else
-      {
+        _voiceCommandUtils = VoiceCommandUtils(
+          onCommandRecognized: handleVoiceCommand,
+          settingsModel: _settingsModel,
+        );
+        try {
+          await _voiceCommandUtils!.initSpeech();
+        } catch (e) {
+          if (kDebugMode) {
+            print('Failed to initialize speech: $e');
+          }
+          _showErrorSnackBar('Voice command initialization failed.');
+          _voiceCommandUtils = null;
+        }
+        _voiceCommandUtils?.startListening();
+      } else {
         _voiceCommandUtils?.startListening();
       }
-  } else {
-    if (_voiceCommandUtils != null) {
-      _voiceCommandUtils!.stopListening();
-    }
-  }
-
-
-  // Handle speakerEnabled changes
-  _toggleSpeaker(_settingsModel.speakerEnabled);
-
- // Handle micEnabled changes
-  if (_audioTrack != null) {
-    _audioTrack!.enabled = _settingsModel.micEnabled;
-  }
-
-  setState(() {
-    // Update UI if necessary
-  });
-}
-
-Future<void> _toggleMic(bool enable) async {
-  try {
-    if (_audioTrack != null) {
-      _audioTrack!.enabled = enable;
-      if (kDebugMode) {
-        print('Microphone has been ${enable ? 'enabled' : 'disabled'}.');
-      }
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error toggling mic: $e');
-    }
-  }
-}
-
-// Modify _toggleSpeaker function
-Future<void> _toggleSpeaker(bool enable) async {
-  try {
-    if (_remoteStream != null) {
-      var audioTracks = _remoteStream!.getAudioTracks();
-      for (var track in audioTracks) {
-        track.enabled = enable;
-      }
-      if (kDebugMode) {
-        print('Speaker has been ${enable ? 'enabled' : 'disabled'}.');
-      }
     } else {
-      if (kDebugMode) {
-        print('Cannot toggle speaker: Remote stream is null.');
+      if (_voiceCommandUtils != null) {
+        _voiceCommandUtils!.stopListening();
       }
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error toggling speaker: $e');
+
+    // Handle speakerEnabled changes
+    _toggleSpeaker(_settingsModel.speakerEnabled);
+
+    // Handle micEnabled changes
+    if (_audioTrack != null) {
+      _audioTrack!.enabled = _settingsModel.micEnabled;
+    }
+
+    setState(() {
+      // Update UI if necessary
+    });
+  }
+
+  Future<void> _toggleMic(bool enable) async {
+    try {
+      if (_audioTrack != null) {
+        _audioTrack!.enabled = enable;
+        if (kDebugMode) {
+          print('Microphone has been ${enable ? 'enabled' : 'disabled'}.');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error toggling mic: $e');
+      }
     }
   }
-}
 
-
-
+  // Modify _toggleSpeaker function
+  Future<void> _toggleSpeaker(bool enable) async {
+    try {
+      if (_remoteStream != null) {
+        var audioTracks = _remoteStream!.getAudioTracks();
+        for (var track in audioTracks) {
+          track.enabled = enable;
+        }
+        if (kDebugMode) {
+          print('Speaker has been ${enable ? 'enabled' : 'disabled'}.');
+        }
+      } else {
+        if (kDebugMode) {
+          print('Cannot toggle speaker: Remote stream is null.');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error toggling speaker: $e');
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -974,7 +948,7 @@ Future<void> _toggleSpeaker(bool enable) async {
     super.dispose();
   }
 
-    Future<void> _resetApp() async {
+  Future<void> _resetApp() async {
     // Close the peer connection
     if (_peerConnection != null) {
       await _peerConnection!.close();
@@ -1003,13 +977,13 @@ Future<void> _toggleSpeaker(bool enable) async {
     await _remoteRenderer.initialize();
 
     // Reset variables
-      setState(() {
-        _connectionCode = '';
-        _isOfferer = false;
-        _connecting = false;
-        _isConnected = false;
-        _renderersInitialized = true; // Since we re-initialized them
-      });
+    setState(() {
+      _connectionCode = '';
+      _isOfferer = false;
+      _connecting = false;
+      _isConnected = false;
+      _renderersInitialized = true; // Since we re-initialized them
+    });
 
     // Re-initialize the peer connection and media streams
     await _createPeerConnection();
@@ -1110,22 +1084,22 @@ Future<void> _toggleSpeaker(bool enable) async {
           // All other UI components come here
           _renderersInitialized
               ? Column(
-                    children: [
+                  children: [
                     Expanded(
                       child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: RTCVideoView(
-                        _localRenderer,
-                        mirror: true,
-                      ),
+                        padding: const EdgeInsets.all(8.0),
+                        child: RTCVideoView(
+                          _localRenderer,
+                          mirror: true,
+                        ),
                       ),
                     ),
                     Expanded(
                       child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: RTCVideoView(
-                        _remoteRenderer,
-                      ),
+                        padding: const EdgeInsets.all(8.0),
+                        child: RTCVideoView(
+                          _remoteRenderer,
+                        ),
                       ),
                     ),
                     Padding(
@@ -1139,57 +1113,87 @@ Future<void> _toggleSpeaker(bool enable) async {
                                   style: TextStyle(fontSize: 16), // Increased text size
                                 ),
                     ),
-SafeArea(
-  child: Padding(
-    padding: const EdgeInsets.symmetric(vertical: 10.0),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        // Start Connection Button
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: AnimatedStyledButton(
-              label: 'Start Connection', // Updated label
-              icon: Icons.link, // Updated icon
-              onPressed: _isOfferer || _connecting ? null : _createOffer,
-              isEnabled: !(_isOfferer || _connecting),
-            ),
-          ),
-        ),
-        
-        // Join Session Button
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: AnimatedStyledButton(
-              label: 'Join Session', // Updated label
-              icon: Icons.qr_code_scanner,
-              onPressed: _connecting ? null : _scanQRCode,
-              isEnabled: !_connecting,
-            ),
-          ),
-        ),
-        
-        // Disconnect Button
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: AnimatedStyledButton(
-              label: 'Disconnect', // Updated label
-              icon: Icons.power_settings_new, // Updated icon
-              onPressed: _resetApp,
-              isEnabled: true,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+                    SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Start Connection Button
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: AnimatedStyledButton(
+                                  label: 'Start Connection', // Updated label
+                                  icon: Icons.link, // Updated icon
+                                  onPressed: _isOfferer || _connecting ? null : _createOffer,
+                                  isEnabled: !(_isOfferer || _connecting),
+                                ),
+                              ),
+                            ),
+
+                            // Join Session Button
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: AnimatedStyledButton(
+                                  label: 'Join Session', // Updated label
+                                  icon: Icons.qr_code_scanner,
+                                  onPressed: _connecting ? null : _scanQRCode,
+                                  isEnabled: !_connecting,
+                                ),
+                              ),
+                            ),
+
+                            // Disconnect Button
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: AnimatedStyledButton(
+                                  label: 'Disconnect', // Updated label
+                                  icon: Icons.power_settings_new, // Updated icon
+                                  onPressed: _resetApp,
+                                  isEnabled: true,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 )
               : const Center(child: CircularProgressIndicator()),
+
+          // Global Message Overlay for Non-VR Modes
+          ValueListenableBuilder<String?>(
+            valueListenable: _vrMessageNotifier,
+            builder: (context, message, child) {
+              if (message == null) return const SizedBox.shrink();
+              return Positioned(
+                top: 50, // Adjust the position as needed
+                left: 20,
+                right: 20,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1346,7 +1350,6 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
   }
 }
 
-
 class VR50_50VideoView extends StatelessWidget {
   final RTCVideoRenderer localRenderer;
   final RTCVideoRenderer remoteRenderer;
@@ -1359,157 +1362,157 @@ class VR50_50VideoView extends StatelessWidget {
     required this.messageNotifier,
   }) : super(key: key);
 
-@override
-Widget build(BuildContext context) {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  @override
+  Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-  return Scaffold(
-    body: GestureDetector(
-      onDoubleTap: () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        Navigator.pop(context);
-      },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final quarterWidth = constraints.maxWidth / 4;
-          final settingsModel = Provider.of<SettingsModel>(context);
-          final leftEyeSeparation = quarterWidth * settingsModel.leftEyeSeparation;
-          final rightEyeSeparation = quarterWidth * settingsModel.rightEyeSeparation;
-          final messageWidth = quarterWidth * 2 * 0.8; // 80% of half screen
-
-          return Stack(
-            children: [
-              // Existing VR Views
-              Row(
-                children: [
-                  // Left Eye View
-                  SizedBox(
-                    width: quarterWidth * 2,
-                    height: constraints.maxHeight,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: quarterWidth,
-                          height: constraints.maxHeight,
-                          child: RTCVideoView(
-                            localRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                          ),
-                        ),
-                        SizedBox(
-                          width: quarterWidth,
-                          height: constraints.maxHeight,
-                          child: RTCVideoView(
-                            remoteRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Right Eye View
-                  SizedBox(
-                    width: quarterWidth * 2,
-                    height: constraints.maxHeight,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: quarterWidth,
-                          height: constraints.maxHeight,
-                          child: RTCVideoView(
-                            localRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                          ),
-                        ),
-                        SizedBox(
-                          width: quarterWidth,
-                          height: constraints.maxHeight,
-                          child: RTCVideoView(
-                            remoteRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              // Overlay Messages
-              ValueListenableBuilder<String?>(
-                valueListenable: messageNotifier,
-                builder: (context, message, child) {
-                  if (message == null) return const SizedBox.shrink();
-                  return Row(
-                    children: [
-                      // Left Eye Overlay
-                      SizedBox(
-                        width: quarterWidth * 2,
-                        height: constraints.maxHeight,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              left: (quarterWidth * 2 - messageWidth) / 2 + leftEyeSeparation,
-                              top: constraints.maxHeight / 2 - 50,
-                              child: Container(
-                                width: messageWidth,
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  message,
-                                  style: const TextStyle(
-                                    fontSize: 24.0,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Right Eye Overlay
-                      SizedBox(
-                        width: quarterWidth * 2,
-                        height: constraints.maxHeight,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              left: (quarterWidth * 2 - messageWidth) / 2 - rightEyeSeparation,
-                              top: constraints.maxHeight / 2 - 50,
-                              child: Container(
-                                width: messageWidth,
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  message,
-                                  style: const TextStyle(
-                                    fontSize: 24.0,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          );
+    return Scaffold(
+      body: GestureDetector(
+        onDoubleTap: () {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          Navigator.pop(context);
         },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final quarterWidth = constraints.maxWidth / 4;
+            final settingsModel = Provider.of<SettingsModel>(context);
+            final leftEyeSeparation = quarterWidth * settingsModel.leftEyeSeparation;
+            final rightEyeSeparation = quarterWidth * settingsModel.rightEyeSeparation;
+            final messageWidth = quarterWidth * 2 * 0.8; // 80% of half screen
+
+            return Stack(
+              children: [
+                // Existing VR Views
+                Row(
+                  children: [
+                    // Left Eye View
+                    SizedBox(
+                      width: quarterWidth * 2,
+                      height: constraints.maxHeight,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: quarterWidth,
+                            height: constraints.maxHeight,
+                            child: RTCVideoView(
+                              localRenderer,
+                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            ),
+                          ),
+                          SizedBox(
+                            width: quarterWidth,
+                            height: constraints.maxHeight,
+                            child: RTCVideoView(
+                              remoteRenderer,
+                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Right Eye View
+                    SizedBox(
+                      width: quarterWidth * 2,
+                      height: constraints.maxHeight,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: quarterWidth,
+                            height: constraints.maxHeight,
+                            child: RTCVideoView(
+                              localRenderer,
+                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            ),
+                          ),
+                          SizedBox(
+                            width: quarterWidth,
+                            height: constraints.maxHeight,
+                            child: RTCVideoView(
+                              remoteRenderer,
+                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                // Overlay Messages
+                ValueListenableBuilder<String?>(
+                  valueListenable: messageNotifier,
+                  builder: (context, message, child) {
+                    if (message == null) return const SizedBox.shrink();
+                    return Row(
+                      children: [
+                        // Left Eye Overlay
+                        SizedBox(
+                          width: quarterWidth * 2,
+                          height: constraints.maxHeight,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: (quarterWidth * 2 - messageWidth) / 2 + leftEyeSeparation,
+                                top: constraints.maxHeight / 2 - 50,
+                                child: Container(
+                                  width: messageWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    message,
+                                    style: const TextStyle(
+                                      fontSize: 24.0,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Right Eye Overlay
+                        SizedBox(
+                          width: quarterWidth * 2,
+                          height: constraints.maxHeight,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: (quarterWidth * 2 - messageWidth) / 2 - rightEyeSeparation,
+                                top: constraints.maxHeight / 2 - 50,
+                                child: Container(
+                                  width: messageWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    message,
+                                    style: const TextStyle(
+                                      fontSize: 24.0,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 // PiP Mode implementation for VR headset
@@ -1525,151 +1528,150 @@ class PiPVideoView extends StatelessWidget {
     required this.messageNotifier, // Add this line
   }) : super(key: key);
 
+  @override
+  Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-@override
-Widget build(BuildContext context) {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-  return Scaffold(
-    body: GestureDetector(
-      onDoubleTap: () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        Navigator.pop(context);
-      },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final halfWidth = constraints.maxWidth / 2;
-          final pipSize = halfWidth / 3; // Adjust as needed
-          final settingsModel = Provider.of<SettingsModel>(context);
-          final leftEyeSeparation = halfWidth * settingsModel.leftEyeSeparation;
-          final rightEyeSeparation = halfWidth * settingsModel.rightEyeSeparation;
-          final messageWidth = halfWidth * 0.8;
-
-          // Define proportional positions
-          final leftEyeRightPosition = halfWidth * 0.05 + leftEyeSeparation;
-          final rightEyeRightPosition = halfWidth * 0.2 - rightEyeSeparation;
-
-          return Stack(
-            children: [
-              Row(
-                children: [
-                  // Left Eye View
-                  SizedBox(
-                    width: halfWidth,
-                    height: constraints.maxHeight,
-                    child: Stack(
-                      children: [
-                        RTCVideoView(
-                          mainRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
-                        Positioned(
-                          right: leftEyeRightPosition,
-                          bottom: 20.0,
-                          width: pipSize,
-                          height: pipSize,
-                          child: _buildPipContainer(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Right Eye View
-                  SizedBox(
-                    width: halfWidth,
-                    height: constraints.maxHeight,
-                    child: Stack(
-                      children: [
-                        RTCVideoView(
-                          mainRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
-                        Positioned(
-                          right: rightEyeRightPosition,
-                          bottom: 20.0,
-                          width: pipSize,
-                          height: pipSize,
-                          child: _buildPipContainer(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              // Overlay Messages
-              ValueListenableBuilder<String?>(
-                valueListenable: messageNotifier,
-                builder: (context, message, child) {
-                  if (message == null) return const SizedBox.shrink();
-                  return Row(
-                    children: [
-                      // Left Eye Overlay
-                      SizedBox(
-                        width: halfWidth,
-                        height: constraints.maxHeight,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              left: (halfWidth - messageWidth) / 2 + leftEyeSeparation,
-                              top: constraints.maxHeight / 2 - 50,
-                              child: Container(
-                                width: messageWidth,
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  message,
-                                  style: const TextStyle(
-                                    fontSize: 24.0,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Right Eye Overlay
-                      SizedBox(
-                        width: halfWidth,
-                        height: constraints.maxHeight,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              left: (halfWidth - messageWidth) / 2 - rightEyeSeparation,
-                              top: constraints.maxHeight / 2 - 50,
-                              child: Container(
-                                width: messageWidth,
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  message,
-                                  style: const TextStyle(
-                                    fontSize: 24.0,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          );
+    return Scaffold(
+      body: GestureDetector(
+        onDoubleTap: () {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          Navigator.pop(context);
         },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final halfWidth = constraints.maxWidth / 2;
+            final pipSize = halfWidth / 3; // Adjust as needed
+            final settingsModel = Provider.of<SettingsModel>(context);
+            final leftEyeSeparation = halfWidth * settingsModel.leftEyeSeparation;
+            final rightEyeSeparation = halfWidth * settingsModel.rightEyeSeparation;
+            final messageWidth = halfWidth * 0.8;
+
+            // Define proportional positions
+            final leftEyeRightPosition = halfWidth * 0.05 + leftEyeSeparation;
+            final rightEyeRightPosition = halfWidth * 0.2 - rightEyeSeparation;
+
+            return Stack(
+              children: [
+                Row(
+                  children: [
+                    // Left Eye View
+                    SizedBox(
+                      width: halfWidth,
+                      height: constraints.maxHeight,
+                      child: Stack(
+                        children: [
+                          RTCVideoView(
+                            mainRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
+                          Positioned(
+                            right: leftEyeRightPosition,
+                            bottom: 20.0,
+                            width: pipSize,
+                            height: pipSize,
+                            child: _buildPipContainer(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Right Eye View
+                    SizedBox(
+                      width: halfWidth,
+                      height: constraints.maxHeight,
+                      child: Stack(
+                        children: [
+                          RTCVideoView(
+                            mainRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
+                          Positioned(
+                            right: rightEyeRightPosition,
+                            bottom: 20.0,
+                            width: pipSize,
+                            height: pipSize,
+                            child: _buildPipContainer(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                // Overlay Messages
+                ValueListenableBuilder<String?>(
+                  valueListenable: messageNotifier,
+                  builder: (context, message, child) {
+                    if (message == null) return const SizedBox.shrink();
+                    return Row(
+                      children: [
+                        // Left Eye Overlay
+                        SizedBox(
+                          width: halfWidth,
+                          height: constraints.maxHeight,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: (halfWidth - messageWidth) / 2 + leftEyeSeparation,
+                                top: constraints.maxHeight / 2 - 50,
+                                child: Container(
+                                  width: messageWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    message,
+                                    style: const TextStyle(
+                                      fontSize: 24.0,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Right Eye Overlay
+                        SizedBox(
+                          width: halfWidth,
+                          height: constraints.maxHeight,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: (halfWidth - messageWidth) / 2 - rightEyeSeparation,
+                                top: constraints.maxHeight / 2 - 50,
+                                child: Container(
+                                  width: messageWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    message,
+                                    style: const TextStyle(
+                                      fontSize: 24.0,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildPipContainer() {
@@ -1684,3 +1686,4 @@ Widget build(BuildContext context) {
     );
   }
 }
+
