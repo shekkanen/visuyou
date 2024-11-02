@@ -690,6 +690,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         builder: (context) => VR50_50VideoView(
           localRenderer: _localRenderer,
           remoteRenderer: _remoteRenderer,
+            messageNotifier: _vrMessageNotifier,
         ),
       ),
     ).then((_) {
@@ -712,6 +713,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         builder: (context) => PiPVideoView(
           mainRenderer: _remoteRenderer, // Assuming remoteRenderer as main view
           pipRenderer: _localRenderer, // Assuming localRenderer as PiP view
+          messageNotifier: _vrMessageNotifier,          
         ),
       ),
     ).then((_) {
@@ -734,6 +736,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         builder: (context) => PiPVideoView(
           mainRenderer: _localRenderer, // Assuming localRenderer as main view
           pipRenderer: _remoteRenderer, // Assuming remoteRenderer as PiP view
+          messageNotifier: _vrMessageNotifier,          
         ),
       ),
     ).then((_) {
@@ -1335,169 +1338,326 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
 class VR50_50VideoView extends StatelessWidget {
   final RTCVideoRenderer localRenderer;
   final RTCVideoRenderer remoteRenderer;
+  final ValueNotifier<String?> messageNotifier;
 
   const VR50_50VideoView({
     Key? key,
     required this.localRenderer,
     required this.remoteRenderer,
+    required this.messageNotifier,
   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    // Hide the system UI when entering VR mode
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+@override
+Widget build(BuildContext context) {
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    return Scaffold(
-      body: GestureDetector(
-        onDoubleTap: () {
-          // Restore the system UI when exiting VR mode
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          Navigator.pop(context);
+  return Scaffold(
+    body: GestureDetector(
+      onDoubleTap: () {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        Navigator.pop(context);
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final quarterWidth = constraints.maxWidth / 4;
+          final settingsModel = Provider.of<SettingsModel>(context);
+          final leftEyeSeparation = quarterWidth * settingsModel.leftEyeSeparation;
+          final rightEyeSeparation = quarterWidth * settingsModel.rightEyeSeparation;
+          final messageWidth = quarterWidth * 2 * 0.8; // 80% of half screen
+
+          return Stack(
+            children: [
+              // Existing VR Views
+              Row(
+                children: [
+                  // Left Eye View
+                  SizedBox(
+                    width: quarterWidth * 2,
+                    height: constraints.maxHeight,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: quarterWidth,
+                          height: constraints.maxHeight,
+                          child: RTCVideoView(
+                            localRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
+                        ),
+                        SizedBox(
+                          width: quarterWidth,
+                          height: constraints.maxHeight,
+                          child: RTCVideoView(
+                            remoteRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Right Eye View
+                  SizedBox(
+                    width: quarterWidth * 2,
+                    height: constraints.maxHeight,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: quarterWidth,
+                          height: constraints.maxHeight,
+                          child: RTCVideoView(
+                            localRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
+                        ),
+                        SizedBox(
+                          width: quarterWidth,
+                          height: constraints.maxHeight,
+                          child: RTCVideoView(
+                            remoteRenderer,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Overlay Messages
+              ValueListenableBuilder<String?>(
+                valueListenable: messageNotifier,
+                builder: (context, message, child) {
+                  if (message == null) return const SizedBox.shrink();
+                  return Row(
+                    children: [
+                      // Left Eye Overlay
+                      SizedBox(
+                        width: quarterWidth * 2,
+                        height: constraints.maxHeight,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: (quarterWidth * 2 - messageWidth) / 2 + leftEyeSeparation,
+                              top: constraints.maxHeight / 2 - 50,
+                              child: Container(
+                                width: messageWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  message,
+                                  style: const TextStyle(
+                                    fontSize: 24.0,
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Right Eye Overlay
+                      SizedBox(
+                        width: quarterWidth * 2,
+                        height: constraints.maxHeight,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: (quarterWidth * 2 - messageWidth) / 2 - rightEyeSeparation,
+                              top: constraints.maxHeight / 2 - 50,
+                              child: Container(
+                                width: messageWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  message,
+                                  style: const TextStyle(
+                                    fontSize: 24.0,
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          );
         },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final quarterWidth = constraints.maxWidth / 4;
-            return Row(
-              children: [
-                // Left Eye View
-                SizedBox(
-                  width: quarterWidth * 2,
-                  height: constraints.maxHeight,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: quarterWidth,
-                        height: constraints.maxHeight,
-                        child: RTCVideoView(
-                          localRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
-                      ),
-                      SizedBox(
-                        width: quarterWidth,
-                        height: constraints.maxHeight,
-                        child: RTCVideoView(
-                          remoteRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Right Eye View
-                SizedBox(
-                  width: quarterWidth * 2,
-                  height: constraints.maxHeight,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: quarterWidth,
-                        height: constraints.maxHeight,
-                        child: RTCVideoView(
-                          localRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
-                      ),
-                      SizedBox(
-                        width: quarterWidth,
-                        height: constraints.maxHeight,
-                        child: RTCVideoView(
-                          remoteRenderer,
-                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // PiP Mode implementation for VR headset
 class PiPVideoView extends StatelessWidget {
   final RTCVideoRenderer mainRenderer;
   final RTCVideoRenderer pipRenderer;
+  final ValueNotifier<String?> messageNotifier; // Add this line
 
   const PiPVideoView({
     Key? key,
     required this.mainRenderer,
     required this.pipRenderer,
+    required this.messageNotifier, // Add this line
   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    // Hide the system UI when entering VR mode
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    return Scaffold(
-      body: GestureDetector(
-        onDoubleTap: () {
-          // Restore the system UI when exiting VR mode
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          Navigator.pop(context);
+@override
+Widget build(BuildContext context) {
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  return Scaffold(
+    body: GestureDetector(
+      onDoubleTap: () {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        Navigator.pop(context);
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final halfWidth = constraints.maxWidth / 2;
+          final pipSize = halfWidth / 3; // Adjust as needed
+          final settingsModel = Provider.of<SettingsModel>(context);
+          final leftEyeSeparation = halfWidth * settingsModel.leftEyeSeparation;
+          final rightEyeSeparation = halfWidth * settingsModel.rightEyeSeparation;
+          final messageWidth = halfWidth * 0.8;
+
+          // Define proportional positions
+          final leftEyeRightPosition = halfWidth * 0.05 + leftEyeSeparation;
+          final rightEyeRightPosition = halfWidth * 0.2 - rightEyeSeparation;
+
+          return Stack(
+            children: [
+              Row(
+                children: [
+                  // Left Eye View
+                  SizedBox(
+                    width: halfWidth,
+                    height: constraints.maxHeight,
+                    child: Stack(
+                      children: [
+                        RTCVideoView(
+                          mainRenderer,
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        ),
+                        Positioned(
+                          right: leftEyeRightPosition,
+                          bottom: 20.0,
+                          width: pipSize,
+                          height: pipSize,
+                          child: _buildPipContainer(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Right Eye View
+                  SizedBox(
+                    width: halfWidth,
+                    height: constraints.maxHeight,
+                    child: Stack(
+                      children: [
+                        RTCVideoView(
+                          mainRenderer,
+                          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        ),
+                        Positioned(
+                          right: rightEyeRightPosition,
+                          bottom: 20.0,
+                          width: pipSize,
+                          height: pipSize,
+                          child: _buildPipContainer(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Overlay Messages
+              ValueListenableBuilder<String?>(
+                valueListenable: messageNotifier,
+                builder: (context, message, child) {
+                  if (message == null) return const SizedBox.shrink();
+                  return Row(
+                    children: [
+                      // Left Eye Overlay
+                      SizedBox(
+                        width: halfWidth,
+                        height: constraints.maxHeight,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: (halfWidth - messageWidth) / 2 + leftEyeSeparation,
+                              top: constraints.maxHeight / 2 - 50,
+                              child: Container(
+                                width: messageWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  message,
+                                  style: const TextStyle(
+                                    fontSize: 24.0,
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Right Eye Overlay
+                      SizedBox(
+                        width: halfWidth,
+                        height: constraints.maxHeight,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: (halfWidth - messageWidth) / 2 - rightEyeSeparation,
+                              top: constraints.maxHeight / 2 - 50,
+                              child: Container(
+                                width: messageWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  message,
+                                  style: const TextStyle(
+                                    fontSize: 24.0,
+                                    color: Colors.white,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          );
         },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final halfWidth = constraints.maxWidth / 2;
-            final pipSize = halfWidth / 3; // Adjust as needed
-
-            // Define proportional positions
-            final leftEyeRightPosition = halfWidth * 0.05; // 5% of half screen width
-            final rightEyeRightPosition = halfWidth * 0.2; // 20% of half screen width
-
-            return Row(
-              children: [
-                // Left Eye View
-                SizedBox(
-                  width: halfWidth,
-                  height: constraints.maxHeight,
-                  child: Stack(
-                    children: [
-                      RTCVideoView(
-                        mainRenderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      ),
-                      Positioned(
-                        right: leftEyeRightPosition,
-                        bottom: 20.0,
-                        width: pipSize,
-                        height: pipSize,
-                        child: _buildPipContainer(),
-                      ),
-                    ],
-                  ),
-                ),
-                // Right Eye View
-                SizedBox(
-                  width: halfWidth,
-                  height: constraints.maxHeight,
-                  child: Stack(
-                    children: [
-                      RTCVideoView(
-                        mainRenderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      ),
-                      Positioned(
-                        right: rightEyeRightPosition,
-                        bottom: 20.0,
-                        width: pipSize,
-                        height: pipSize,
-                        child: _buildPipContainer(),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildPipContainer() {
