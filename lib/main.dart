@@ -60,6 +60,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   String _selectedViewMode = 'Full VR Mode'; // Default selected mode
   final List<String> _viewModes = [
     'Full VR Mode',
+    'Full VR Mode2',
     '50/50 VR Mode',
     'PIP VR Mode',
     'PIP VR Mode2'
@@ -574,6 +575,11 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
         _selectedViewMode = 'Full VR Mode';
       });
       switchViewMode('Full VR Mode');
+    } else if (command == 'full_vr_mode2') {
+      setState(() {
+        _selectedViewMode = 'Full VR Mode2';
+      });
+      switchViewMode('Full VR Mode2');
     } else if (command == 'vr50_50_mode') {
       setState(() {
         _selectedViewMode = '50/50 VR Mode';
@@ -614,6 +620,9 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
       case 'Full VR Mode':
         _enterFullVRMode();
         break;
+      case 'Full VR Mode2':
+        _enterFullVRMode2();
+        break;
       case '50/50 VR Mode':
         _enter50_50VRMode();
         break;
@@ -644,6 +653,26 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
       ]);
     });
   }
+
+// main.dart
+
+void _enterFullVRMode2() {
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => FullVRVideoView2(localRenderer: _localRenderer),
+    ),
+  ).then((_) {
+    // Reset orientation when the VR view is popped from the navigation stack.
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  });
+}
 
   /// Enters 50/50 VR Mode.
   void _enter50_50VRMode() {
@@ -1192,6 +1221,59 @@ class FullVRVideoView extends StatelessWidget {
     );
   }
 }
+
+// main.dart
+
+class FullVRVideoView2 extends StatelessWidget {
+  final RTCVideoRenderer localRenderer;
+
+  const FullVRVideoView2({Key? key, required this.localRenderer})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Hide the system UI when entering VR mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    return Scaffold(
+      body: GestureDetector(
+        onDoubleTap: () {
+          // Restore the system UI when exiting VR mode
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          Navigator.pop(context);
+        },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final halfWidth = constraints.maxWidth / 2;
+            return Row(
+              children: [
+                // Left Eye View
+                SizedBox(
+                  width: halfWidth,
+                  height: constraints.maxHeight,
+                  child: RTCVideoView(
+                    localRenderer,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  ),
+                ),
+                // Right Eye View
+                SizedBox(
+                  width: halfWidth,
+                  height: constraints.maxHeight,
+                  child: RTCVideoView(
+                    localRenderer,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 
 class VR50_50VideoView extends StatelessWidget {
   final RTCVideoRenderer localRenderer;

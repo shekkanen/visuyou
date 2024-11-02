@@ -18,9 +18,10 @@ class SettingsModel extends ChangeNotifier {
   String _speakerEnabledWord = 'speaker on';
   String _speakerDisableWord = 'speaker off';
   String _fullVrModeWord = 'mode one';
-  String _vr50_50ModeWord = 'mode two';
-  String _pipVrModeWord = 'mode three';
-  String _pipVrMode2Word = 'mode four';
+  String _fullVrMode2Word = 'mode two';
+  String _vr50_50ModeWord = 'mode three';
+  String _pipVrModeWord = 'mode four';
+  String _pipVrMode2Word = 'mode five';
 
   // Getters
   bool get micEnabled => _micEnabled;
@@ -34,6 +35,7 @@ class SettingsModel extends ChangeNotifier {
   String get speakerEnabledWord => _speakerEnabledWord;
   String get speakerDisableWord => _speakerDisableWord;
   String get fullVrModeWord => _fullVrModeWord;
+  String get fullVrMode2Word => _fullVrMode2Word;
   String get vr50_50ModeWord => _vr50_50ModeWord;
   String get pipVrModeWord => _pipVrModeWord;
   String get pipVrMode2Word => _pipVrMode2Word;
@@ -57,9 +59,10 @@ class SettingsModel extends ChangeNotifier {
     _speakerEnabledWord = prefs.getString('speakerEnabledWord') ?? 'speaker on';
     _speakerDisableWord = prefs.getString('speakerDisableWord') ?? 'speaker off';
     _fullVrModeWord = prefs.getString('fullVrModeWord') ?? 'mode one';
-    _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? 'mode two';
-    _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'mode three';
-    _pipVrMode2Word = prefs.getString('pipVrMode2Word') ?? 'mode four';
+    _fullVrMode2Word = prefs.getString('fullVrMode2Word') ?? 'mode two';
+    _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? 'mode three';
+    _pipVrModeWord = prefs.getString('pipVrModeWord') ?? 'mode four';
+    _pipVrMode2Word = prefs.getString('pipVrMode2Word') ?? 'mode five';
 
     _settingsLoadedCompleter.complete(); // Signal that settings are loaded
     notifyListeners();
@@ -138,6 +141,13 @@ class SettingsModel extends ChangeNotifier {
     _fullVrModeWord = value;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('fullVrModeWord', value);
+    notifyListeners();
+  }
+
+  Future<void> updateFullVrMode2Word(String value) async {
+    _fullVrMode2Word = value;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('fullVrMode2Word', value);
     notifyListeners();
   }
 

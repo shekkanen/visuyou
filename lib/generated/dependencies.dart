@@ -32,7 +32,7 @@ const Map<String, String> dependencies = {
   'flutter_plugin_android_lifecycle': '2.0.21',
   'flutter_test': '0.0.0',
   'flutter_web_plugins': '0.0.0',
-  'flutter_webrtc': '0.9.48+hotfix.1',
+  'flutter_webrtc': '0.12.1+hotfix.1',
   'http': '0.13.6',
   'http_parser': '4.0.2',
   'image': '3.3.0',

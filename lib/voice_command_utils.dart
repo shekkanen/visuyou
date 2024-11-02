@@ -27,6 +27,7 @@ List<String> _getGrammar() {
     ...SettingsPage.muteSpeakerWords.map((word) => word.toLowerCase()),
     ...SettingsPage.unmuteSpeakerWords.map((word) => word.toLowerCase()),
     ...SettingsPage.fullVrModeWords.map((word) => word.toLowerCase()),
+    ...SettingsPage.fullVrMode2Words.map((word) => word.toLowerCase()),
     ...SettingsPage.vr50_50ModeWords.map((word) => word.toLowerCase()),
     ...SettingsPage.pipVrModeWords.map((word) => word.toLowerCase()),
     ...SettingsPage.pipVrMode2Words.map((word) => word.toLowerCase()),
@@ -134,6 +135,8 @@ Future<void> _processRecognizedText(String recognizedJson) async {
     onCommandRecognized('mute_speaker');
   } else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase()) {
     onCommandRecognized('full_vr_mode');
+  } else if (recognizedText == settingsModel.fullVrMode2Word.toLowerCase()) {
+    onCommandRecognized('full_vr_mode2');
   } else if (recognizedText == settingsModel.vr50_50ModeWord.toLowerCase()) {
     onCommandRecognized('vr50_50_mode');
   } else if (recognizedText == settingsModel.pipVrModeWord.toLowerCase()) {

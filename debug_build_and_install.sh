@@ -8,6 +8,8 @@ pkill -f "adb -s 18a3a90b9907 logcat"
 
 #flutter pub get
 
+dart scripts/generate_dependencies.dart
+
 # Build debug APK
 if flutter build apk --debug; then
     echo "Build succeeded, installing APK..."

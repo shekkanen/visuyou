@@ -26,14 +26,17 @@ static const List<String> unmuteSpeakerWords = ['speaker on', 'enable speaker'];
 // Full VR Mode
 static const List<String> fullVrModeWords = ['mode one','screen one'];
 
+// Full VR Mode2
+static const List<String> fullVrMode2Words = ['mode two','screen two'];
+
 // 50/50 VR Mode
-static const List<String> vr50_50ModeWords = ['mode two', 'screen two'];
+static const List<String> vr50_50ModeWords = ['mode three', 'screen three'];
 
 // Picture in Picture VR Mode
-static const List<String> pipVrModeWords = ['mode three', 'screen three'];
+static const List<String> pipVrModeWords = ['mode four', 'screen four'];
 
 // Alternate Picture in Picture VR Mode
-static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
+static const List<String> pipVrMode2Words = ['mode five', 'screen five'];
 
 
   void _navigateToPolicyPage(BuildContext context, String title, String content) {
@@ -251,6 +254,31 @@ static const List<String> pipVrMode2Words = ['mode four', 'screen four'];
               }
             },
           ),
+          ListTile(
+            title: const Text('Full VR Mode2 Word'),
+            subtitle: Text('Current: ${settingsModel.fullVrMode2Word}'),
+            onTap: () async {
+              String? selectedWord = await showDialog<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: const Text('Select Full VR Mode2 Word'),
+                    children: fullVrMode2Words.map((String word) {
+                      return SimpleDialogOption(
+                        onPressed: () {
+                          Navigator.pop(context, word);
+                        },
+                        child: Text(word),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+              if (selectedWord != null) {
+                await settingsModel.updateFullVrMode2Word(selectedWord);
+              }
+            },
+          ),          
           ListTile(
             title: const Text('50/50 VR Mode Word'),
             subtitle: Text('Current: ${settingsModel.vr50_50ModeWord}'),
