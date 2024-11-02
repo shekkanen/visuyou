@@ -645,7 +645,7 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
     context,
     MaterialPageRoute(
       builder: (context) => FullVRVideoView(
-        remoteRenderer: _remoteRenderer,
+        renderer: _remoteRenderer,
         messageNotifier: _vrMessageNotifier,
       ),
     ),
@@ -659,25 +659,26 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
     });
   }
 
-// main.dart
-
-void _enterFullVRMode2() {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  void _enterFullVRMode2() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => FullVRVideoView2(localRenderer: _localRenderer),
+      builder: (context) => FullVRVideoView(
+        renderer: _localRenderer,
+        messageNotifier: _vrMessageNotifier,
+      ),
     ),
   ).then((_) {
-    // Reset orientation when the VR view is popped from the navigation stack.
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  });
-}
+      // This will reset the orientation when the VR view is popped from the navigation stack.
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
+  }
 
   /// Enters 50/50 VR Mode.
   void _enter50_50VRMode() {
@@ -1201,12 +1202,12 @@ Future<void> _toggleSpeaker(bool enable) async {
 // In main.dart or wherever your VR views are defined
 
 class FullVRVideoView extends StatefulWidget {
-  final RTCVideoRenderer remoteRenderer;
+  final RTCVideoRenderer renderer;
   final ValueNotifier<String?> messageNotifier;
 
   const FullVRVideoView({
     Key? key,
-    required this.remoteRenderer,
+    required this.renderer,
     required this.messageNotifier,
   }) : super(key: key);
 
@@ -1216,71 +1217,58 @@ class FullVRVideoView extends StatefulWidget {
 
 class _FullVRVideoViewState extends State<FullVRVideoView> {
   @override
-  void dispose() {
-    // Restore the system UI when exiting VR mode
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // Hide the system UI when entering VR mode
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     return Scaffold(
       body: GestureDetector(
         onDoubleTap: () {
-          // Restore the system UI when exiting VR mode
           Navigator.pop(context);
         },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
             final messageWidth = halfWidth * 0.8;
-            // Adjustments for eye separation
-            final eyeSeparation = halfWidth * 0.03; // Adjust this value as needed
+            final settingsModel = Provider.of<SettingsModel>(context);
+            final leftEyeSeparation = halfWidth * settingsModel.leftEyeSeparation;
+            final rightEyeSeparation = halfWidth * settingsModel.rightEyeSeparation;
 
             return Stack(
               children: [
                 Row(
                   children: [
-                    // Left Eye View
                     SizedBox(
                       width: halfWidth,
                       height: constraints.maxHeight,
                       child: RTCVideoView(
-                        widget.remoteRenderer,
-                        objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        widget.renderer,
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                     ),
-                    // Right Eye View
                     SizedBox(
                       width: halfWidth,
                       height: constraints.maxHeight,
                       child: RTCVideoView(
-                        widget.remoteRenderer,
-                        objectFit:
-                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        widget.renderer,
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                     ),
                   ],
                 ),
-                // Overlay Messages for Left and Right Eye Views
+                // Overlay Messages
                 ValueListenableBuilder<String?>(
                   valueListenable: widget.messageNotifier,
                   builder: (context, message, child) {
                     if (message == null) return const SizedBox.shrink();
                     return Row(
                       children: [
-                        // Left Eye Overlay
                         SizedBox(
                           width: halfWidth,
                           height: constraints.maxHeight,
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (halfWidth - messageWidth) / 2 + eyeSeparation,
+                                left: (halfWidth - messageWidth) / 2 + leftEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1302,14 +1290,13 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
                             ],
                           ),
                         ),
-                        // Right Eye Overlay
                         SizedBox(
                           width: halfWidth,
                           height: constraints.maxHeight,
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (halfWidth - messageWidth) / 2 - eyeSeparation,
+                                left: (halfWidth - messageWidth) / 2 - rightEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1334,56 +1321,6 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
                       ],
                     );
                   },
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class FullVRVideoView2 extends StatelessWidget {
-  final RTCVideoRenderer localRenderer;
-
-  const FullVRVideoView2({Key? key, required this.localRenderer})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // Hide the system UI when entering VR mode
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-    return Scaffold(
-      body: GestureDetector(
-        onDoubleTap: () {
-          // Restore the system UI when exiting VR mode
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          Navigator.pop(context);
-        },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final halfWidth = constraints.maxWidth / 2;
-            return Row(
-              children: [
-                // Left Eye View
-                SizedBox(
-                  width: halfWidth,
-                  height: constraints.maxHeight,
-                  child: RTCVideoView(
-                    localRenderer,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  ),
-                ),
-                // Right Eye View
-                SizedBox(
-                  width: halfWidth,
-                  height: constraints.maxHeight,
-                  child: RTCVideoView(
-                    localRenderer,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  ),
                 ),
               ],
             );

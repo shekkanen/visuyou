@@ -66,6 +66,12 @@ class SettingsModel extends ChangeNotifier {
   bool get pipVrModeCommandEnabled => _pipVrModeCommandEnabled;
   bool get pipVrMode2CommandEnabled => _pipVrMode2CommandEnabled;
 
+double _leftEyeSeparation = 0.03;
+double _rightEyeSeparation = 0.03;
+
+double get leftEyeSeparation => _leftEyeSeparation;
+double get rightEyeSeparation => _rightEyeSeparation;
+
   final Completer<void> _settingsLoadedCompleter = Completer<void>();
 
   SettingsModel() {
@@ -103,6 +109,9 @@ class SettingsModel extends ChangeNotifier {
     _pipVrModeCommandEnabled = prefs.getBool('pipVrModeCommandEnabled') ?? true;
     _pipVrMode2CommandEnabled = prefs.getBool('pipVrMode2CommandEnabled') ?? true;
 
+_leftEyeSeparation = prefs.getDouble('leftEyeSeparation') ?? 0.03;
+_rightEyeSeparation = prefs.getDouble('rightEyeSeparation') ?? 0.03;
+
     _settingsLoadedCompleter.complete(); // Signal that settings are loaded
     notifyListeners();
   }
@@ -110,6 +119,20 @@ class SettingsModel extends ChangeNotifier {
   Future<void> get settingsLoaded => _settingsLoadedCompleter.future;
 
   // Update methods
+
+Future<void> updateLeftEyeSeparation(double value) async {
+  _leftEyeSeparation = value;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setDouble('leftEyeSeparation', value);
+  notifyListeners();
+}
+
+Future<void> updateRightEyeSeparation(double value) async {
+  _rightEyeSeparation = value;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setDouble('rightEyeSeparation', value);
+  notifyListeners();
+}
 
   Future<void> updatemicEnabled(bool value) async {
     _micEnabled = value;

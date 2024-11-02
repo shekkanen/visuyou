@@ -2,11 +2,11 @@
 #print all dart files under lib folder to single file flutter_dart.txt
 
 find lib -name "*.dart" > /tmp/dart_files.txt
-echo 'pubspec.yaml' >> /tmp/dart_files.txt
-echo 'android/app/src/main/AndroidManifest.xml' >> /tmp/dart_files.txt
-echo 'android/app/build.gradle' >> /tmp/dart_files.txt
-echo 'android/app/proguard-rules.pro' >> /tmp/dart_files.txt
-echo 'README.md' >> /tmp/dart_files.txt
+#echo 'pubspec.yaml' >> /tmp/dart_files.txt
+#echo 'android/app/src/main/AndroidManifest.xml' >> /tmp/dart_files.txt
+#echo 'android/app/build.gradle' >> /tmp/dart_files.txt
+#echo 'android/app/proguard-rules.pro' >> /tmp/dart_files.txt
+#echo 'README.md' >> /tmp/dart_files.txt
 
 # Append the content of each dart file to flutter_dart.txt
 echo > /tmp/flutter_dart.txt

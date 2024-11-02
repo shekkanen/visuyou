@@ -57,6 +57,40 @@ class SettingsPage extends StatelessWidget {
       ),
       body: ListView(
         children: [
+const Divider(),
+const ListTile(
+  title: Text(
+    'Eye Separation Settings',
+    style: TextStyle(fontWeight: FontWeight.bold),
+  ),
+),
+ListTile(
+  title: Text('Left Eye Separation'),
+  subtitle: Slider(
+    value: settingsModel.leftEyeSeparation,
+    min: 0.0,
+    max: 0.1,
+    divisions: 20,
+    label: (settingsModel.leftEyeSeparation * 100).toStringAsFixed(2),
+    onChanged: (value) {
+      settingsModel.updateLeftEyeSeparation(value);
+    },
+  ),
+),
+ListTile(
+  title: Text('Right Eye Separation'),
+  subtitle: Slider(
+    value: settingsModel.rightEyeSeparation,
+    min: 0.0,
+    max: 0.1,
+    divisions: 20,
+    label: (settingsModel.rightEyeSeparation * 100).toStringAsFixed(2),
+    onChanged: (value) {
+      settingsModel.updateRightEyeSeparation(value);
+    },
+  ),
+),
+
           SwitchListTile(
             title: const Text('Enable Mic'),
             value: settingsModel.micEnabled,
