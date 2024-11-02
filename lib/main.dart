@@ -16,6 +16,7 @@ import 'package:provider/provider.dart'; // Import provider
 import 'settings_model.dart'; // Import settings model
 import 'dart:async'; // Import for async functions
 import 'package:vibration/vibration.dart';
+import 'animated_styled_button.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
@@ -1138,43 +1139,54 @@ Future<void> _toggleSpeaker(bool enable) async {
                                   style: TextStyle(fontSize: 16), // Increased text size
                                 ),
                     ),
-                    SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0), // Added padding for buttons
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 12.0), // Larger button size
-                                textStyle: const TextStyle(fontSize: 18), // Larger text size
-                              ),
-                              onPressed: _isOfferer || _connecting ? null : _createOffer,
-                              child: const Text('Create Offer'),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 12.0), // Larger button size
-                                textStyle: const TextStyle(fontSize: 18), // Larger text size
-                              ),
-                              onPressed: _connecting ? null : _scanQRCode,
-                              child: const Text('Scan QR Code'),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 12.0), // Larger button size
-                                textStyle: const TextStyle(fontSize: 18), // Larger text size
-                              ),
-                              onPressed: _resetApp,
-                              child: const Text('Reset'),
-                            ),                            
-                          ],
-                        ),
-                      ),
-                    ),
+SafeArea(
+  child: Padding(
+    padding: const EdgeInsets.symmetric(vertical: 10.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        // Start Connection Button
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: AnimatedStyledButton(
+              label: 'Start Connection', // Updated label
+              icon: Icons.link, // Updated icon
+              onPressed: _isOfferer || _connecting ? null : _createOffer,
+              isEnabled: !(_isOfferer || _connecting),
+            ),
+          ),
+        ),
+        
+        // Join Session Button
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: AnimatedStyledButton(
+              label: 'Join Session', // Updated label
+              icon: Icons.qr_code_scanner,
+              onPressed: _connecting ? null : _scanQRCode,
+              isEnabled: !_connecting,
+            ),
+          ),
+        ),
+        
+        // Disconnect Button
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: AnimatedStyledButton(
+              label: 'Disconnect', // Updated label
+              icon: Icons.power_settings_new, // Updated icon
+              onPressed: _resetApp,
+              isEnabled: true,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                   ],
                 )
               : const Center(child: CircularProgressIndicator()),
