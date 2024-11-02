@@ -11,29 +11,27 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
   // View Change Words
-// View Change Words
-static const List<String> viewNextWords = ['next', 'forward'];
-static const List<String> viewBackWords = ['back', 'previous'];
+  static const List<String> viewNextWords = ['next', 'forward'];
+  static const List<String> viewBackWords = ['back', 'previous'];
 
   // Mute/Unmute Mic Words
-static const List<String> micOffWords = ['mic off', 'disable mic'];
-static const List<String> micOnWords = ['mic on', 'enable mic'];
+  static const List<String> micOffWords = ['mic off', 'disable mic'];
+  static const List<String> micOnWords = ['mic on', 'enable mic'];
 
   // Mute/Unmute Speaker Words
-static const List<String> speakerOffWords = ['speaker off', 'disable speaker'];
-static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
+  static const List<String> speakerOffWords = ['speaker off', 'disable speaker'];
+  static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
 
   // VR Mode Words
   static const List<String> fullVrModeWords = ['mode one', 'screen one'];
   static const List<String> fullVrMode2Words = ['mode two', 'screen two'];
   static const List<String> vr50_50ModeWords = ['mode three', 'screen three'];
 
-// Picture in Picture VR Mode
+  // Picture in Picture VR Mode
   static const List<String> pipVrModeWords = ['mode four', 'screen four'];
 
-// Alternate Picture in Picture VR Mode
+  // Alternate Picture in Picture VR Mode
   static const List<String> pipVrMode2Words = ['mode five', 'screen five'];
-
 
   void _navigateToPolicyPage(BuildContext context, String title, String content) {
     Navigator.push(
@@ -91,6 +89,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('View Next Word'),
             subtitle: Text('Current: ${settingsModel.viewNextWord}'),
+            enabled: settingsModel.viewNextCommandEnabled,
             onTap: settingsModel.viewNextCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -125,6 +124,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('View Back Word'),
             subtitle: Text('Current: ${settingsModel.viewBackWord}'),
+            enabled: settingsModel.viewBackCommandEnabled,
             onTap: settingsModel.viewBackCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -159,6 +159,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('Enable Mic Word'),
             subtitle: Text('Current: ${settingsModel.micEnabledWord}'),
+            enabled: settingsModel.micEnabledCommandEnabled,
             onTap: settingsModel.micEnabledCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -193,6 +194,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('Disable Mic Word'),
             subtitle: Text('Current: ${settingsModel.micDisableWord}'),
+            enabled: settingsModel.micDisableCommandEnabled,
             onTap: settingsModel.micDisableCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -227,6 +229,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('Enable Speaker Word'),
             subtitle: Text('Current: ${settingsModel.speakerEnabledWord}'),
+            enabled: settingsModel.speakerEnabledCommandEnabled,
             onTap: settingsModel.speakerEnabledCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -261,6 +264,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('Disable Speaker Word'),
             subtitle: Text('Current: ${settingsModel.speakerDisableWord}'),
+            enabled: settingsModel.speakerDisableCommandEnabled,
             onTap: settingsModel.speakerDisableCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -295,6 +299,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('Full VR Mode Word'),
             subtitle: Text('Current: ${settingsModel.fullVrModeWord}'),
+            enabled: settingsModel.fullVrModeCommandEnabled,
             onTap: settingsModel.fullVrModeCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -329,6 +334,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('Full VR Mode2 Word'),
             subtitle: Text('Current: ${settingsModel.fullVrMode2Word}'),
+            enabled: settingsModel.fullVrMode2CommandEnabled,
             onTap: settingsModel.fullVrMode2CommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -363,6 +369,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('50/50 VR Mode Word'),
             subtitle: Text('Current: ${settingsModel.vr50_50ModeWord}'),
+            enabled: settingsModel.vr50_50ModeCommandEnabled,
             onTap: settingsModel.vr50_50ModeCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -397,6 +404,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('PiP VR Mode Word'),
             subtitle: Text('Current: ${settingsModel.pipVrModeWord}'),
+            enabled: settingsModel.pipVrModeCommandEnabled,
             onTap: settingsModel.pipVrModeCommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
@@ -431,6 +439,7 @@ static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
           ListTile(
             title: const Text('PiP VR Mode2 Word'),
             subtitle: Text('Current: ${settingsModel.pipVrMode2Word}'),
+            enabled: settingsModel.pipVrMode2CommandEnabled,
             onTap: settingsModel.pipVrMode2CommandEnabled
                 ? () async {
                     String? selectedWord = await showDialog<String>(
