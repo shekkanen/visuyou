@@ -74,6 +74,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   MediaStreamTrack? _audioTrack;
   RTCRtpSender? _audioSender;
 
+  final ValueNotifier<String?> _vrMessageNotifier = ValueNotifier<String?>(null);
+
   @override
   void initState() {
     super.initState();
@@ -639,12 +641,15 @@ _peerConnection!.onTrack = (RTCTrackEvent event) {
   void _enterFullVRMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FullVRVideoView(remoteRenderer: _remoteRenderer),
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => FullVRVideoView(
+        remoteRenderer: _remoteRenderer,
+        messageNotifier: _vrMessageNotifier,
       ),
-    ).then((_) {
+    ),
+  ).then((_) {
       // This will reset the orientation when the VR view is popped from the navigation stack.
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setPreferredOrientations([
@@ -776,22 +781,45 @@ void _enterFullVRMode2() {
   }
 
   /// Shows an error snackbar.
-  void _showErrorSnackBar(String message) {
+void _showErrorSnackBar(String message) {
+  if (_isInVRMode()) {
+    _displayVRMessage(message);
+  } else {
     final snackBar = SnackBar(
       content: Text(message),
       backgroundColor: Colors.red,
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
+}
 
   /// Shows an informational snackbar.
-  void _showInfoSnackBar(String message) {
+void _showInfoSnackBar(String message) {
+  if (_isInVRMode()) {
+    _displayVRMessage(message);
+  } else {
     final snackBar = SnackBar(
       content: Text(message),
       backgroundColor: Colors.green,
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
+}
+
+// Helper method to check if in VR mode
+bool _isInVRMode() {
+  // Implement logic to determine if the app is currently in VR mode
+  return _selectedViewMode.contains('VR Mode');
+}
+
+// Display message in VR
+void _displayVRMessage(String message) {
+  _vrMessageNotifier.value = message;
+  // Hide the message after a delay
+  Future.delayed(const Duration(seconds: 3), () {
+    _vrMessageNotifier.value = null;
+  });
+}
 
   /// Checks if it's the first launch and shows Terms of Service if needed.
   void _checkFirstLaunch() async {
@@ -1170,11 +1198,29 @@ Future<void> _toggleSpeaker(bool enable) async {
 
 // VR Video View Classes
 
-class FullVRVideoView extends StatelessWidget {
-  final RTCVideoRenderer remoteRenderer;
+// In main.dart or wherever your VR views are defined
 
-  const FullVRVideoView({Key? key, required this.remoteRenderer})
-      : super(key: key);
+class FullVRVideoView extends StatefulWidget {
+  final RTCVideoRenderer remoteRenderer;
+  final ValueNotifier<String?> messageNotifier;
+
+  const FullVRVideoView({
+    Key? key,
+    required this.remoteRenderer,
+    required this.messageNotifier,
+  }) : super(key: key);
+
+  @override
+  _FullVRVideoViewState createState() => _FullVRVideoViewState();
+}
+
+class _FullVRVideoViewState extends State<FullVRVideoView> {
+  @override
+  void dispose() {
+    // Restore the system UI when exiting VR mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1185,33 +1231,109 @@ class FullVRVideoView extends StatelessWidget {
       body: GestureDetector(
         onDoubleTap: () {
           // Restore the system UI when exiting VR mode
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           Navigator.pop(context);
         },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
-            return Row(
+            final messageWidth = halfWidth * 0.8;
+            // Adjustments for eye separation
+            final eyeSeparation = halfWidth * 0.03; // Adjust this value as needed
+
+            return Stack(
               children: [
-                // Left Eye View
-                SizedBox(
-                  width: halfWidth,
-                  height: constraints.maxHeight,
-                  child: RTCVideoView(
-                    remoteRenderer,
-                    objectFit:
-                        RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
-                  ),
+                Row(
+                  children: [
+                    // Left Eye View
+                    SizedBox(
+                      width: halfWidth,
+                      height: constraints.maxHeight,
+                      child: RTCVideoView(
+                        widget.remoteRenderer,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      ),
+                    ),
+                    // Right Eye View
+                    SizedBox(
+                      width: halfWidth,
+                      height: constraints.maxHeight,
+                      child: RTCVideoView(
+                        widget.remoteRenderer,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      ),
+                    ),
+                  ],
                 ),
-                // Right Eye View
-                SizedBox(
-                  width: halfWidth,
-                  height: constraints.maxHeight,
-                  child: RTCVideoView(
-                    remoteRenderer,
-                    objectFit:
-                        RTCVideoViewObjectFit.RTCVideoViewObjectFitCover, // Ensure video fills the box
-                  ),
+                // Overlay Messages for Left and Right Eye Views
+                ValueListenableBuilder<String?>(
+                  valueListenable: widget.messageNotifier,
+                  builder: (context, message, child) {
+                    if (message == null) return const SizedBox.shrink();
+                    return Row(
+                      children: [
+                        // Left Eye Overlay
+                        SizedBox(
+                          width: halfWidth,
+                          height: constraints.maxHeight,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: (halfWidth - messageWidth) / 2 + eyeSeparation,
+                                top: constraints.maxHeight / 2 - 50,
+                                child: Container(
+                                  width: messageWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    message,
+                                    style: const TextStyle(
+                                      fontSize: 24.0,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Right Eye Overlay
+                        SizedBox(
+                          width: halfWidth,
+                          height: constraints.maxHeight,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                left: (halfWidth - messageWidth) / 2 - eyeSeparation,
+                                top: constraints.maxHeight / 2 - 50,
+                                child: Container(
+                                  width: messageWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    message,
+                                    style: const TextStyle(
+                                      fontSize: 24.0,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             );
@@ -1221,8 +1343,6 @@ class FullVRVideoView extends StatelessWidget {
     );
   }
 }
-
-// main.dart
 
 class FullVRVideoView2 extends StatelessWidget {
   final RTCVideoRenderer localRenderer;
