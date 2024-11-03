@@ -11,8 +11,8 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
   // View Change Words
-  static const List<String> viewNextWords = ['next', 'forward'];
-  static const List<String> viewBackWords = ['back', 'previous'];
+  static const List<String> viewNextWords = ['next', 'forward','left'];
+  static const List<String> viewBackWords = ['back', 'previous','right'];
 
   // Mute/Unmute Mic Words
   static const List<String> micOffWords = ['mic off', 'disable mic'];
@@ -62,7 +62,6 @@ class SettingsPage extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          const Divider(),
           const ListTile(
             title: Text(
               'Eye Separation Settings',
@@ -96,7 +95,13 @@ class SettingsPage extends StatelessWidget {
               },
             ),
           ),
-
+          const Divider(),
+          const ListTile(
+            title: Text(
+              'App Settings',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           SwitchListTile(
             title: const Text('Enable Mic'),
             value: settingsModel.micEnabled,
