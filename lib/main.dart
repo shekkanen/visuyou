@@ -18,17 +18,13 @@ import 'dart:async'; // Import for async functions
 import 'package:vibration/vibration.dart';
 import 'animated_styled_button.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
 
-    runApp(
+  runApp(
     ChangeNotifierProvider(
       create: (context) => SettingsModel(),
       child: MaterialApp(
-        navigatorKey: navigatorKey, // Set the navigatorKey here
         title: 'VisuYou',
         theme: ThemeData(primaryColor: Colors.black),
         home: const CameraStreamingApp(),
@@ -69,7 +65,7 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     'PIP VR Mode',
     'PIP VR Mode2'
   ];
-
+  Map<String, String> _previousVoiceCommands = {};
   VoiceCommandUtils? _voiceCommandUtils; // Modified to be nullable
   late SettingsModel _settingsModel; // Add this line
 
@@ -97,7 +93,19 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     _settingsModel.settingsLoaded.then((_) async {
       await _requestPermissions(); // Proceed with the rest after settings are loaded
 
-
+      // Initialize previous voice commands after _settingsModel is initialized
+      _previousVoiceCommands = {
+        'viewNextWord': _settingsModel.viewNextWord,
+        'viewBackWord': _settingsModel.viewBackWord,
+        'micEnabledWord': _settingsModel.micEnabledWord,
+        'micDisableWord': _settingsModel.micDisableWord,
+        'speakerEnabledWord': _settingsModel.speakerEnabledWord,
+        'speakerDisableWord': _settingsModel.speakerDisableWord,
+        'fullVrModeWord': _settingsModel.fullVrModeWord,
+        'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
+        'pipVrModeWord': _settingsModel.pipVrModeWord,
+        'pipVrMode2Word': _settingsModel.pipVrMode2Word,
+      };
 
       // Manually trigger the settings changed handler
       _onSettingsChanged();
@@ -182,12 +190,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
             });
             _showErrorSnackBar('Connection lost. Please try again.');
             _resetApp();
-            
-            // Navigate back to the main screen if in VR mode
-            if (_isInVRMode()) {
-              navigatorKey.currentState?.popUntil((route) => route.isFirst);
-              _showErrorSnackBar('Connection lost. Returning to main screen.');
-            }
           }
         }
       };
@@ -599,42 +601,37 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Switches the view mode based on the selected mode.
-void switchViewMode(String mode) {
-  if (_isInVRMode()) {
-    // If already in VR mode, pop the current VR view before navigating
-    navigatorKey.currentState?.pop();
-  }
+  void switchViewMode(String mode) {
+    if (mode.contains('VR Mode')) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
 
-  if (mode.contains('VR Mode')) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-  } else {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    switch (mode) {
+      case 'Full VR Mode':
+        _enterFullVRMode();
+        break;
+      case 'Full VR Mode2':
+        _enterFullVRMode2();
+        break;
+      case '50/50 VR Mode':
+        _enter50_50VRMode();
+        break;
+      case 'PIP VR Mode':
+        _enterPiPMode();
+        break;
+      case 'PIP VR Mode2':
+        _enterPiPMode2();
+        break;
+    }
   }
-
-  switch (mode) {
-    case 'Full VR Mode':
-      _enterFullVRMode();
-      break;
-    case 'Full VR Mode2':
-      _enterFullVRMode2();
-      break;
-    case '50/50 VR Mode':
-      _enter50_50VRMode();
-      break;
-    case 'PIP VR Mode':
-      _enterPiPMode();
-      break;
-    case 'PIP VR Mode2':
-      _enterPiPMode2();
-      break;
-  }
-}
 
   /// Enters Full VR Mode.
   void _enterFullVRMode() {
@@ -1244,9 +1241,14 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
 
     return Scaffold(
       body: GestureDetector(
-        onDoubleTap: () {
-          Navigator.pop(context);
-        },
+      onDoubleTap: () {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
@@ -1371,10 +1373,14 @@ class VR50_50VideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-        onDoubleTap: () {
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          Navigator.pop(context);
-        },
+      onDoubleTap: () {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final quarterWidth = constraints.maxWidth / 4;
@@ -1537,10 +1543,14 @@ class PiPVideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-        onDoubleTap: () {
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          Navigator.pop(context);
-        },
+      onDoubleTap: () {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
