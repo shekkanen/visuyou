@@ -66,11 +66,11 @@ class SettingsModel extends ChangeNotifier {
   bool get pipVrModeCommandEnabled => _pipVrModeCommandEnabled;
   bool get pipVrMode2CommandEnabled => _pipVrMode2CommandEnabled;
 
-double _leftEyeSeparation = 0.03;
-double _rightEyeSeparation = 0.03;
+  double _leftEyeSeparation = 0.03;
+  double _rightEyeSeparation = 0.03;
 
-double get leftEyeSeparation => _leftEyeSeparation;
-double get rightEyeSeparation => _rightEyeSeparation;
+  double get leftEyeSeparation => _leftEyeSeparation;
+  double get rightEyeSeparation => _rightEyeSeparation;
 
   final Completer<void> _settingsLoadedCompleter = Completer<void>();
 
@@ -89,7 +89,8 @@ double get rightEyeSeparation => _rightEyeSeparation;
     _micEnabledWord = prefs.getString('micEnabledWord') ?? 'mic on';
     _micDisableWord = prefs.getString('micDisableWord') ?? 'mic off';
     _speakerEnabledWord = prefs.getString('speakerEnabledWord') ?? 'speaker on';
-    _speakerDisableWord = prefs.getString('speakerDisableWord') ?? 'speaker off';
+    _speakerDisableWord =
+        prefs.getString('speakerDisableWord') ?? 'speaker off';
     _fullVrModeWord = prefs.getString('fullVrModeWord') ?? 'mode one';
     _fullVrMode2Word = prefs.getString('fullVrMode2Word') ?? 'mode two';
     _vr50_50ModeWord = prefs.getString('vr50_50ModeWord') ?? 'mode three';
@@ -99,18 +100,26 @@ double get rightEyeSeparation => _rightEyeSeparation;
     // Load the boolean flags for individual voice commands
     _viewNextCommandEnabled = prefs.getBool('viewNextCommandEnabled') ?? true;
     _viewBackCommandEnabled = prefs.getBool('viewBackCommandEnabled') ?? true;
-    _micEnabledCommandEnabled = prefs.getBool('micEnabledCommandEnabled') ?? true;
-    _micDisableCommandEnabled = prefs.getBool('micDisableCommandEnabled') ?? true;
-    _speakerEnabledCommandEnabled = prefs.getBool('speakerEnabledCommandEnabled') ?? true;
-    _speakerDisableCommandEnabled = prefs.getBool('speakerDisableCommandEnabled') ?? true;
-    _fullVrModeCommandEnabled = prefs.getBool('fullVrModeCommandEnabled') ?? true;
-    _fullVrMode2CommandEnabled = prefs.getBool('fullVrMode2CommandEnabled') ?? true;
-    _vr50_50ModeCommandEnabled = prefs.getBool('vr50_50ModeCommandEnabled') ?? true;
+    _micEnabledCommandEnabled =
+        prefs.getBool('micEnabledCommandEnabled') ?? true;
+    _micDisableCommandEnabled =
+        prefs.getBool('micDisableCommandEnabled') ?? true;
+    _speakerEnabledCommandEnabled =
+        prefs.getBool('speakerEnabledCommandEnabled') ?? true;
+    _speakerDisableCommandEnabled =
+        prefs.getBool('speakerDisableCommandEnabled') ?? true;
+    _fullVrModeCommandEnabled =
+        prefs.getBool('fullVrModeCommandEnabled') ?? true;
+    _fullVrMode2CommandEnabled =
+        prefs.getBool('fullVrMode2CommandEnabled') ?? true;
+    _vr50_50ModeCommandEnabled =
+        prefs.getBool('vr50_50ModeCommandEnabled') ?? true;
     _pipVrModeCommandEnabled = prefs.getBool('pipVrModeCommandEnabled') ?? true;
-    _pipVrMode2CommandEnabled = prefs.getBool('pipVrMode2CommandEnabled') ?? true;
+    _pipVrMode2CommandEnabled =
+        prefs.getBool('pipVrMode2CommandEnabled') ?? true;
 
-_leftEyeSeparation = prefs.getDouble('leftEyeSeparation') ?? 0.03;
-_rightEyeSeparation = prefs.getDouble('rightEyeSeparation') ?? 0.03;
+    _leftEyeSeparation = prefs.getDouble('leftEyeSeparation') ?? 0.03;
+    _rightEyeSeparation = prefs.getDouble('rightEyeSeparation') ?? 0.03;
 
     _settingsLoadedCompleter.complete(); // Signal that settings are loaded
     notifyListeners();
@@ -120,19 +129,19 @@ _rightEyeSeparation = prefs.getDouble('rightEyeSeparation') ?? 0.03;
 
   // Update methods
 
-Future<void> updateLeftEyeSeparation(double value) async {
-  _leftEyeSeparation = value;
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setDouble('leftEyeSeparation', value);
-  notifyListeners();
-}
+  Future<void> updateLeftEyeSeparation(double value) async {
+    _leftEyeSeparation = value;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('leftEyeSeparation', value);
+    notifyListeners();
+  }
 
-Future<void> updateRightEyeSeparation(double value) async {
-  _rightEyeSeparation = value;
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setDouble('rightEyeSeparation', value);
-  notifyListeners();
-}
+  Future<void> updateRightEyeSeparation(double value) async {
+    _rightEyeSeparation = value;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('rightEyeSeparation', value);
+    notifyListeners();
+  }
 
   Future<void> updatemicEnabled(bool value) async {
     _micEnabled = value;

@@ -17,12 +17,15 @@ class VoiceCommandUtils {
   SpeechService? _speechService;
   bool _isListening = false;
 
-  VoiceCommandUtils({required this.onCommandRecognized, required this.settingsModel});
+  VoiceCommandUtils(
+      {required this.onCommandRecognized, required this.settingsModel});
 
   Future<void> initSpeech() async {
-    if (!await Permission.microphone.isGranted || !await Permission.camera.isGranted) {
+    if (!await Permission.microphone.isGranted ||
+        !await Permission.camera.isGranted) {
       if (kDebugMode) {
-        print('Permissions not granted. Speech recognition initialization aborted.');
+        print(
+            'Permissions not granted. Speech recognition initialization aborted.');
       }
       return;
     }
@@ -37,9 +40,7 @@ class VoiceCommandUtils {
 
     // Create the recognizer
     _recognizer = await _vosk!.createRecognizer(
-        model: _model!,
-        sampleRate: 16000,
-        grammar: _getGrammar());
+        model: _model!, sampleRate: 16000, grammar: _getGrammar());
 
     // Initialize the SpeechService for recognition
     _speechService = await _vosk!.initSpeechService(_recognizer!);
@@ -65,7 +66,8 @@ class VoiceCommandUtils {
   Future<String> _loadModel() async {
     final modelLoader = ModelLoader();
     // Adjust the path according to where your model zip file is located
-    final modelPath = await modelLoader.loadFromAssets('assets/models/vosk-model-small-en-us-0.15.zip');
+    final modelPath = await modelLoader
+        .loadFromAssets('assets/models/vosk-model-small-en-us-0.15.zip');
     return modelPath;
   }
 
@@ -110,10 +112,12 @@ class VoiceCommandUtils {
     } else if (recognizedText == settingsModel.micDisableWord.toLowerCase() &&
         settingsModel.micDisableCommandEnabled) {
       onCommandRecognized('mute_mic');
-    } else if (recognizedText == settingsModel.speakerEnabledWord.toLowerCase() &&
+    } else if (recognizedText ==
+            settingsModel.speakerEnabledWord.toLowerCase() &&
         settingsModel.speakerEnabledCommandEnabled) {
       onCommandRecognized('unmute_speaker');
-    } else if (recognizedText == settingsModel.speakerDisableWord.toLowerCase() &&
+    } else if (recognizedText ==
+            settingsModel.speakerDisableWord.toLowerCase() &&
         settingsModel.speakerDisableCommandEnabled) {
       onCommandRecognized('mute_speaker');
     } else if (recognizedText == settingsModel.fullVrModeWord.toLowerCase() &&

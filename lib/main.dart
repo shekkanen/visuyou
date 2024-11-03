@@ -19,7 +19,8 @@ import 'package:vibration/vibration.dart';
 import 'animated_styled_button.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure plugin services are initialized
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Ensure plugin services are initialized
 
   runApp(
     ChangeNotifierProvider(
@@ -73,7 +74,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   MediaStreamTrack? _audioTrack;
   RTCRtpSender? _audioSender;
 
-  final ValueNotifier<String?> _vrMessageNotifier = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> _vrMessageNotifier =
+      ValueNotifier<String?>(null);
 
   @override
   void initState() {
@@ -199,7 +201,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
           setState(() {
             _remoteRenderer.srcObject = event.streams[0];
             _remoteStream = event.streams[0]; // Store the remote stream
-            _toggleSpeaker(_settingsModel.speakerEnabled); // Apply speaker setting
+            _toggleSpeaker(
+                _settingsModel.speakerEnabled); // Apply speaker setting
           });
         }
       };
@@ -493,8 +496,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
   }
 
   /// Processes the scanned QR code data.
-  void _processScannedData(String type, String sdp,
-      List<Map<String, dynamic>> iceCandidates) async {
+  void _processScannedData(
+      String type, String sdp, List<Map<String, dynamic>> iceCandidates) async {
     if (type == 'offer') {
       await _onOfferReceived(sdp, iceCandidates);
     } else if (type == 'answer') {
@@ -531,7 +534,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     } else if (command == 'view_back') {
       // Handle 'back' command
       int currentIndex = _viewModes.indexOf(_selectedViewMode);
-      int prevIndex = (currentIndex - 1 + _viewModes.length) % _viewModes.length;
+      int prevIndex =
+          (currentIndex - 1 + _viewModes.length) % _viewModes.length;
       String prevMode = _viewModes[prevIndex];
       setState(() {
         _selectedViewMode = prevMode;
@@ -736,8 +740,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Permissions required'),
-        content:
-            const Text('Camera and microphone permissions are required to proceed.'),
+        content: const Text(
+            'Camera and microphone permissions are required to proceed.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -923,7 +927,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
 
     _voiceCommandUtils?.dispose(); // Dispose voice command utils if initialized
 
-    _settingsModel.removeListener(_onSettingsChanged); // Remove settings listener
+    _settingsModel
+        .removeListener(_onSettingsChanged); // Remove settings listener
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -999,8 +1004,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
-                    overflow:
-                        TextOverflow.ellipsis, // Prevent overflow, but ellipsis should not be needed
+                    overflow: TextOverflow
+                        .ellipsis, // Prevent overflow, but ellipsis should not be needed
                     maxLines: 1, // Prevent the title from taking too much space
                   ),
                 ),
@@ -1023,11 +1028,17 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, size: 28, color: Colors.grey), // Increased icon size and set color to grey
+            icon: const Icon(Icons.settings,
+                size: 28,
+                color:
+                    Colors.grey), // Increased icon size and set color to grey
             onPressed: () => _navigateToSettingsPage(context),
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline, size: 28, color: Colors.grey), // Increased icon size and set color to grey
+            icon: const Icon(Icons.info_outline,
+                size: 28,
+                color:
+                    Colors.grey), // Increased icon size and set color to grey
             onPressed: () => _navigateToAboutPage(context),
           ),
           DropdownButton<String>(
@@ -1035,7 +1046,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
             dropdownColor: Colors.black87,
             style: const TextStyle(color: Colors.white),
             underline: Container(),
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28),
+            icon: const Icon(Icons.arrow_drop_down,
+                color: Colors.white, size: 28),
             items: _viewModes.map((String mode) {
               return DropdownMenuItem<String>(
                 value: mode,
@@ -1095,7 +1107,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                               ? const CircularProgressIndicator()
                               : const Text(
                                   'No data to display',
-                                  style: TextStyle(fontSize: 16), // Increased text size
+                                  style: TextStyle(
+                                      fontSize: 16), // Increased text size
                                 ),
                     ),
                     SafeArea(
@@ -1107,11 +1120,14 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                             // Start Connection Button
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
                                 child: AnimatedStyledButton(
                                   label: 'Start Connection', // Updated label
                                   icon: Icons.link, // Updated icon
-                                  onPressed: _isOfferer || _connecting ? null : _createOffer,
+                                  onPressed: _isOfferer || _connecting
+                                      ? null
+                                      : _createOffer,
                                   isEnabled: !(_isOfferer || _connecting),
                                 ),
                               ),
@@ -1120,7 +1136,8 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                             // Join Session Button
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
                                 child: AnimatedStyledButton(
                                   label: 'Join Session', // Updated label
                                   icon: Icons.qr_code_scanner,
@@ -1133,10 +1150,12 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                             // Disconnect Button
                             Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
                                 child: AnimatedStyledButton(
                                   label: 'Disconnect', // Updated label
-                                  icon: Icons.power_settings_new, // Updated icon
+                                  icon:
+                                      Icons.power_settings_new, // Updated icon
                                   onPressed: _resetApp,
                                   isEnabled: true,
                                 ),
@@ -1226,21 +1245,23 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
 
     return Scaffold(
       body: GestureDetector(
-      onDoubleTap: () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      },
+        onDoubleTap: () {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
             final messageWidth = halfWidth * 0.8;
             final settingsModel = Provider.of<SettingsModel>(context);
-            final leftEyeSeparation = halfWidth * settingsModel.leftEyeSeparation;
-            final rightEyeSeparation = halfWidth * settingsModel.rightEyeSeparation;
+            final leftEyeSeparation =
+                halfWidth * settingsModel.leftEyeSeparation;
+            final rightEyeSeparation =
+                halfWidth * settingsModel.rightEyeSeparation;
 
             return Stack(
               children: [
@@ -1251,7 +1272,8 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
                       height: constraints.maxHeight,
                       child: RTCVideoView(
                         widget.renderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                     ),
                     SizedBox(
@@ -1259,7 +1281,8 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
                       height: constraints.maxHeight,
                       child: RTCVideoView(
                         widget.renderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                       ),
                     ),
                   ],
@@ -1277,7 +1300,8 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (halfWidth - messageWidth) / 2 + leftEyeSeparation,
+                                left: (halfWidth - messageWidth) / 2 +
+                                    leftEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1305,7 +1329,8 @@ class _FullVRVideoViewState extends State<FullVRVideoView> {
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (halfWidth - messageWidth) / 2 - rightEyeSeparation,
+                                left: (halfWidth - messageWidth) / 2 -
+                                    rightEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1358,20 +1383,22 @@ class VR50_50VideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-      onDoubleTap: () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      },
+        onDoubleTap: () {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final quarterWidth = constraints.maxWidth / 4;
             final settingsModel = Provider.of<SettingsModel>(context);
-            final leftEyeSeparation = quarterWidth * settingsModel.leftEyeSeparation;
-            final rightEyeSeparation = quarterWidth * settingsModel.rightEyeSeparation;
+            final leftEyeSeparation =
+                quarterWidth * settingsModel.leftEyeSeparation;
+            final rightEyeSeparation =
+                quarterWidth * settingsModel.rightEyeSeparation;
             final messageWidth = quarterWidth * 2 * 0.8; // 80% of half screen
 
             return Stack(
@@ -1390,7 +1417,8 @@ class VR50_50VideoView extends StatelessWidget {
                             height: constraints.maxHeight,
                             child: RTCVideoView(
                               localRenderer,
-                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
                             ),
                           ),
                           SizedBox(
@@ -1398,7 +1426,8 @@ class VR50_50VideoView extends StatelessWidget {
                             height: constraints.maxHeight,
                             child: RTCVideoView(
                               remoteRenderer,
-                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
                             ),
                           ),
                         ],
@@ -1415,7 +1444,8 @@ class VR50_50VideoView extends StatelessWidget {
                             height: constraints.maxHeight,
                             child: RTCVideoView(
                               localRenderer,
-                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
                             ),
                           ),
                           SizedBox(
@@ -1423,7 +1453,8 @@ class VR50_50VideoView extends StatelessWidget {
                             height: constraints.maxHeight,
                             child: RTCVideoView(
                               remoteRenderer,
-                              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                              objectFit: RTCVideoViewObjectFit
+                                  .RTCVideoViewObjectFitCover,
                             ),
                           ),
                         ],
@@ -1445,7 +1476,8 @@ class VR50_50VideoView extends StatelessWidget {
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (quarterWidth * 2 - messageWidth) / 2 + leftEyeSeparation,
+                                left: (quarterWidth * 2 - messageWidth) / 2 +
+                                    leftEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1474,7 +1506,8 @@ class VR50_50VideoView extends StatelessWidget {
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (quarterWidth * 2 - messageWidth) / 2 - rightEyeSeparation,
+                                left: (quarterWidth * 2 - messageWidth) / 2 -
+                                    rightEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1528,21 +1561,23 @@ class PiPVideoView extends StatelessWidget {
 
     return Scaffold(
       body: GestureDetector(
-      onDoubleTap: () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      },
+        onDoubleTap: () {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             final halfWidth = constraints.maxWidth / 2;
             final pipSize = halfWidth / 3; // Adjust as needed
             final settingsModel = Provider.of<SettingsModel>(context);
-            final leftEyeSeparation = halfWidth * settingsModel.leftEyeSeparation;
-            final rightEyeSeparation = halfWidth * settingsModel.rightEyeSeparation;
+            final leftEyeSeparation =
+                halfWidth * settingsModel.leftEyeSeparation;
+            final rightEyeSeparation =
+                halfWidth * settingsModel.rightEyeSeparation;
             final messageWidth = halfWidth * 0.8;
 
             // Define proportional positions
@@ -1561,7 +1596,8 @@ class PiPVideoView extends StatelessWidget {
                         children: [
                           RTCVideoView(
                             mainRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            objectFit: RTCVideoViewObjectFit
+                                .RTCVideoViewObjectFitCover,
                           ),
                           Positioned(
                             right: leftEyeRightPosition,
@@ -1581,7 +1617,8 @@ class PiPVideoView extends StatelessWidget {
                         children: [
                           RTCVideoView(
                             mainRenderer,
-                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                            objectFit: RTCVideoViewObjectFit
+                                .RTCVideoViewObjectFitCover,
                           ),
                           Positioned(
                             right: rightEyeRightPosition,
@@ -1609,7 +1646,8 @@ class PiPVideoView extends StatelessWidget {
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (halfWidth - messageWidth) / 2 + leftEyeSeparation,
+                                left: (halfWidth - messageWidth) / 2 +
+                                    leftEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1638,7 +1676,8 @@ class PiPVideoView extends StatelessWidget {
                           child: Stack(
                             children: [
                               Positioned(
-                                left: (halfWidth - messageWidth) / 2 - rightEyeSeparation,
+                                left: (halfWidth - messageWidth) / 2 -
+                                    rightEyeSeparation,
                                 top: constraints.maxHeight / 2 - 50,
                                 child: Container(
                                   width: messageWidth,
@@ -1684,4 +1723,3 @@ class PiPVideoView extends StatelessWidget {
     );
   }
 }
-

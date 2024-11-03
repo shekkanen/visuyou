@@ -35,8 +35,7 @@ class _AnimatedStyledButtonState extends State<AnimatedStyledButton>
       upperBound: 0.1,
     );
 
-    _scaleAnimation =
-        Tween<double>(begin: 1.0, end: 0.9).animate(_controller);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(_controller);
   }
 
   void _onTapDown(TapDownDetails details) {
@@ -78,10 +77,13 @@ class _AnimatedStyledButtonState extends State<AnimatedStyledButton>
         ),
         child: ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: widget.isEnabled ? Colors.black : Colors.grey, // Updated parameter
+            backgroundColor: widget.isEnabled
+                ? Colors.black
+                : Colors.grey, // Updated parameter
             foregroundColor: Colors.white, // Updated parameter
             padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 4.0),
-            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            textStyle:
+                const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),

@@ -19,7 +19,10 @@ class SettingsPage extends StatelessWidget {
   static const List<String> micOnWords = ['mic on', 'enable mic'];
 
   // Mute/Unmute Speaker Words
-  static const List<String> speakerOffWords = ['speaker off', 'disable speaker'];
+  static const List<String> speakerOffWords = [
+    'speaker off',
+    'disable speaker'
+  ];
   static const List<String> speakerOnWords = ['speaker on', 'enable speaker'];
 
   // VR Mode Words
@@ -33,7 +36,8 @@ class SettingsPage extends StatelessWidget {
   // Alternate Picture in Picture VR Mode
   static const List<String> pipVrMode2Words = ['mode five', 'screen five'];
 
-  void _navigateToPolicyPage(BuildContext context, String title, String content) {
+  void _navigateToPolicyPage(
+      BuildContext context, String title, String content) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -53,43 +57,45 @@ class SettingsPage extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black, // Match your app's theme
-        iconTheme: const IconThemeData(color: Colors.grey), // Set back icon color to gray
+        iconTheme: const IconThemeData(
+            color: Colors.grey), // Set back icon color to gray
       ),
       body: ListView(
         children: [
-const Divider(),
-const ListTile(
-  title: Text(
-    'Eye Separation Settings',
-    style: TextStyle(fontWeight: FontWeight.bold),
-  ),
-),
-ListTile(
-  title: Text('Left Eye Separation'),
-  subtitle: Slider(
-    value: settingsModel.leftEyeSeparation,
-    min: 0.0,
-    max: 0.1,
-    divisions: 20,
-    label: (settingsModel.leftEyeSeparation * 100).toStringAsFixed(2),
-    onChanged: (value) {
-      settingsModel.updateLeftEyeSeparation(value);
-    },
-  ),
-),
-ListTile(
-  title: Text('Right Eye Separation'),
-  subtitle: Slider(
-    value: settingsModel.rightEyeSeparation,
-    min: 0.0,
-    max: 0.1,
-    divisions: 20,
-    label: (settingsModel.rightEyeSeparation * 100).toStringAsFixed(2),
-    onChanged: (value) {
-      settingsModel.updateRightEyeSeparation(value);
-    },
-  ),
-),
+          const Divider(),
+          const ListTile(
+            title: Text(
+              'Eye Separation Settings',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          ListTile(
+            title: Text('Left Eye Separation'),
+            subtitle: Slider(
+              value: settingsModel.leftEyeSeparation,
+              min: 0.0,
+              max: 0.1,
+              divisions: 20,
+              label: (settingsModel.leftEyeSeparation * 100).toStringAsFixed(2),
+              onChanged: (value) {
+                settingsModel.updateLeftEyeSeparation(value);
+              },
+            ),
+          ),
+          ListTile(
+            title: Text('Right Eye Separation'),
+            subtitle: Slider(
+              value: settingsModel.rightEyeSeparation,
+              min: 0.0,
+              max: 0.1,
+              divisions: 20,
+              label:
+                  (settingsModel.rightEyeSeparation * 100).toStringAsFixed(2),
+              onChanged: (value) {
+                settingsModel.updateRightEyeSeparation(value);
+              },
+            ),
+          ),
 
           SwitchListTile(
             title: const Text('Enable Mic'),
@@ -104,7 +110,8 @@ ListTile(
           SwitchListTile(
             title: const Text('Enable Voice Commands'),
             value: settingsModel.enableVoiceCommands,
-            onChanged: (value) => settingsModel.updateEnableVoiceCommands(value),
+            onChanged: (value) =>
+                settingsModel.updateEnableVoiceCommands(value),
           ),
 
           // Conditionally display the Voice Command Settings section
@@ -121,7 +128,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "View Next" Command'),
               value: settingsModel.viewNextCommandEnabled,
-              onChanged: (value) => settingsModel.updateViewNextCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateViewNextCommandEnabled(value),
             ),
             ListTile(
               title: const Text('View Next Word'),
@@ -156,7 +164,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "View Back" Command'),
               value: settingsModel.viewBackCommandEnabled,
-              onChanged: (value) => settingsModel.updateViewBackCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateViewBackCommandEnabled(value),
             ),
             ListTile(
               title: const Text('View Back Word'),
@@ -191,7 +200,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "Mic On" Command'),
               value: settingsModel.micEnabledCommandEnabled,
-              onChanged: (value) => settingsModel.updateMicEnabledCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateMicEnabledCommandEnabled(value),
             ),
             ListTile(
               title: const Text('Enable Mic Word'),
@@ -226,7 +236,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "Mic Off" Command'),
               value: settingsModel.micDisableCommandEnabled,
-              onChanged: (value) => settingsModel.updateMicDisableCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateMicDisableCommandEnabled(value),
             ),
             ListTile(
               title: const Text('Disable Mic Word'),
@@ -261,7 +272,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "Speaker On" Command'),
               value: settingsModel.speakerEnabledCommandEnabled,
-              onChanged: (value) => settingsModel.updateSpeakerEnabledCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateSpeakerEnabledCommandEnabled(value),
             ),
             ListTile(
               title: const Text('Enable Speaker Word'),
@@ -286,7 +298,8 @@ ListTile(
                         },
                       );
                       if (selectedWord != null) {
-                        await settingsModel.updateSpeakerEnabledWord(selectedWord);
+                        await settingsModel
+                            .updateSpeakerEnabledWord(selectedWord);
                       }
                     }
                   : null,
@@ -296,7 +309,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "Speaker Off" Command'),
               value: settingsModel.speakerDisableCommandEnabled,
-              onChanged: (value) => settingsModel.updateSpeakerDisableCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateSpeakerDisableCommandEnabled(value),
             ),
             ListTile(
               title: const Text('Disable Speaker Word'),
@@ -321,7 +335,8 @@ ListTile(
                         },
                       );
                       if (selectedWord != null) {
-                        await settingsModel.updateSpeakerDisableWord(selectedWord);
+                        await settingsModel
+                            .updateSpeakerDisableWord(selectedWord);
                       }
                     }
                   : null,
@@ -331,7 +346,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "Full VR Mode" Command'),
               value: settingsModel.fullVrModeCommandEnabled,
-              onChanged: (value) => settingsModel.updateFullVrModeCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateFullVrModeCommandEnabled(value),
             ),
             ListTile(
               title: const Text('Full VR Mode Word'),
@@ -366,7 +382,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "Full VR Mode2" Command'),
               value: settingsModel.fullVrMode2CommandEnabled,
-              onChanged: (value) => settingsModel.updateFullVrMode2CommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateFullVrMode2CommandEnabled(value),
             ),
             ListTile(
               title: const Text('Full VR Mode2 Word'),
@@ -401,7 +418,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "50/50 VR Mode" Command'),
               value: settingsModel.vr50_50ModeCommandEnabled,
-              onChanged: (value) => settingsModel.updateVr50_50ModeCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updateVr50_50ModeCommandEnabled(value),
             ),
             ListTile(
               title: const Text('50/50 VR Mode Word'),
@@ -436,7 +454,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "PiP VR Mode" Command'),
               value: settingsModel.pipVrModeCommandEnabled,
-              onChanged: (value) => settingsModel.updatePipVrModeCommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updatePipVrModeCommandEnabled(value),
             ),
             ListTile(
               title: const Text('PiP VR Mode Word'),
@@ -471,7 +490,8 @@ ListTile(
             SwitchListTile(
               title: const Text('Enable "PiP VR Mode2" Command'),
               value: settingsModel.pipVrMode2CommandEnabled,
-              onChanged: (value) => settingsModel.updatePipVrMode2CommandEnabled(value),
+              onChanged: (value) =>
+                  settingsModel.updatePipVrMode2CommandEnabled(value),
             ),
             ListTile(
               title: const Text('PiP VR Mode2 Word'),
@@ -513,7 +533,8 @@ ListTile(
           ListTile(
             title: const Text('Terms of Service'),
             onTap: () {
-              _navigateToPolicyPage(context, 'Terms of Service', termsOfService);
+              _navigateToPolicyPage(
+                  context, 'Terms of Service', termsOfService);
             },
           ),
         ],

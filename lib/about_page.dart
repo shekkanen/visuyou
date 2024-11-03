@@ -19,7 +19,8 @@ class AboutPage extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black, // Match your app's theme
-        iconTheme: const IconThemeData(color: Colors.grey), // Set the back icon color to gray
+        iconTheme: const IconThemeData(
+            color: Colors.grey), // Set the back icon color to gray
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -43,7 +44,8 @@ class AboutPage extends StatelessWidget {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () async {
-                final Uri url = Uri.parse('https://buymeacoffee.com/samihekkanen');
+                final Uri url =
+                    Uri.parse('https://buymeacoffee.com/samihekkanen');
                 if (!await launchUrl(url)) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Could not open the link.')),
