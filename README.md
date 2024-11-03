@@ -350,3 +350,11 @@ Session Recording: Offer the option to record sessions for later viewing, with c
 
  # Privacy Policy
  https://shekkanen.github.io/visuyou-policies/privacy_policy.html
+
+ # tag move
+ ```
+git tag -d v1.0.0
+git push origin :refs/tags/v1.0.0
+git tag -a v1.0.0 -m "Release version 1.0.0"
+git push origin v1.0.0
+  ```
