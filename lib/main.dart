@@ -65,7 +65,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     'PIP VR Mode',
     'PIP VR Mode2'
   ];
-  Map<String, String> _previousVoiceCommands = {};
   VoiceCommandUtils? _voiceCommandUtils; // Modified to be nullable
   late SettingsModel _settingsModel; // Add this line
 
@@ -92,20 +91,6 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
     // Wait for settings to load before proceeding
     _settingsModel.settingsLoaded.then((_) async {
       await _requestPermissions(); // Proceed with the rest after settings are loaded
-
-      // Initialize previous voice commands after _settingsModel is initialized
-      _previousVoiceCommands = {
-        'viewNextWord': _settingsModel.viewNextWord,
-        'viewBackWord': _settingsModel.viewBackWord,
-        'micEnabledWord': _settingsModel.micEnabledWord,
-        'micDisableWord': _settingsModel.micDisableWord,
-        'speakerEnabledWord': _settingsModel.speakerEnabledWord,
-        'speakerDisableWord': _settingsModel.speakerDisableWord,
-        'fullVrModeWord': _settingsModel.fullVrModeWord,
-        'vr50_50ModeWord': _settingsModel.vr50_50ModeWord,
-        'pipVrModeWord': _settingsModel.pipVrModeWord,
-        'pipVrMode2Word': _settingsModel.pipVrMode2Word,
-      };
 
       // Manually trigger the settings changed handler
       _onSettingsChanged();
