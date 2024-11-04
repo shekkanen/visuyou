@@ -1107,15 +1107,33 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(12.0), // Increased padding
-                      child: _connectionCode.isNotEmpty
-                          ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
-                          : _connecting
-                              ? const CircularProgressIndicator()
-                              : const Text(
-                                  'No data to display',
-                                  style: TextStyle(
-                                      fontSize: 16), // Increased text size
+                      child: _isConnected
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: Colors.red,
                                 ),
+                                SizedBox(width: 8.0),
+                                Text(
+                                  'Double tap to exit VR mode',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : _connectionCode.isNotEmpty
+                              ? QRCodeUtils.buildQRCodeWidget(_connectionCode)
+                              : _connecting
+                                  ? const CircularProgressIndicator()
+                                  : const Text(
+                                      'No data to display',
+                                      style: TextStyle(fontSize: 16), // Increased text size
+                                    ),
                     ),
                     SafeArea(
                       child: Padding(
