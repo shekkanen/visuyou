@@ -177,6 +177,12 @@ class _CameraStreamingAppState extends State<CameraStreamingApp> {
             });
             _showErrorSnackBar('Connection lost. Please try again.');
             _resetApp();
+            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+            SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
+          Navigator.of(context).popUntil((route) => route.isFirst);            
           }
         }
       };
