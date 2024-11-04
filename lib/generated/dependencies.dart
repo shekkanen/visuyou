@@ -17,7 +17,7 @@ const Map<String, String> dependencies = {
   'clock': '1.1.1',
   'collection': '1.18.0',
   'cross_file': '0.3.4+2',
-  'crypto': '3.0.5',
+  'crypto': '3.0.6',
   'cupertino_icons': '1.0.8',
   'dart_webrtc': '1.4.9',
   'device_info_plus': '11.1.0',

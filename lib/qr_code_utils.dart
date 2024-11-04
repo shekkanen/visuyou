@@ -1,14 +1,30 @@
 // lib/qr_code_utils.dart
-// Copyright © 2024 Sami Hekkanen. All rights reserved.
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:flutter/foundation.dart'; // Import for kDebugMode
+import 'package:flutter/foundation.dart';
+import 'package:crypto/crypto.dart'; // Import for HMAC
+import 'secret_key.dart'; // Import the secret key
 
 class QRCodeUtils {
-  /// Displays a QR code containing type, sdp, and iceCandidates.
+  /// Generates HMAC signature for the given data using the secret key.
+  static String _generateHMAC(String data) {
+    final key = utf8.encode(secretKey);
+    final bytes = utf8.encode(data);
+    final hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
+    final digest = hmacSha256.convert(bytes);
+    return digest.toString();
+  }
+
+  /// Verifies HMAC signature for the given data.
+  static bool _verifyHMAC(String data, String signature) {
+    final expectedSignature = _generateHMAC(data);
+    return expectedSignature == signature;
+  }
+
+  /// Displays a QR code containing type, sdp, iceCandidates, and HMAC signature.
   static Future<void> displayQRCode(
     BuildContext context,
     String type,
@@ -27,6 +43,17 @@ class QRCodeUtils {
       String jsonString = jsonEncode(qrData);
       String compressedData = _compressData(jsonString);
 
+      // Generate HMAC signature
+      String signature = _generateHMAC(compressedData);
+
+      // Attach signature to the data
+      final Map<String, dynamic> qrDataWithSignature = {
+        'data': compressedData,
+        'signature': signature,
+      };
+
+      String finalQrData = jsonEncode(qrDataWithSignature);
+
       if (kDebugMode) {
         print(
             "Size of data before compression: ${utf8.encode(jsonString).length} bytes");
@@ -34,7 +61,8 @@ class QRCodeUtils {
             "Size of data after compression: ${utf8.encode(compressedData).length} bytes");
       }
 
-      String qrCodeData = compressedData;
+      // Generate QR Code
+      String qrCodeData = finalQrData;
 
       setStateCallback(qrCodeData);
 
@@ -49,7 +77,7 @@ class QRCodeUtils {
     }
   }
 
-  /// Scans a QR code and extracts type, sdp, and iceCandidates.
+  /// Scans a QR code and extracts type, sdp, and iceCandidates after verification.
   static Future<void> scanQRCode(
       BuildContext context,
       Function(String, String, List<Map<String, dynamic>>)
@@ -74,22 +102,34 @@ class QRCodeUtils {
     }
   }
 
-  /// Processes the scanned QR code data.
+  /// Processes the scanned QR code data with HMAC verification.
   static void _processScannedData(BuildContext context, String scannedData,
       Function(String, String, List<Map<String, dynamic>>) processScannedData) {
     try {
-      // Assuming the data is already compressed
-      String decompressedData = _decompressData(scannedData);
-      final Map<String, dynamic> receivedData = jsonDecode(decompressedData);
+      final Map<String, dynamic> receivedData = jsonDecode(scannedData);
 
-      if (kDebugMode) {
-        print("Decoded Data: $receivedData");
+      String compressedData = receivedData['data'];
+      String signature = receivedData['signature'];
+
+      // Verify HMAC signature
+      bool isValid = _verifyHMAC(compressedData, signature);
+      if (!isValid) {
+        if (kDebugMode) {
+          print("HMAC signature verification failed.");
+        }
+        _showErrorAlert(
+            context, "Invalid QR code. The data may have been tampered with.");
+        return;
       }
 
-      final String type = receivedData['type'];
-      final String sdp = receivedData['sdp'];
+      // Decompress data
+      String decompressedData = _decompressData(compressedData);
+      final Map<String, dynamic> connectionData = jsonDecode(decompressedData);
+
+      final String type = connectionData['type'];
+      final String sdp = connectionData['sdp'];
       final List<dynamic> iceCandidatesDynamic =
-          receivedData['iceCandidates'] ?? [];
+          connectionData['iceCandidates'] ?? [];
 
       // Convert dynamic list to List<Map<String, dynamic>>
       List<Map<String, dynamic>> iceCandidates = iceCandidatesDynamic
@@ -97,13 +137,14 @@ class QRCodeUtils {
           .toList();
 
       if (kDebugMode) {
+        print("Decoded Data: $connectionData");
         print("Type: $type, SDP: $sdp, ICE Candidates: $iceCandidates");
       }
 
       processScannedData(type, sdp, iceCandidates);
     } catch (e) {
       if (kDebugMode) {
-        print("Failed to decode QR code data: $e");
+        print("Failed to decode or verify QR code data: $e");
       }
       _showErrorAlert(
           context, "Failed to process scanned QR code data. Please try again.");
@@ -168,12 +209,11 @@ class QRCodeUtils {
   /// Builds the QR code widget to display on the screen.
   static Widget buildQRCodeWidget(String connectionCode) {
     return Padding(
-      padding: const EdgeInsets.all(16.0), // Change 9: Added consistent padding
+      padding: const EdgeInsets.all(16.0), // Consistent padding
       child: Center(
-        // Change 7: Wrapped Column in Center
         child: Column(
           mainAxisAlignment:
-              MainAxisAlignment.center, // Change 8: Added vertical centering
+              MainAxisAlignment.center, // Added vertical centering
           children: [
             const Text(
               'Using VR headsets may cause motion sickness, disorientation, or other discomfort. Be aware of your surroundings and use caution.',
@@ -181,7 +221,7 @@ class QRCodeUtils {
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
-                color: Colors.redAccent, // Optional: Make the warning stand out
+                color: Colors.redAccent, // Make the warning stand out
               ),
             ),
             const SizedBox(height: 10),
