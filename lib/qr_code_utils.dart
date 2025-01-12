@@ -6,12 +6,19 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:crypto/crypto.dart'; // Import for HMAC
-import 'secret_key.dart'; // Import the secret key
-
+import 'dart:io'; // Import for Platform
 class QRCodeUtils {
-  /// Generates HMAC signature for the given data using the secret key.
+
+    static String _getSecretKey() {
+      final secretKey = Platform.environment['VISUYOU_SECRET_KEY'];
+      if(secretKey == null || secretKey.isEmpty){
+        throw Exception('VISUYOU_SECRET_KEY environment variable is not set. Please set this before using this application. This value is used to verify the integrity of the QR codes you are scanning. This is a sensitive value and should never be commited to the git repository.');
+      }
+       return secretKey;
+    }
+    /// Generates HMAC signature for the given data using the secret key.
   static String _generateHMAC(String data) {
-    final key = utf8.encode(secretKey);
+      final key = utf8.encode(_getSecretKey());
     final bytes = utf8.encode(data);
     final hmacSha256 = Hmac(sha256, key); // HMAC-SHA256
     final digest = hmacSha256.convert(bytes);
@@ -146,8 +153,12 @@ class QRCodeUtils {
       if (kDebugMode) {
         print("Failed to decode or verify QR code data: $e");
       }
-      _showErrorAlert(
-          context, "Failed to process scanned QR code data. Please try again.");
+        _showErrorAlert(context, "Failed to process scanned QR code data. Please try again.");
+    } on FormatException catch (e) {
+        if (kDebugMode) {
+          print('Failed to decode JSON: $e');
+        }
+        _showErrorAlert(context, "Failed to decode scanned QR code data. Please try again.");
     }
   }
 

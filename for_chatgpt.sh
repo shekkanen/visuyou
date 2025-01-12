@@ -5,6 +5,7 @@ find lib -name "*.dart" > /tmp/dart_files.txt
 echo 'pubspec.yaml' >> /tmp/dart_files.txt
 echo 'android/app/src/main/AndroidManifest.xml' >> /tmp/dart_files.txt
 echo 'android/app/build.gradle' >> /tmp/dart_files.txt
+echo 'android/settings.gradle' >> /tmp/dart_files.txt
 echo 'android/app/proguard-rules.pro' >> /tmp/dart_files.txt
 echo 'README.md' >> /tmp/dart_files.txt
 echo 'CHANGELOG.md' >> /tmp/dart_files.txt
