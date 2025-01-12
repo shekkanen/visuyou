@@ -40,7 +40,22 @@ class AboutPage extends StatelessWidget {
             const Text(
               '© 2024 Sami Hekkanen. All rights reserved.',
               style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            ),            
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: () async {
+                final Uri url = Uri.parse('https://buymeacoffee.com/samihekkanen');
+                if (!await launchUrl(url)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Could not open the link.')),
+                  );
+                }
+              },
+              child: const Text(
+                'Buy Me a Coffee (External Link)',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
             const SizedBox(height: 20),
             const Text(
               'Dependencies:',
