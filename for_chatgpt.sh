@@ -10,6 +10,7 @@ echo 'android/app/proguard-rules.pro' >> /tmp/dart_files.txt
 echo 'README.md' >> /tmp/dart_files.txt
 echo 'CHANGELOG.md' >> /tmp/dart_files.txt
 echo 'release_build_and_install.sh' >> /tmp/dart_files.txt
+echo 'assets/.env.example' >> /tmp/dart_files.txt
 
 # Append the content of each dart file to flutter_dart.txt
 echo > /tmp/flutter_dart.txt
