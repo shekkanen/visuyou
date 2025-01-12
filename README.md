@@ -4,6 +4,8 @@
 
 VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using Flutter. It enables users to share and experience the world from another person's perspective in real time using VR headsets. Since the app establishes a direct connection between two devices without relying on any servers, your privacy and data remain secure.
 
+![Couple](docs/couple.webp "Couple")
+
 ### Screenshots
 
 ## Screenshots
