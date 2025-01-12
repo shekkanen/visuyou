@@ -140,18 +140,24 @@ Install the app using:
 flutter install
 ```
 
+## Requirements
+- two mobile phone with visuyou app installed
+- two vr headseats for mobile phones 
+
 ## Usage
 
 ### Establishing Connection
 
 1. **Launch the App**: Open VisuYou on both devices.
-2. **Create Offer**:
-   - On one device, tap **Create Offer**.
+2. **Start Connection**:
+   - On fisrt device, tap **Start Connection**.
    - A QR code will be generated containing the connection offer.
-3. **Scan QR Code**:
-   - On the second device, tap **Scan QR Code**.
+3. **Join Session**:
+   - On the second device, tap **Join Session**.
    - Scan the QR code displayed on the first device.
-4. **Complete the Connection**: Follow any additional prompts to finalize the connection. The app will exchange necessary information to establish a P2P connection.
+4. **Complete the Connection**: 
+   - On first device, complete then connection, by tapping **Join Session** 
+   - Scan the QR code displayed on the second device
 
 ### Selecting VR Modes
 
