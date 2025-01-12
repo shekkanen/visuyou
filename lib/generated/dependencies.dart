@@ -27,6 +27,7 @@ const Map<String, String> dependencies = {
   'file': '7.0.0',
   'flutter': '0.0.0',
   'flutter_barcode_scanner': '2.0.0',
+  'flutter_dotenv': '5.2.1',
   'flutter_launcher_icons': '0.9.3',
   'flutter_lints': '4.0.0',
   'flutter_plugin_android_lifecycle': '2.0.21',

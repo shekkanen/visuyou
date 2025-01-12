@@ -6,7 +6,6 @@ VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using
 
 ![Couple](docs/couple.webp "Couple")
 
-### Screenshots
 
 ## Screenshots
 
@@ -45,8 +44,8 @@ VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using
 Connect directly with another device using WebRTC technology, ensuring a private and secure connection without intermediary servers.
 
 ### Multiple VR Modes
-- **Full VR Mode**: Immersive experience with the same (remote) video feed in both eyes.  
-- **Full VR Mode2**: Immersive experience with the local camera feed in both eyes.  
+- **Full VR Mode**: Rremote video feed in both eyes.  
+- **Full VR Mode2**: Local camera feed in both eyes.  
 - **50/50 VR Mode**: Split-screen view, combining local and remote video streams side-by-side for each eye.  
 - **PiP VR Mode**: Picture-in-Picture mode, displaying the remote stream within the local stream.  
 - **PiP VR Mode2**: Picture-in-Picture mode, displaying the local stream within the remote stream.
@@ -275,11 +274,11 @@ git push origin feature/YourFeature
 5. **Open a Pull Request** on GitHub.
 
 ## License
-This project is licensed under [Your License Name]. You may add more details or a link to your license file here.
+This project is licensed under MIT License.
 
 ## Contact
 For questions or support:
-- **Email**: sami.hekkanen@gmail.com  
+- **Email**: visuyouapp@gmail.com
 - **GitHub**: shekkanen
 
 ## Getting Started
