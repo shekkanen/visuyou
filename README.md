@@ -32,6 +32,10 @@ VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using
 ### 8. Mode 5 PiP VR Mode2
 ![Mode 5 PiP VR Mode2](docs/screenshots/mode5_pip_vr_mode2.webp "PiP VR Mode2")
 
+### 9. Settings Screen
+![Settings Screen](docs/screenshots/settings_screen.webp "Settings Screen")
+
+
 
 ## Features
 
