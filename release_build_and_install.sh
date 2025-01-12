@@ -4,9 +4,9 @@
 pkill -f "adb -s e7d36532 logcat"
 pkill -f "adb -s 18a3a90b9907 logcat"
 
-flutter clean
+#flutter clean
 
-flutter pub get
+#flutter pub get
 
 dart scripts/generate_dependencies.dart
 
@@ -26,5 +26,5 @@ else
   echo "Build failed, not installing APK."
 fi
 
-adb -s e7d36532 logcat | grep 'com.samihekkanen.visuyou' > xiaomi_logcat.log &
-adb -s 18a3a90b9907 logcat | grep 'com.samihekkanen.visuyou' > redmi_logcat.log &
+#adb -s e7d36532 logcat | grep 'com.samihekkanen.visuyou' > xiaomi_logcat.log &
+#adb -s 18a3a90b9907 logcat | grep 'com.samihekkanen.visuyou' > redmi_logcat.log &
