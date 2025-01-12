@@ -1,0 +1,20 @@
+## 1.0.0
+- Initial release of the project.
+- Implemented core peer-to-peer WebRTC functionality for VR streaming.
+- Added support for Full VR Mode, Full VR Mode2, 50/50 VR Mode and PiP VR Modes.
+- Integrated voice commands for seamless navigation and control.
+- Implemented QR code functionality for easy connection establishment.
+- Introduced settings to manage speaker, mic and eye separation.
+- Created a user-friendly UI for easy navigation.
+- Added an About page to display details about the app and dependencies.
+- Added Terms of Service and Privacy Policy pages with selectable text.
+- Implemented robust error handling and alerts throughout the app.
+- Added haptic feedback for voice commands.
+- Implemented environment variables for secret key management.
+- Integrated the required android permissions into the manifest.
+- Configured Gradle build file for release mode.
+- Added Proguard configurations.
+- Updated the README.md to include more details.
+- Implemented the `generate_dependencies.dart` to update the dependency list in the about page.
+- Implemented several VR video view classes such as `FullVRVideoView`, `VR50_50VideoView`, `PiPVideoView` that utilizes `LayoutBuilder` for dynamic UI sizing.
+- Implemented `ValueNotifier` to manage message overlay.
