@@ -17,10 +17,14 @@ import 'settings_model.dart'; // Import settings model
 import 'dart:async'; // Import for async functions
 import 'package:vibration/vibration.dart';
 import 'animated_styled_button.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding
       .ensureInitialized(); // Ensure plugin services are initialized
+
+  // Load environment variables from /assets/.env
+  await dotenv.load(fileName: "assets/.env");
 
   runApp(
     ChangeNotifierProvider(

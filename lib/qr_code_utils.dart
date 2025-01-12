@@ -7,15 +7,19 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:crypto/crypto.dart'; // Import for HMAC
 import 'dart:io'; // Import for Platform
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class QRCodeUtils {
 
-    static String _getSecretKey() {
-      final secretKey = Platform.environment['VISUYOU_SECRET_KEY'];
-      if(secretKey == null || secretKey.isEmpty){
-        throw Exception('VISUYOU_SECRET_KEY environment variable is not set. Please set this before using this application. This value is used to verify the integrity of the QR codes you are scanning. This is a sensitive value and should never be commited to the git repository.');
-      }
-       return secretKey;
+  static String _getSecretKey() {
+    // Instead of Platform.environment, use dotenv.env
+    final secretKey = dotenv.env['VISUYOU_SECRET_KEY'];
+    if (secretKey == null || secretKey.isEmpty) {
+      throw Exception('VISUYOU_SECRET_KEY environment variable is not set. '
+          'Please set this before using this application...');
     }
+    return secretKey;
+  }
+
     /// Generates HMAC signature for the given data using the secret key.
   static String _generateHMAC(String data) {
       final key = utf8.encode(_getSecretKey());

@@ -39,6 +39,7 @@ dependencies:
   vosk_flutter: ^0.3.48
   path_provider: ^2.0.11 
   shared_preferences: 2.3.2
+  flutter_dotenv: ^5.2.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -72,6 +73,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/.env
     - assets/visuyou_logo_512x512.png
     - assets/visuyou_background.png
     - assets/models/vosk-model-small-en-us-0.15.zip
