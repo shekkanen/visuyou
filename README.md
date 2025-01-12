@@ -1,75 +1,122 @@
 # VisuYou
+
 ## VisuYou - True P2P VR Experience
 
-VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using Flutter. It enables users to share and experience the world from another person's perspective in real-time using VR headsets. The app establishes a direct connection between two devices without relying on any servers, ensuring complete privacy.
+VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using Flutter. It enables users to share and experience the world from another person's perspective in real time using VR headsets. Since the app establishes a direct connection between two devices without relying on any servers, your privacy and data remain secure.
+
+### Screenshots
+
+## Screenshots
+
+### 1. Main Screen
+![Main Screen](docs/screenshots/main_screen.webp "Main Screen")
+
+### 2. Main Screen Connected
+![Main Screen Connected](docs/screenshots/main_screen_connected.webp "Main Screen Connected")
+
+### 3. Start Connection
+![Start Connection](docs/screenshots/main_screen_start_connection.webp "Start Connection")
+
+### 4. Mode 1 Full VR Mode
+![Mode 1 Full VR Mode](docs/screenshots/mode1_full_vr_mode.webp "Full VR Mode")
+
+### 5. Mode 2 Full VR Mode2
+![Mode 2 Full VR Mode2](docs/screenshots/mode2_full_vr_mode2.webp "Full VR Mode2")
+
+### 6. Mode 3 50/50 VR Mode
+![Mode 3 50/50 VR Mode](docs/screenshots/mode3_50_50_vr_mode.webp "50/50 VR Mode")
+
+### 7. Mode 4 PiP VR Mode
+![Mode 4 PiP VR Mode](docs/screenshots/mode4_pip_vr_mode.webp "PiP VR Mode")
+
+### 8. Mode 5 PiP VR Mode2
+![Mode 5 PiP VR Mode2](docs/screenshots/mode5_pip_vr_mode2.webp "PiP VR Mode2")
+
 
 ## Features
-- **True P2P Connection**: Connect directly with another device using WebRTC technology, ensuring a private and secure connection without intermediary servers.
-- **Multiple VR Modes**:
-  - Full VR Mode: Immersive experience with the same video feed in both eyes.
-  - Full VR Mode2: Immersive experience with the local camera stream.
-  - 50/50 VR Mode: Split-screen view combining local and remote video streams.
-  - PiP VR Mode: Picture-in-Picture mode to view the remote stream within the local stream.
-  - PiP VR Mode2: Picture-in-Picture mode to view the local stream within the remote stream.
-- **Voice Commands**: Navigate between VR modes using voice commands for a seamless hands-free experience.
-- **QR Code Connection**: Easily establish connections by generating and scanning QR codes.
-- **Audio Support**: Optional audio streaming that can be enabled or disabled in the settings.
-- **Cross-Platform Compatibility**: Built with Flutter, VisuYou can be used across various devices supporting Flutter.
+
+### True P2P Connection
+Connect directly with another device using WebRTC technology, ensuring a private and secure connection without intermediary servers.
+
+### Multiple VR Modes
+- **Full VR Mode**: Immersive experience with the same (remote) video feed in both eyes.  
+- **Full VR Mode2**: Immersive experience with the local camera feed in both eyes.  
+- **50/50 VR Mode**: Split-screen view, combining local and remote video streams side-by-side for each eye.  
+- **PiP VR Mode**: Picture-in-Picture mode, displaying the remote stream within the local stream.  
+- **PiP VR Mode2**: Picture-in-Picture mode, displaying the local stream within the remote stream.
+
+### Voice Commands
+Control and navigate the app using voice commands. Switch modes, enable or disable features, and more, all hands-free.
+
+### QR Code Connection
+Easily establish connections by generating or scanning QR codes. This provides a straightforward way to share connection offers between devices.
+
+### Audio Support
+Optionally enable or disable audio streaming in the settings.
+
+### Cross-Platform Compatibility
+Built with Flutter, VisuYou can run on multiple platforms that support Flutter, with a current focus on Android.
 
 ## Table of Contents
-1. [Installation](#installation)
-2. [Prerequisites](#prerequisites)
-3. [Setup](#setup)
-4. [Build Instructions](#build-instructions)
-5. [Usage](#usage)
-   - [Establishing Connection](#establishing-connection)
-   - [Selecting VR Modes](#selecting-vr-modes)
-   - [Voice Commands](#voice-commands)
-   - [Settings](#settings)
-   - [Permissions](#permissions)
-6. [Troubleshooting](#troubleshooting)
-7. [Dependencies](#dependencies)
-8. [Contributing](#contributing)
-9. [License](#license)
-10. [Contact](#contact)
-11. [Getting Started](#getting-started)
-12. [Usage Scenarios](#usage-scenarios)
-13. [Considerations for Implementation](#considerations-for-implementation)
+1. [Installation](#installation)  
+2. [Prerequisites](#prerequisites)  
+3. [Setup](#setup)  
+4. [Build Instructions](#build-instructions)  
+5. [Usage](#usage)  
+   - [Establishing Connection](#establishing-connection)  
+   - [Selecting VR Modes](#selecting-vr-modes)  
+   - [Voice Commands](#voice-commands)  
+   - [Settings](#settings)  
+   - [Permissions](#permissions)  
+6. [Troubleshooting](#troubleshooting)  
+7. [Dependencies](#dependencies)  
+8. [Contributing](#contributing)  
+9. [License](#license)  
+10. [Contact](#contact)  
+11. [Getting Started](#getting-started)  
+12. [Usage Scenarios](#usage-scenarios)  
+13. [Considerations for Implementation](#considerations-for-implementation)  
 14. [Additional Features to Enhance Use Cases](#additional-features-to-enhance-use-cases)
 
 ## Installation
 
 ### Prerequisites
-- **Flutter SDK**: Ensure you have Flutter installed on your machine. [Install Flutter](https://flutter.dev/docs/get-started/install)
-- **Android Device**: The app is currently built for Android devices.
-- **VR Headset**: A compatible VR headset is recommended for the full experience.
+- **Flutter SDK**: Make sure you have Flutter installed. Refer to the official Flutter installation guide.  
+- **Android Device**: The current build targets Android.  
+- **VR Headset**: Optional but highly recommended for a fully immersive experience.
 
-### Setup
-1. **Create .env File**: Copy `assets/.env.example` to `assets/.env`.
-2.  **Add VISUYOU_SECRET_KEY**: Replace `your_actual_secret_key` in the `assets/.env` file with your own secret key. This is used for HMAC signature verification when connecting to other users.
+## Setup
 
-### Build Instructions
+1. **Create a .env File**  
+   Copy the file `assets/.env.example` to `assets/.env`.
 
-#### Clone the Repository
+2. **Add `VISUYOU_SECRET_KEY`**  
+   In `assets/.env`, set the value of `VISUYOU_SECRET_KEY` to your own secret key. This is used for HMAC signature verification, providing secure connections.
+
+## Build Instructions
+
+### Clone the Repository
 
 ```bash
 git clone https://github.com/yourusername/visuyou.git
 cd visuyou
 ```
 
-#### Install Dependencies
+### Install Dependencies
 
 ```bash
 flutter pub get
 ```
 
-#### Configure App Signing (For Release Builds)
+### Configure App Signing (For Release Builds)
+
+Generate a keystore:
 
 ```bash
 keytool -genkey -v -keystore ~/visuyou_keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias your_alias
 ```
 
-In your project root, create a file named `key.properties` and add the following:
+Create a file named `key.properties`:
 
 ```properties
 storePassword=your_keystore_password
@@ -78,7 +125,7 @@ keyAlias=your_alias
 storeFile=/path/to/visuyou_keystore.jks
 ```
 
-Ensure the signing configurations are added:
+Update `android/app/build.gradle`:
 
 ```groovy
 def keystoreProperties = new Properties()
@@ -89,7 +136,6 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     // ...
-
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -98,7 +144,6 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
-
     buildTypes {
         release {
             signingConfig signingConfigs.release
@@ -109,147 +154,100 @@ android {
 }
 ```
 
-#### Build the App
+### Build the App
 
 ```bash
 flutter build apk --debug
-```
-
-```bash
 flutter build apk --release
-```
-
-```bash
 flutter build appbundle --release
 ```
 
-#### Install the App on Your Device
-
-Connect your Android device via USB and enable USB debugging.
-
-Install the app using:
+### Install the App on Your Device
 
 ```bash
 flutter install
 ```
 
-### Requirements
-
-- Two mobile phones with VisuYou app installed
-- Two VR headsets for mobile phones
-
 ## Usage
 
 ### Establishing Connection
-Launch the App: Open VisuYou on both devices.
-
-Start Connection:
-
-On the first device, tap Start Connection.
-
-A QR code will be generated containing the connection offer.
-
-Join Session:
-
-On the second device, tap Join Session.
-
-Scan the QR code displayed on the first device.
-
-Complete the Connection:
-
-On the first device, complete the connection by tapping Join Session.
-
-Scan the QR code displayed on the second device.
+1. **Launch the App** on both devices.  
+2. **Start Connection** on the first device:  
+   Tap "Start Connection" to generate a QR code containing the offer.  
+3. **Join Session** on the second device:  
+   Tap "Join Session" and scan the QR code shown on the first device.  
+4. **Complete the Connection**:  
+   On the first device, tap "Join Session" again to scan the QR code displayed on the second device (creating a complete P2P handshake).
 
 ### Selecting VR Modes
-Use the dropdown menu in the app bar to select your preferred VR mode:
-
-- **Full VR Mode**
-- **Full VR Mode2**
-- **50/50 VR Mode**
-- **PIP VR Mode**
-- **PIP VR Mode2**
+Use the dropdown menu in the app bar to switch modes:
+- **Full VR Mode**: Remote camera feed in both eyes.  
+- **Full VR Mode2**: Local camera feed in both eyes.  
+- **50/50 VR Mode**: Split-screen of both local and remote feeds for each eye.  
+- **PiP VR Mode**: The remote stream overlaid within the local stream.  
+- **PiP VR Mode2**: The local stream overlaid within the remote stream.
 
 ### Voice Commands
-Say "Next" or "Forward" or "Left" to cycle through the available VR modes.
+Enable voice commands in Settings to use keywords:
 
-Say "Back" or "Previous" or "Right" to cycle through the available VR modes.
+#### Navigation
+- "Next", "Forward", or "Left" cycles through VR modes forward.  
+- "Back", "Previous", or "Right" cycles backward.
 
-Ensure that voice recognition permissions are granted.
+#### Audio
+- "mic on" or "enable mic" / "mic off" or "disable mic"  
+- "speaker on" or "enable speaker" / "speaker off" or "disable speaker"
 
-- **Mic On**: "mic on" or "enable mic" to enable mic.
-- **Mic Off**: "mic off" or "disable mic" to disable mic.
-- **Speaker On**: "speaker on" or "enable speaker" to enable speaker.
-- **Speaker Off**: "speaker off" or "disable speaker" to disable speaker.
-- **Full VR Mode**: "mode one" or "screen one"
-- **Full VR Mode 2**: "mode two" or "screen two"
-- **50/50 VR Mode**: "mode three" or "screen three"
-- **PIP VR Mode**: "mode four" or "screen four"
-- **PIP VR Mode 2**: "mode five" or "screen five"
+#### VR Modes
+- "mode one" or "screen one" (Full VR Mode)  
+- "mode two" or "screen two" (Full VR Mode2)  
+- "mode three" or "screen three" (50/50 VR Mode)  
+- "mode four" or "screen four" (PiP VR Mode)  
+- "mode five" or "screen five" (PiP VR Mode2)
 
 ### Settings
-Access the settings by tapping the Settings icon in the app bar.
-
-- **Eye Separation**: Adjust the eye separation for VR modes.
-- **Enable Mic**: Toggle to stream audio along with video.
-- **Enable Speaker**: Toggle to stream speaker along with video.
-- **Enable Voice Commands**: Enable and disable the use of voice commands.
-- **Voice Commands Configuration**: Configure the words and enable/disable for voice commands.
-- **Privacy Policy**: Review the app's privacy policy.
-- **Terms of Service**: Review the terms of service.
+- **Eye Separation**: Adjust separation for VR modes.  
+- **Enable Mic**: Toggle microphone streaming.  
+- **Enable Speaker**: Toggle speaker audio.  
+- **Enable Voice Commands**: Turn on/off voice recognition.  
+- **Voice Commands Configuration**: Customize or disable individual commands.  
+- **Privacy Policy & Terms of Service**: Review from within the app.
 
 ### Permissions
-The app requires the following permissions:
-
-- **Camera**: To capture and stream video.
-- **Microphone**: (Optional) To capture and stream audio if enabled.
-- **Internet**: To establish a P2P connection using WebRTC.
-- **Bluetooth**: Required for network state changes on certain devices.
-- **Audio Settings**: To modify audio configurations.
-- **Network State**: To access and change network state.
-
-Ensure you grant all necessary permissions when prompted to fully utilize the app's features.
+Make sure to grant:
+- **Camera** (for streaming video)  
+- **Microphone** (for streaming audio if enabled)  
+- **Network State / Internet** (for WebRTC connections)  
+- **Bluetooth** (needed for certain network states on Android)  
+- **Audio Settings** (to adjust volumes and speaker states)
 
 ## Troubleshooting
 
-### Connection Issues:
-Ensure both devices have a stable internet connection.
-Verify that permissions are granted on both devices.
-
-### Camera Not Found:
-If the back camera is not detected, the app will attempt to use the default camera.
-Check your device's camera settings.
-
-### Voice Commands Not Working:
-Ensure microphone permissions are granted.
-Speak clearly and in a quiet environment.
-
-### App Crashes or Freezes:
-Restart the app and try again.
-Check for any updates to the app or dependencies.
+- **Connection Issues**: Verify both devices have a stable network and the necessary permissions.  
+- **Camera Not Found**: The app defaults to back camera when available; otherwise, it uses any available camera.  
+- **Voice Commands Not Working**: Check mic permissions and confirm that voice commands are enabled in Settings.  
+- **App Crashes/Freezes**: Restart the app, clear cache, or update dependencies.
 
 ## Dependencies
-VisuYou utilizes several Flutter packages:
+VisuYou relies on multiple Flutter packages, including (but not limited to):
+- flutter_webrtc  
+- permission_handler  
+- qr_flutter  
+- flutter_barcode_scanner  
+- vosk_flutter  
+- shared_preferences  
+- archive  
+- camera  
+- vibration  
+- crypto  
+- flutter_dotenv  
 
-- **flutter_webrtc**: WebRTC implementation for Flutter.
-- **permission_handler**: Handles runtime permissions.
-- **qr_flutter**: Generates QR codes.
-- **flutter_barcode_scanner**: Scans QR codes.
-- **vosk_flutter**: Implements voice command recognition.
-- **shared_preferences**: Stores user settings locally.
-- **archive**: Handles data compression and decompression.
-- **camera**: Accesses device cameras.
-- **cupertino_icons**: Provides iOS style icons.
-- **provider**: Implements state management.
-- **vibration**: Implements haptic feedback.
-- **crypto**: Implements hashing and data integrity.
-
-For a complete list, refer to the pubspec.yaml file.
+For a complete list, see `pubspec.yaml`.
 
 ## Contributing
-Contributions are welcome! Please follow these steps:
+Contributions are welcome!
 
-1. **Fork the Repository**: Click the "Fork" button at the top right of the repository page.
+1. **Fork the Repository**: Click "Fork" on GitHub.  
 2. **Create a Feature Branch**:
 
 ```bash
@@ -268,57 +266,49 @@ git commit -am 'Add new feature'
 git push origin feature/YourFeature
 ```
 
-5. **Open a Pull Request**: Submit your pull request for review.
+5. **Open a Pull Request** on GitHub.
 
 ## License
-The source code for this project is licensed under the Your License Name license.
+This project is licensed under [Your License Name]. You may add more details or a link to your license file here.
 
 ## Contact
-For any inquiries or support, please contact:
-
-- **Email**: sami.hekkanen@gmail.com
+For questions or support:
+- **Email**: sami.hekkanen@gmail.com  
 - **GitHub**: shekkanen
 
 ## Getting Started
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- **Lab**: Write your first Flutter app
-- **Cookbook**: Useful Flutter samples
-
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This project is a starting point for a Flutter application. If this is your first Flutter project, you may want to review:
+- **Flutter Dev’s Getting Started**  
+- **Lab: Write your first Flutter app**  
+- **Cookbook: Useful Flutter samples**
 
 ## Usage Scenarios
-Your app offers a unique and private peer-to-peer VR experience that allows users to view the world from another person's perspective in real-time. This opens up a wide array of innovative use cases across various fields. Here are some ideas:
-
-- **Shared Experiences for Couples**: Couples can use the app to enhance their connection by sharing perspectives in intimate or everyday moments. This can deepen empathy and understanding between partners by literally seeing through each other's eyes.
-- **Virtual Tourism and Exploration**: Users can virtually explore new places by connecting with someone in a different location. This allows people to experience travel and cultural exchange without leaving their homes.
-- **Education and Training**: Teachers, mentors, or experts can provide real-time demonstrations from their perspective. For instance, a chef could show cooking techniques, or a mechanic could guide someone through a repair.
-- **Remote Assistance and Support**: Technicians or support personnel can see exactly what a user is encountering and guide them through troubleshooting steps, enhancing customer service experiences.
-- **Medical and Healthcare Applications**: Doctors could perform remote consultations by viewing a patient's environment. Similarly, patients could share their daily routines for better health monitoring.
-- **Emergency Services and Safety**: First responders can share live footage from their perspective during emergencies, aiding coordination and response efforts.
-- **Sports and Training**: Coaches can observe athletes' techniques in real-time or athletes can experience a coach's perspective, improving training efficiency.
-- **Entertainment and Gaming**: Gamers can share their live gameplay from a first-person perspective, or audiences can experience events like concerts or sports matches through the eyes of someone on the ground.
-- **Artistic Collaboration**: Artists and creators can collaborate remotely, sharing their creative process live to work together on projects such as painting, crafting, or music production.
-- **Accessibility Enhancements**: People with mobility issues can experience activities through someone else's perspective, like hiking or attending events, which they might not be able to do physically.
-- **Research and Field Studies**: Scientists and researchers can share live observations from the field with their teams or students, enhancing collaborative research efforts.
-- **Family Connections**: Families separated by distance can share moments like walking through a new home, attending a child's event, or celebrating holidays together.
-- **Journalism and Reporting**: Reporters can provide immersive coverage of events by sharing live perspectives from the scene, giving audiences a more engaging experience.
-- **Psychological Therapy and Counseling**: Therapists could use the app to better understand a client's environment and experiences, potentially aiding in treatments like exposure therapy.
-- **Mindfulness and Empathy Exercises**: Users can engage in activities that promote empathy by experiencing daily life from another person's perspective, fostering greater understanding and social connection.
+VisuYou can facilitate a wide range of real-time, immersive experiences, including:
+- Shared Experiences for Couples  
+- Virtual Tourism and Exploration  
+- Education and Training  
+- Remote Assistance and Support  
+- Medical and Healthcare Applications  
+- Emergency Services and Safety  
+- Sports and Training  
+- Entertainment and Gaming  
+- Artistic Collaboration  
+- Accessibility Enhancements  
+- Research and Field Studies  
+- Family Connections  
+- Journalism and Reporting  
+- Psychological Therapy and Counseling  
+- Mindfulness and Empathy Exercises
 
 ## Considerations for Implementation
-
-- **Privacy and Consent**: Ensure that all users are fully informed and consent to sharing their perspectives. Implement robust privacy controls and data protection measures.
-- **Security**: As the app operates without servers, focus on securing peer-to-peer connections to protect against interception or unauthorized access.
-- **User Experience**: Provide intuitive controls for starting and ending sessions, switching perspectives, and handling connectivity issues.
-- **Compliance with Regulations**: Be mindful of legal considerations, such as data protection laws and regulations regarding streaming content, especially in different jurisdictions.
+- **Privacy and Consent**: Users must be fully informed about the nature of streaming and sharing perspectives.  
+- **Security**: P2P connections must be encrypted.  
+- **User Experience**: Streamlined controls and user-friendly VR navigation are crucial.  
+- **Compliance**: Be aware of regional laws and regulations around data handling and user privacy.
 
 ## Additional Features to Enhance Use Cases
+- **Gesture Recognition**: For hands-free interactions.  
+- **Customization Options**: Toggle video quality, switch front/back camera, etc.  
+- **Session Recording**: Optionally allow session recording (with mutual consent) for later review.
 
-- **Gesture Recognition**: Use device sensors to capture gestures or movements, adding another layer of interaction.
-- **Customization Options**: Allow users to adjust video quality or switch between front and back cameras, tailoring the experience to their needs.
-- **Session Recording**: Offer the option to record sessions for later viewing, with clear consent from both parties.
+Enjoy exploring the world from another person’s perspective, all while maintaining the highest standard of privacy and security!
