@@ -104,7 +104,7 @@ Built with Flutter, VisuYou can run on multiple platforms that support Flutter, 
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/visuyou.git
+git clone https://github.com/shekkanen/visuyou.git
 cd visuyou
 ```
 
