@@ -11,11 +11,11 @@ VisuYou is a peer-to-peer (P2P) virtual reality (VR) application developed using
 ### 1. Main Screen
 ![Main Screen](docs/screenshots/main_screen.webp "Main Screen")
 
-### 2. Main Screen Connected
-![Main Screen Connected](docs/screenshots/main_screen_connected.webp "Main Screen Connected")
-
-### 3. Start Connection
+### 2. Start Connection
 ![Start Connection](docs/screenshots/main_screen_start_connection.webp "Start Connection")
+
+### 3. Main Screen Connected
+![Main Screen Connected](docs/screenshots/main_screen_connected.webp "Main Screen Connected")
 
 ### 4. Mode 1 Full VR Mode
 ![Mode 1 Full VR Mode](docs/screenshots/mode1_full_vr_mode.webp "Full VR Mode")
